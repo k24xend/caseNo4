@@ -6,6 +6,7 @@ from app.domain import (
     DebtData,
     JourneyState,
     SnapshotInput,
+    add_calendar_months,
     calculate_snapshot,
     classify,
     forecast_debts,
@@ -91,6 +92,41 @@ def test_interest_rounds_half_up_in_minor_units() -> None:
 def test_unknown_strategy_is_rejected() -> None:
     with pytest.raises(ValueError):
         forecast_debts([], 0, "magic")
+
+
+@pytest.mark.parametrize(
+    ("origin", "months", "expected"),
+    [
+        (date(2024, 1, 31), 1, date(2024, 2, 29)),
+        (date(2025, 1, 31), 1, date(2025, 2, 28)),
+        (date(2026, 12, 15), 1, date(2027, 1, 15)),
+        (date(2026, 1, 1), 360, date(2056, 1, 1)),
+    ],
+)
+def test_calendar_month_transition(origin: date, months: int, expected: date) -> None:
+    assert add_calendar_months(origin, months) == expected
+
+
+@pytest.mark.parametrize("extra", [0, 100, 100_000])
+def test_zero_percent_debt_and_extra_payments(extra: int) -> None:
+    result = forecast_debts(
+        [DebtData("zero", "Zero", 10_000, 0, 1_000)], extra, "avalanche", date(2026, 1, 31)
+    )
+    assert result["total_paid"] == 10_000
+    assert result["negative_amortization"] == []
+
+
+def test_debt_can_close_in_current_month() -> None:
+    result = forecast_debts(
+        [DebtData("d", "Debt", 100, 0, 100)], 0, "avalanche", date(2026, 12, 31)
+    )
+    assert result["months"] == 1
+    assert result["debt_free_date"] == "2026-12-31"
+
+
+def test_negative_extra_payment_is_rejected() -> None:
+    with pytest.raises(ValueError):
+        forecast_debts([], -1, "avalanche")
 
 
 def test_main_action_is_deterministic() -> None:

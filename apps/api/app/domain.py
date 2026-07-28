@@ -1,5 +1,6 @@
+import calendar
 from dataclasses import dataclass
-from datetime import date, timedelta
+from datetime import date
 from enum import StrEnum
 
 
@@ -54,14 +55,10 @@ def classify(snapshot: dict[str, int], *, has_debts: bool, has_overdue: bool) ->
         return JourneyState.CRITICAL
     if has_overdue:
         return JourneyState.STABILIZATION
-    if not has_debts and snapshot["available_now"] < snapshot["minimum_buffer_target"]:
-        return JourneyState.BUFFER
     if snapshot["available_now"] < snapshot["minimum_buffer_target"]:
-        return JourneyState.STABILIZATION
+        return JourneyState.STABILIZATION if has_debts else JourneyState.BUFFER
     if has_debts:
         return JourneyState.EXIT
-    if snapshot["available_now"] < snapshot["minimum_buffer_target"]:
-        return JourneyState.BUFFER
     return JourneyState.GROWTH
 
 
@@ -115,7 +112,9 @@ def forecast_debts(
     total_paid = 0
     # The original minimum-payment envelope stays available after a debt is
     # closed. This is the deterministic "rollover" used by all strategies.
-    monthly_envelope = sum(d.minimum_payment for d in ordered) + max(0, extra_payment)
+    if extra_payment < 0:
+        raise ValueError("extra_payment cannot be negative")
+    monthly_envelope = sum(d.minimum_payment for d in ordered) + extra_payment
     negative_amortization: list[str] = []
     for month in range(1, 361):
         active = [d for d in ordered if balances[d.id] > 0]
@@ -124,7 +123,7 @@ def forecast_debts(
             return {
                 "strategy": strategy,
                 "months": month - 1,
-                "debt_free_date": (origin + timedelta(days=30 * (month - 1))).isoformat(),
+                "debt_free_date": add_calendar_months(origin, max(0, month - 2)).isoformat(),
                 "total_paid": total_paid,
                 "negative_amortization": negative_amortization,
                 "order": [d.id for d in ordered],
@@ -153,3 +152,11 @@ def forecast_debts(
         "negative_amortization": negative_amortization,
         "order": [d.id for d in ordered],
     }
+
+
+def add_calendar_months(origin: date, months: int) -> date:
+    """Move by whole calendar months, clamping to the target month's last day."""
+    absolute_month = origin.year * 12 + origin.month - 1 + months
+    year, zero_based_month = divmod(absolute_month, 12)
+    month = zero_based_month + 1
+    return date(year, month, min(origin.day, calendar.monthrange(year, month)[1]))

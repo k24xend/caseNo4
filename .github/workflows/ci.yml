@@ -26,8 +26,8 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: mypy app
-      - run: pytest
       - run: alembic upgrade head
+      - run: pytest
       - run: alembic downgrade base && alembic upgrade head
   flutter:
     runs-on: ubuntu-latest

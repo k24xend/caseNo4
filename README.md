@@ -58,3 +58,20 @@ git grep -nEi '(api[_-]?key|secret|token|password)\s*[:=]\s*["'"'][^"'"']+["'"']
 ## Известные ограничения
 
 Ручной ввод вместо bank sync; один базовый currency без FX-конвертации; прогноз использует месячные проценты и горизонт 30 лет; уведомления только как настройка; offline-конфликт сохраняется в очереди и требует повторной синхронизации. См. [полный список](docs/limitations.md).
+
+## A0–A3 demo startup
+
+```bash
+cp .env.example .env
+docker compose up --build -d postgres
+cd apps/api && python -m venv .venv && .venv/bin/pip install -e '.[dev]'
+.venv/bin/alembic upgrade head
+PYTHONPATH=. .venv/bin/python -m app.seed
+.venv/bin/uvicorn app.main:app --reload
+```
+
+In another terminal run `cd apps/mobile && flutter pub get && flutter run
+--dart-define=APP_ENV=demo --dart-define=API_URL=http://127.0.0.1:8000` (use
+`10.0.2.2` for Android Emulator). Choose **Посмотреть демо**; the app signs in
+with the seeded `demo@vyhod.app` / `demo-vyhod` account. Then review Today, Plan,
+Debts, Transactions, and logout in Profile.

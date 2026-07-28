@@ -43,6 +43,13 @@ async def tokens(user_id: str, db: AsyncSession) -> dict[str, str]:
     }
 
 
+def refresh_expired(session: RefreshSession) -> bool:
+    expires_at = session.expires_at
+    if expires_at.tzinfo is None:
+        expires_at = expires_at.replace(tzinfo=UTC)
+    return expires_at <= datetime.now(UTC)
+
+
 async def current_user(
     credentials: HTTPAuthorizationCredentials = Depends(bearer),
     db: AsyncSession = Depends(get_db),

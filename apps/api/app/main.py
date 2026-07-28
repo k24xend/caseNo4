@@ -10,7 +10,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .ai import FakeAIProvider, safe_explanation
-from .auth import current_user, hash_password, tokens, verify_password
+from .auth import current_user, hash_password, refresh_expired, tokens, verify_password
 from .config import get_settings
 from .database import engine, get_db
 from .domain import (
@@ -28,6 +28,7 @@ from .models import (
     Checkin,
     Debt,
     FinancialSnapshot,
+    IdempotencyRecord,
     RefreshSession,
     Scenario,
     ScheduledItem,
@@ -112,7 +113,7 @@ async def refresh(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> dict[s
     except (jwt.PyJWTError, KeyError, ValueError) as exc:
         raise HTTPException(401, "Invalid refresh token") from exc
     session = await db.scalar(select(RefreshSession).where(RefreshSession.token_id == payload["jti"], RefreshSession.revoked.is_(False)))
-    if not session:
+    if not session or refresh_expired(session) or session.user_id != payload.get("sub"):
         raise HTTPException(401, "Refresh token was revoked")
     session.revoked = True
     return await tokens(payload["sub"], db)
@@ -141,9 +142,18 @@ async def onboarding(
     db: DbDep,
     idempotency_key: Annotated[str, Header()] = "onboarding",
 ) -> dict[str, object]:
+    existing = await db.scalar(
+        select(IdempotencyRecord).where(
+            IdempotencyRecord.user_id == user.id,
+            IdempotencyRecord.scope == "onboarding",
+            IdempotencyRecord.key == idempotency_key,
+        )
+    )
+    if existing:
+        return existing.response
     account = await db.scalar(select(Account).where(Account.user_id == user.id))
     if account:
-        return {"completed": True, "account_id": account.id}
+        raise HTTPException(409, "Onboarding already completed")
     settings = await db.scalar(select(UserSettings).where(UserSettings.user_id == user.id))
     assert settings
     settings.language, settings.currency, settings.minimum_buffer, settings.onboarding_complete = (
@@ -167,7 +177,7 @@ async def onboarding(
                 amount=item.amount,
                 currency=body.currency,
                 due_date=item.due_date,
-                recurring=True,
+                recurring=item.recurring,
             )
         )
     for item in body.debts:
@@ -178,8 +188,15 @@ async def onboarding(
                 **item.model_dump(),
             )
         )
+    await db.flush()
+    response: dict[str, object] = {"completed": True, "account_id": account.id}
+    db.add(
+        IdempotencyRecord(
+            user_id=user.id, scope="onboarding", key=idempotency_key, response=response
+        )
+    )
     await db.commit()
-    return {"completed": True, "account_id": account.id, "idempotency_key": idempotency_key}
+    return response
 
 
 async def build_plan(
@@ -191,37 +208,27 @@ async def build_plan(
     if any(a.currency != settings.currency for a in accounts):
         raise HTTPException(409, "Multiple currencies cannot be combined")
     today = date.today()
-    incomes = list(
+    scheduled = list(
         (
             await db.scalars(
                 select(ScheduledItem).where(
                     ScheduledItem.user_id == user.id,
-                    ScheduledItem.kind == "income",
-                    ScheduledItem.confirmed.is_(True),
                     ScheduledItem.due_date >= today,
                 )
             )
         ).all()
     )
-    next_income = min(incomes, key=lambda x: x.due_date) if incomes else None
+    confirmed_incomes = [
+        item for item in scheduled if item.kind == "income" and item.confirmed
+    ]
+    next_income = min(confirmed_incomes, key=lambda x: x.due_date) if confirmed_incomes else None
     horizon = next_income.due_date if next_income else today + timedelta(days=7)
-    expenses = list(
-        (
-            await db.scalars(
-                select(ScheduledItem).where(
-                    ScheduledItem.user_id == user.id,
-                    ScheduledItem.kind == "expense",
-                    ScheduledItem.due_date <= horizon,
-                    ScheduledItem.due_date >= today,
-                )
-            )
-        ).all()
-    )
+    expenses = [item for item in scheduled if item.kind == "expense"]
     debts = list((await db.scalars(select(Debt).where(Debt.user_id == user.id))).all())
     available = sum(a.balance for a in accounts)
-    eligible_incomes = [x for x in incomes if x.due_date <= horizon]
+    eligible_incomes = [x for x in confirmed_incomes if x.due_date <= horizon]
     income = sum(x.amount for x in eligible_incomes)
-    mandatory = sum(x.amount for x in expenses)
+    mandatory = sum(x.amount for x in expenses if x.due_date <= horizon)
     def debt_due_before_horizon(debt: Debt) -> bool:
         day = min(debt.due_day, 28)
         due = date(today.year, today.month, day)
@@ -234,18 +241,25 @@ async def build_plan(
     overrides = overrides or {}
     income += overrides.get("income", 0)
     mandatory += overrides.get("mandatory_expense", 0)
+    month_horizon = today + timedelta(days=31)
+    monthly_income = sum(
+        x.amount for x in confirmed_incomes if x.recurring or x.due_date <= month_horizon
+    )
+    monthly_mandatory = sum(
+        x.amount for x in expenses if x.recurring or x.due_date <= month_horizon
+    )
     data = SnapshotInput(
-        available,
-        sum(x.amount for x in incomes if x.due_date < today + timedelta(days=31)),
-        sum(x.amount for x in expenses if x.recurring),
-        sum(d.minimum_payment for d in debts),
-        settings.minimum_buffer,
-        (horizon - today).days,
-        income,
-        mandatory,
-        minimums,
-        bool(debts),
-        any(d.overdue for d in debts),
+        available_now=available,
+        confirmed_income=income,
+        mandatory_expenses=mandatory,
+        minimum_debt_payments=minimums,
+        protected_reserve=settings.minimum_buffer,
+        days_to_income=(horizon - today).days,
+        monthly_income=monthly_income + overrides.get("income", 0),
+        monthly_mandatory=monthly_mandatory + overrides.get("mandatory_expense", 0),
+        monthly_debt_minimums=sum(d.minimum_payment for d in debts),
+        has_debts=bool(debts),
+        has_overdue=any(d.overdue for d in debts),
     )
     snap = calculate_snapshot(data)
     state = classify(snap, has_debts=bool(debts), has_overdue=data.has_overdue)
@@ -278,7 +292,15 @@ async def build_plan(
         "generated_at": datetime.now(UTC).isoformat(),
         "calculation_version": 1,
     }
-    db.add(FinancialSnapshot(user_id=user.id, currency=settings.currency, state=str(state), values=result))
+    db.add(
+        FinancialSnapshot(
+            user_id=user.id,
+            currency=settings.currency,
+            calculation_version=1,
+            state=str(state),
+            values={"inputs": data.__dict__, "result": result},
+        )
+    )
     await db.commit()
     return result
 
