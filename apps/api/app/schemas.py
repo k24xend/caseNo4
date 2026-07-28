@@ -28,22 +28,42 @@ class IncomeIn(BaseModel):
     amount: int = Field(gt=0)
     due_date: date
     confirmed: bool = True
+    recurring: bool = False
+
+    @field_validator("name")
+    @classmethod
+    def income_name(cls, value: str) -> str:
+        if not value.strip():
+            raise ValueError("name cannot be blank")
+        return value.strip()
 
 
 class ExpenseIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     amount: int = Field(gt=0)
     due_date: date
+    recurring: bool = False
 
 
 class OnboardingDebtIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
+    debt_type: str = Field(default="credit", min_length=1, max_length=30)
     balance: int = Field(gt=0)
     annual_rate_bps: int = Field(ge=0, le=100_000)
     minimum_payment: int = Field(ge=0)
     due_day: int = Field(ge=1, le=31)
+    next_payment_date: date | None = None
     overdue: bool = False
     custom_priority: int = Field(default=0, ge=0)
+
+    @field_validator("minimum_payment")
+    @classmethod
+    def minimum_not_above_balance(cls, value: int, info: object) -> int:
+        data = getattr(info, "data", {})
+        balance = data.get("balance")
+        if isinstance(balance, int) and value > balance:
+            raise ValueError("minimum payment cannot exceed balance")
+        return value
 
 
 class OnboardingIn(BaseModel):

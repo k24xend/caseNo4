@@ -77,6 +77,7 @@ class Debt(TimestampMixin, Base):
     annual_rate_bps: Mapped[int] = mapped_column(Integer, default=0)
     minimum_payment: Mapped[int] = mapped_column(Integer, default=0)
     due_day: Mapped[int] = mapped_column(Integer, default=1)
+    next_payment_date: Mapped[date | None] = mapped_column(Date, nullable=True)
     overdue: Mapped[bool] = mapped_column(Boolean, default=False)
     custom_priority: Mapped[int] = mapped_column(Integer, default=0)
 

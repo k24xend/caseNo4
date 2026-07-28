@@ -1,53 +1,16 @@
-class TokenPair {
-  const TokenPair(this.accessToken, this.refreshToken);
-  factory TokenPair.fromJson(Map<String, dynamic> json) => TokenPair(
-        json['access_token'] as String,
-        json['refresh_token'] as String,
-      );
-  final String accessToken;
-  final String refreshToken;
-}
-
-class MoneySnapshot {
-  const MoneySnapshot({required this.safeToSpend, required this.safeDailyAmount,
-    required this.projectedBalance, required this.monthlyFreeCashFlow,
-    required this.minimumBuffer});
-  factory MoneySnapshot.fromJson(Map<String, dynamic> json) => MoneySnapshot(
-    safeToSpend: json['safe_to_spend'] as int,
-    safeDailyAmount: json['safe_daily_amount'] as int,
-    projectedBalance: json['projected_balance_before_next_income'] as int,
-    monthlyFreeCashFlow: json['monthly_free_cash_flow'] as int,
-    minimumBuffer: json['minimum_buffer_target'] as int,
-  );
-  final int safeToSpend, safeDailyAmount, projectedBalance, monthlyFreeCashFlow, minimumBuffer;
-}
-
-class RecommendedAction {
-  const RecommendedAction(this.type, this.title, this.amount);
-  factory RecommendedAction.fromJson(Map<String, dynamic> json) => RecommendedAction(
-    json['type'] as String, json['title'] as String, json['amount'] as int);
-  final String type, title;
-  final int amount;
-}
-
-class FinancialPlan {
-  const FinancialPlan(this.state, this.currency, this.snapshot, this.action);
-  factory FinancialPlan.fromJson(Map<String, dynamic> json) => FinancialPlan(
-    json['state'] as String,
-    json['currency'] as String? ?? 'RUB',
-    MoneySnapshot.fromJson(json['snapshot'] as Map<String, dynamic>),
-    RecommendedAction.fromJson(json['action'] as Map<String, dynamic>),
-  );
-  final String state, currency;
-  final MoneySnapshot snapshot;
-  final RecommendedAction action;
-}
-
-class DebtDto {
-  const DebtDto(this.id, this.name, this.balance, this.currency, this.rateBps, this.minimumPayment);
-  factory DebtDto.fromJson(Map<String, dynamic> json) => DebtDto(json['id'] as String,
-    json['name'] as String, json['balance'] as int, json['currency'] as String,
-    json['annual_rate_bps'] as int, json['minimum_payment'] as int);
-  final String id, name, currency;
-  final int balance, rateBps, minimumPayment;
-}
+class InvalidApiResponse implements Exception { const InvalidApiResponse(this.field); final String field; @override String toString() => 'Invalid API response: $field'; }
+Map<String,dynamic> object(Object? value,String field) { if(value is Map<String,dynamic>) return value; throw InvalidApiResponse(field); }
+String string(Object? value,String field) { if(value is String) return value; throw InvalidApiResponse(field); }
+int integer(Object? value,String field) { if(value is int) return value; throw InvalidApiResponse(field); }
+bool boolean(Object? value,String field) { if(value is bool) return value; throw InvalidApiResponse(field); }
+class TokenPair { const TokenPair(this.accessToken,this.refreshToken); factory TokenPair.fromJson(Map<String,dynamic> j)=>TokenPair(string(j['access_token'],'access_token'),string(j['refresh_token'],'refresh_token')); final String accessToken,refreshToken; }
+class UserSession { const UserSession({required this.id,required this.email,required this.language,required this.currency,required this.onboardingComplete}); factory UserSession.fromJson(Map<String,dynamic> j){final s=object(j['settings'],'settings');return UserSession(id:string(j['id'],'id'),email:string(j['email'],'email'),language:string(s['language'],'settings.language'),currency:string(s['currency'],'settings.currency'),onboardingComplete:boolean(s['onboarding_complete'],'settings.onboarding_complete'));} final String id,email,language,currency;final bool onboardingComplete; }
+class AccountDto { const AccountDto(this.id,this.balance,this.currency); factory AccountDto.fromJson(Map<String,dynamic> j)=>AccountDto(string(j['id'],'id'),integer(j['balance'],'balance'),string(j['currency'],'currency')); final String id,currency;final int balance; }
+class IncomeDto { const IncomeDto(this.id,this.name,this.amount,this.currency,this.date,this.confirmed,this.recurring); factory IncomeDto.fromJson(Map<String,dynamic> j)=>IncomeDto(string(j['id'],'id'),string(j['name'],'name'),integer(j['amount'],'amount'),string(j['currency'],'currency'),DateTime.parse(string(j['due_date'],'due_date')),boolean(j['confirmed'],'confirmed'),boolean(j['recurring'],'recurring')); final String id,name,currency; final int amount; final DateTime date; final bool confirmed,recurring; }
+class RequiredExpenseDto { const RequiredExpenseDto(this.id,this.name,this.amount,this.currency,this.date,this.recurring); factory RequiredExpenseDto.fromJson(Map<String,dynamic> j)=>RequiredExpenseDto(string(j['id'],'id'),string(j['name'],'name'),integer(j['amount'],'amount'),string(j['currency'],'currency'),DateTime.parse(string(j['due_date'],'due_date')),boolean(j['recurring'],'recurring')); final String id,name,currency;final int amount;final DateTime date;final bool recurring; }
+class MoneySnapshot { const MoneySnapshot({required this.safeToSpend,required this.safeDailyAmount,required this.projectedBalance,required this.monthlyFreeCashFlow,required this.minimumBuffer}); factory MoneySnapshot.fromJson(Map<String,dynamic> j)=>MoneySnapshot(safeToSpend:integer(j['safe_to_spend'],'safe_to_spend'),safeDailyAmount:integer(j['safe_daily_amount'],'safe_daily_amount'),projectedBalance:integer(j['projected_balance_before_next_income'],'projected_balance_before_next_income'),monthlyFreeCashFlow:integer(j['monthly_free_cash_flow'],'monthly_free_cash_flow'),minimumBuffer:integer(j['minimum_buffer_target'],'minimum_buffer_target')); final int safeToSpend,safeDailyAmount,projectedBalance,monthlyFreeCashFlow,minimumBuffer; }
+class RecommendedAction { const RecommendedAction(this.type,this.title,this.amount); factory RecommendedAction.fromJson(Map<String,dynamic> j)=>RecommendedAction(string(j['type'],'action.type'),string(j['title'],'action.title'),integer(j['amount'],'action.amount')); final String type,title;final int amount; }
+class DebtForecast { const DebtForecast(this.strategy,this.months,this.debtFreeDate,this.totalPaid,this.negativeAmortization,this.order); factory DebtForecast.fromJson(Map<String,dynamic> j)=>DebtForecast(string(j['strategy'],'strategy'),j['months'] is int?j['months'] as int:null,j['debt_free_date'] is String?DateTime.tryParse(j['debt_free_date'] as String):null,integer(j['total_paid'],'total_paid'),(j['negative_amortization'] is List?j['negative_amortization'] as List:const []).whereType<String>().toList(),(j['order'] is List?j['order'] as List:const []).whereType<String>().toList()); final String strategy;final int? months;final DateTime? debtFreeDate;final int totalPaid;final List<String> negativeAmortization,order; }
+class FinancialPlan { const FinancialPlan(this.state,this.currency,this.snapshot,this.action,this.forecasts); factory FinancialPlan.fromJson(Map<String,dynamic> j){final raw=j['debt_forecasts'];final forecasts=<String,DebtForecast>{};if(raw is Map<String,dynamic>){for(final e in raw.entries){forecasts[e.key]=DebtForecast.fromJson(object(e.value,'debt_forecasts.${e.key}'));}}return FinancialPlan(string(j['state'],'state'),string(j['currency'],'currency'),MoneySnapshot.fromJson(object(j['snapshot'],'snapshot')),RecommendedAction.fromJson(object(j['action'],'action')),forecasts);} final String state,currency;final MoneySnapshot snapshot;final RecommendedAction action;final Map<String,DebtForecast> forecasts; }
+class DebtDto { const DebtDto(this.id,this.name,this.type,this.balance,this.currency,this.rateBps,this.minimumPayment,this.dueDay,this.overdue); factory DebtDto.fromJson(Map<String,dynamic> j)=>DebtDto(string(j['id'],'id'),string(j['name'],'name'),string(j['debt_type'],'debt_type'),integer(j['balance'],'balance'),string(j['currency'],'currency'),integer(j['annual_rate_bps'],'annual_rate_bps'),integer(j['minimum_payment'],'minimum_payment'),integer(j['due_day'],'due_day'),boolean(j['overdue'],'overdue')); final String id,name,type,currency;final int balance,rateBps,minimumPayment,dueDay;final bool overdue; }
+class TransactionDto { const TransactionDto(this.id,this.kind,this.amount,this.currency,this.category,this.description); factory TransactionDto.fromJson(Map<String,dynamic> j)=>TransactionDto(string(j['id'],'id'),string(j['kind'],'kind'),integer(j['amount'],'amount'),string(j['currency'],'currency'),string(j['category'],'category'),string(j['description'],'description')); final String id,kind,currency,category,description;final int amount; }

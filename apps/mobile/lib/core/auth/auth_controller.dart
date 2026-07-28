@@ -6,7 +6,7 @@ final authControllerProvider = StateNotifierProvider<AuthController, SessionStat
 class AuthController extends StateNotifier<SessionState> {
   AuthController(this.api):super(SessionState.loading);
   final ApiClient api;
-  Future<void> restore() async { try { state = await api.hasSession() ? (await api.onboardingComplete() ? SessionState.authenticated : SessionState.onboarding) : SessionState.anonymous; } catch (_) { state=SessionState.anonymous; } }
+  Future<void> restore() async { try { state = await api.hasSession() ? (await api.onboardingComplete() ? SessionState.authenticated : SessionState.onboarding) : SessionState.anonymous; } catch (_) { await api.clearSession(); state=SessionState.anonymous; } }
   Future<void> demoLogin() async { state=SessionState.loading; await api.login('demo@vyhod.app','demo-vyhod'); await api.storage.write('onboarding_complete','true'); state=SessionState.authenticated; }
   Future<void> registered() async => state=SessionState.onboarding;
   void completed() => state=SessionState.authenticated;
