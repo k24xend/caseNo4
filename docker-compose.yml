@@ -1,0 +1,24 @@
+services:
+  db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: vyhod
+      POSTGRES_USER: vyhod
+      POSTGRES_PASSWORD: vyhod
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U vyhod"]
+      interval: 3s
+      timeout: 3s
+      retries: 10
+    volumes: ["postgres_data:/var/lib/postgresql/data"]
+  api:
+    build: apps/api
+    environment:
+      DATABASE_URL: postgresql+asyncpg://vyhod:vyhod@db:5432/vyhod
+      JWT_SECRET: ${JWT_SECRET:-local-compose-development-secret}
+      AI_PROVIDER: fake
+    ports: ["8000:8000"]
+    depends_on:
+      db: {condition: service_healthy}
+volumes:
+  postgres_data:
