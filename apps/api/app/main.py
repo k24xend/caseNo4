@@ -3,6 +3,7 @@ from typing import Annotated, cast
 
 import jwt
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
@@ -26,13 +27,24 @@ from .models import (
     Base,
     Checkin,
     Debt,
+    FinancialSnapshot,
+    RefreshSession,
     Scenario,
     ScheduledItem,
     Transaction,
     User,
     UserSettings,
 )
-from .schemas import AuthIn, CheckinIn, DebtIn, OnboardingIn, ScenarioIn, TokenPair, TransactionIn
+from .schemas import (
+    AuthIn,
+    CheckinIn,
+    DebtIn,
+    OnboardingIn,
+    RefreshIn,
+    ScenarioIn,
+    TokenPair,
+    TransactionIn,
+)
 
 app = FastAPI(title="ВЫХОД API", version="1.0.0")
 app.add_middleware(
@@ -49,6 +61,14 @@ async def http_error(_: Request, exc: HTTPException) -> JSONResponse:
     return JSONResponse(
         status_code=exc.status_code,
         content={"error": {"code": f"http_{exc.status_code}", "message": exc.detail}},
+    )
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
+    return JSONResponse(
+        status_code=422,
+        content={"error": {"code": "validation_error", "message": "Request validation failed", "details": exc.errors()}},
     )
 
 
@@ -72,7 +92,7 @@ async def register(body: AuthIn, db: AsyncSession = Depends(get_db)) -> dict[str
     await db.flush()
     db.add(UserSettings(user_id=user.id))
     await db.commit()
-    return tokens(user.id)
+    return await tokens(user.id, db)
 
 
 @app.post("/auth/login", response_model=TokenPair)
@@ -80,18 +100,34 @@ async def login(body: AuthIn, db: AsyncSession = Depends(get_db)) -> dict[str, s
     user = await db.scalar(select(User).where(User.email == body.email.lower()))
     if not user or not verify_password(body.password, user.password_hash):
         raise HTTPException(401, "Invalid email or password")
-    return tokens(user.id)
+    return await tokens(user.id, db)
 
 
 @app.post("/auth/refresh", response_model=TokenPair)
-async def refresh(refresh_token: str) -> dict[str, str]:
+async def refresh(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> dict[str, str]:
     try:
-        payload = jwt.decode(refresh_token, get_settings().jwt_secret, algorithms=["HS256"])
+        payload = jwt.decode(body.refresh_token, get_settings().jwt_secret, algorithms=["HS256"])
         if payload["type"] != "refresh":
             raise ValueError
     except (jwt.PyJWTError, KeyError, ValueError) as exc:
         raise HTTPException(401, "Invalid refresh token") from exc
-    return tokens(payload["sub"])
+    session = await db.scalar(select(RefreshSession).where(RefreshSession.token_id == payload["jti"], RefreshSession.revoked.is_(False)))
+    if not session:
+        raise HTTPException(401, "Refresh token was revoked")
+    session.revoked = True
+    return await tokens(payload["sub"], db)
+
+
+@app.post("/auth/logout", status_code=204)
+async def logout(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> None:
+    try:
+        payload = jwt.decode(body.refresh_token, get_settings().jwt_secret, algorithms=["HS256"])
+        session = await db.scalar(select(RefreshSession).where(RefreshSession.token_id == payload.get("jti")))
+        if session:
+            session.revoked = True
+            await db.commit()
+    except jwt.PyJWTError:
+        return
 
 
 UserDep = Annotated[User, Depends(current_user)]
@@ -120,26 +156,17 @@ async def onboarding(
         user_id=user.id, name="Основной", balance=body.available_now, currency=body.currency
     )
     db.add(account)
-    db.add(
-        ScheduledItem(
-            user_id=user.id,
-            kind="income",
-            name="Ближайший доход",
-            amount=body.next_income_amount,
-            currency=body.currency,
-            due_date=body.next_income_date,
-            confirmed=True,
-        )
-    )
+    for item in body.incomes:
+        db.add(ScheduledItem(user_id=user.id, kind="income", currency=body.currency, **item.model_dump()))
     for item in body.expenses:
         db.add(
             ScheduledItem(
                 user_id=user.id,
                 kind="expense",
-                name=str(item.get("name", "Расход")),
-                amount=int(cast(int | str, item["amount"])),
+                name=item.name,
+                amount=item.amount,
                 currency=body.currency,
-                due_date=date.fromisoformat(str(item["due_date"])),
+                due_date=item.due_date,
                 recurring=True,
             )
         )
@@ -148,11 +175,7 @@ async def onboarding(
             Debt(
                 user_id=user.id,
                 currency=body.currency,
-                name=str(item["name"]),
-                balance=int(cast(int | str, item["balance"])),
-                annual_rate_bps=int(cast(int | str, item.get("annual_rate_bps", 0))),
-                minimum_payment=int(cast(int | str, item.get("minimum_payment", 0))),
-                due_day=int(cast(int | str, item.get("due_day", 1))),
+                **item.model_dump(),
             )
         )
     await db.commit()
@@ -196,17 +219,26 @@ async def build_plan(
     )
     debts = list((await db.scalars(select(Debt).where(Debt.user_id == user.id))).all())
     available = sum(a.balance for a in accounts)
-    income = next_income.amount if next_income else 0
+    eligible_incomes = [x for x in incomes if x.due_date <= horizon]
+    income = sum(x.amount for x in eligible_incomes)
     mandatory = sum(x.amount for x in expenses)
-    minimums = sum(d.minimum_payment for d in debts)
+    def debt_due_before_horizon(debt: Debt) -> bool:
+        day = min(debt.due_day, 28)
+        due = date(today.year, today.month, day)
+        if due < today:
+            following = today.replace(day=1) + timedelta(days=32)
+            due = date(following.year, following.month, day)
+        return due <= horizon
+
+    minimums = sum(d.minimum_payment for d in debts if debt_due_before_horizon(d))
     overrides = overrides or {}
     income += overrides.get("income", 0)
     mandatory += overrides.get("mandatory_expense", 0)
     data = SnapshotInput(
         available,
-        income,
-        mandatory,
-        minimums,
+        sum(x.amount for x in incomes if x.due_date < today + timedelta(days=31)),
+        sum(x.amount for x in expenses if x.recurring),
+        sum(d.minimum_payment for d in debts),
         settings.minimum_buffer,
         (horizon - today).days,
         income,
@@ -230,20 +262,25 @@ async def build_plan(
                 max(0, snap["monthly_free_cash_flow"] + overrides.get("extra_debt_payment", 0)),
                 s,
             )
-            for s in ("avalanche", "snowball")
+            for s in ("avalanche", "snowball", "custom")
         }
         if debts
         else {}
     )
-    return {
+    result = {
         "state": state,
+        "currency": settings.currency,
         "snapshot": snap,
         "next_income_date": horizon.isoformat() if next_income else None,
         "income_confirmed": bool(next_income),
         "action": action,
         "debt_forecasts": forecasts,
         "generated_at": datetime.now(UTC).isoformat(),
+        "calculation_version": 1,
     }
+    db.add(FinancialSnapshot(user_id=user.id, currency=settings.currency, state=str(state), values=result))
+    await db.commit()
+    return result
 
 
 @app.get("/plan")

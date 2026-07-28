@@ -20,8 +20,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Какая у вас базовая валюта?'), findsOneWidget);
-    expect(find.text('1 из 6'), findsOneWidget);
+    expect(find.text('1 из 7'), findsOneWidget);
     expect(find.byType(LinearProgressIndicator), findsOneWidget);
   });
 }
-

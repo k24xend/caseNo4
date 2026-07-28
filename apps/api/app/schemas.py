@@ -19,15 +19,41 @@ class TokenPair(BaseModel):
     token_type: str = "bearer"
 
 
+class RefreshIn(BaseModel):
+    refresh_token: str = Field(min_length=20)
+
+
+class IncomeIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    amount: int = Field(gt=0)
+    due_date: date
+    confirmed: bool = True
+
+
+class ExpenseIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    amount: int = Field(gt=0)
+    due_date: date
+
+
+class OnboardingDebtIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    balance: int = Field(gt=0)
+    annual_rate_bps: int = Field(ge=0, le=100_000)
+    minimum_payment: int = Field(ge=0)
+    due_day: int = Field(ge=1, le=31)
+    overdue: bool = False
+    custom_priority: int = Field(default=0, ge=0)
+
+
 class OnboardingIn(BaseModel):
     language: Literal["ru", "en"] = "ru"
     currency: str = "RUB"
     available_now: int = Field(ge=0)
     minimum_buffer: int = Field(ge=0)
-    next_income_amount: int = Field(ge=0)
-    next_income_date: date
-    expenses: list[dict[str, object]] = []
-    debts: list[dict[str, object]] = []
+    incomes: list[IncomeIn] = Field(default_factory=list)
+    expenses: list[ExpenseIn] = Field(default_factory=list)
+    debts: list[OnboardingDebtIn] = Field(default_factory=list)
 
     @field_validator("currency")
     @classmethod

@@ -1,0 +1,2 @@
+import 'package:flutter/material.dart';import 'package:flutter_riverpod/flutter_riverpod.dart';import 'package:go_router/go_router.dart';import '../../core/auth/auth_controller.dart';
+class ProfileScreen extends ConsumerWidget{const ProfileScreen({super.key});@override Widget build(BuildContext c,WidgetRef r)=>Scaffold(appBar:AppBar(title:const Text('Профиль')),body:Padding(padding:const EdgeInsets.all(24),child:FilledButton(onPressed:()async{await r.read(authControllerProvider.notifier).logout();if(c.mounted)c.go('/welcome');},child:const Text('Выйти'))));}
