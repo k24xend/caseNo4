@@ -8,6 +8,57 @@ class ORMModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 
+class EntityOut(ORMModel):
+    id: str
+    created_at: datetime
+    updated_at: datetime
+    version: int
+
+
+class AccountOut(EntityOut):
+    name: str
+    balance: int
+    currency: str
+
+
+class ScheduledItemOut(EntityOut):
+    kind: str
+    name: str
+    amount: int
+    currency: str
+    due_date: date
+    confirmed: bool
+    recurring: bool
+
+
+class DebtOut(EntityOut):
+    name: str
+    debt_type: str
+    balance: int
+    currency: str
+    annual_rate_bps: int
+    minimum_payment: int
+    due_day: int
+    overdue: bool
+    custom_priority: int
+
+
+class TransactionOut(EntityOut):
+    account_id: str
+    kind: str
+    amount: int
+    currency: str
+    category: str
+    description: str
+    occurred_at: datetime
+
+
+class TransactionPage(BaseModel):
+    items: list[TransactionOut]
+    limit: int
+    offset: int
+
+
 class AuthIn(BaseModel):
     email: EmailStr
     password: str = Field(min_length=8, max_length=128)
