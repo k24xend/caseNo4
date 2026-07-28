@@ -1,0 +1,51 @@
+name: CI
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  backend:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env: {POSTGRES_USER: vyhod, POSTGRES_PASSWORD: vyhod, POSTGRES_DB: vyhod_test}
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U vyhod -d vyhod_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    defaults: {run: {working-directory: apps/api}}
+    env:
+      DATABASE_URL: postgresql+asyncpg://vyhod:vyhod@localhost:5432/vyhod_test
+      JWT_SECRET: ci-only-secret-at-least-32-characters
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: {python-version: '3.12', cache: pip}
+      - run: pip install -e '.[dev]'
+      - run: ruff check .
+      - run: mypy app
+      - run: pytest
+      - run: alembic upgrade head
+      - run: alembic downgrade base && alembic upgrade head
+  flutter:
+    runs-on: ubuntu-latest
+    defaults: {run: {working-directory: apps/mobile}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - run: flutter pub get
+      - run: flutter analyze
+      - run: flutter test
+      - run: flutter build web --release --dart-define=APP_ENV=demo
+  ios-unsigned:
+    runs-on: macos-15
+    defaults: {run: {working-directory: apps/mobile}}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: subosito/flutter-action@v2
+        with: {channel: stable, cache: true}
+      - run: flutter pub get
+      - run: flutter build ios --debug --no-codesign --dart-define=APP_ENV=demo --dart-define=API_URL=http://127.0.0.1:8000

@@ -46,8 +46,10 @@ flutter run -d ios --dart-define=API_URL=http://127.0.0.1:8000
 ```bash
 cd apps/api && ruff check . && mypy app && pytest
 DATABASE_URL=postgresql+asyncpg://vyhod:vyhod@localhost/vyhod alembic upgrade head
-cd apps/mobile && flutter analyze && flutter test && flutter build apk --debug
+cd apps/mobile && flutter analyze && flutter test && flutter build web
 docker compose config && docker compose up --build -d
+# Только macOS с Xcode:
+cd apps/mobile && flutter build ios --no-codesign
 git grep -nEi '(api[_-]?key|secret|token|password)\s*[:=]\s*["'"'][^"'"']+["'"']'
 ```
 

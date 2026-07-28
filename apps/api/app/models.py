@@ -39,6 +39,14 @@ class UserSettings(TimestampMixin, Base):
     onboarding_complete: Mapped[bool] = mapped_column(Boolean, default=False)
 
 
+class RefreshSession(TimestampMixin, Base):
+    __tablename__ = "refresh_sessions"
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    token_id: Mapped[str] = mapped_column(String(36), unique=True, index=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked: Mapped[bool] = mapped_column(Boolean, default=False)
+
+
 class Account(TimestampMixin, Base):
     __tablename__ = "accounts"
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
@@ -110,3 +118,12 @@ class IdempotencyRecord(TimestampMixin, Base):
     scope: Mapped[str] = mapped_column(String(50))
     key: Mapped[str] = mapped_column(String(100))
     response: Mapped[dict[str, object]] = mapped_column(JSON)
+
+
+class FinancialSnapshot(TimestampMixin, Base):
+    __tablename__ = "financial_snapshots"
+    user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
+    currency: Mapped[str] = mapped_column(String(3))
+    calculation_version: Mapped[int] = mapped_column(Integer, default=1)
+    state: Mapped[str] = mapped_column(String(30))
+    values: Mapped[dict[str, object]] = mapped_column(JSON)
