@@ -1,0 +1,14 @@
+import SwiftUI
+
+struct TransactionsView: View {
+    @Environment(AppModel.self) private var model; @State private var adding = false
+    var body: some View { Group { if model.transactions.isEmpty { StateView(icon: "list.bullet.rectangle", title: "transactions.empty", message: "transactions.empty_message") } else { List(model.transactions) { item in HStack { Image(systemName: item.kind == "income" ? "arrow.down.left" : "arrow.up.right").foregroundStyle(item.kind == "income" ? .blue : .primary).frame(width: 30, height: 44); VStack(alignment: .leading) { Text(item.description.isEmpty ? item.category : item.description).font(.headline); HStack { Text(LocalizedStringKey("transaction.\(item.kind)")); Text(item.occurredAt, style: .date); if let state = item.syncState { StatusBadge(state: state) } }.font(.caption).foregroundStyle(.secondary) }; Spacer(); Text(MoneyFormatter.string(item.amount, currency: item.currency)).monospacedDigit().fontWeight(.semibold) }.accessibilityElement(children: .combine) } } }.navigationTitle("tab.transactions").toolbar { Button { adding = true } label: { Image(systemName: "plus") }.accessibilityLabel("transactions.add") }.sheet(isPresented: $adding) { TransactionEditorView() }.refreshable { await model.reload() } }
+}
+
+struct TransactionEditorView: View {
+    @Environment(AppModel.self) private var model; @Environment(\.dismiss) private var dismiss
+    @State private var kind = "expense", amount = "", category = "", description = "", recurring = false, saving = false, error: String?
+    var body: some View { NavigationStack { Form { Picker("transactions.kind", selection: $kind) { Text("transaction.expense").tag("expense"); Text("transaction.income").tag("income") }.pickerStyle(.segmented); TextField("transactions.amount", text: $amount).keyboardType(.decimalPad); TextField("transactions.category", text: $category); TextField("transactions.description", text: $description); Toggle("transactions.recurring", isOn: $recurring); Text("transactions.recurring_hint").font(.footnote).foregroundStyle(.secondary); if let error { Text(error).foregroundStyle(.red) } }.navigationTitle("transactions.add").toolbar { ToolbarItem(placement: .cancellationAction) { Button("cancel") { dismiss() } }; ToolbarItem(placement: .confirmationAction) { Button("save") { save() }.disabled(saving || parsed == 0 || category.isEmpty).accessibilityIdentifier("save-transaction") } } } }
+    private var parsed: MinorUnits { NSDecimalNumber(decimal: Decimal(string: amount.replacingOccurrences(of: ",", with: ".")) ?? 0).multiplying(byPowerOf10: 2).int64Value }
+    private func save() { saving = true; Task { do { try await model.addTransaction(kind: kind, amount: parsed, category: category, description: description, recurring: recurring); dismiss() } catch { self.error = error.localizedDescription }; saving = false } }
+}

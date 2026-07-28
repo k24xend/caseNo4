@@ -42,6 +42,7 @@ from .models import (
 )
 from .schemas import (
     AccountOut,
+    AIExplanationEnvelope,
     AuthIn,
     CheckinIn,
     DebtIn,
@@ -314,11 +315,7 @@ async def build_plan(
         minimums,
         settings.minimum_buffer,
         (horizon - today).days,
-        sum(
-            x.amount
-            for x in incomes
-            if x.recurring and x.due_date < today + timedelta(days=31)
-        ),
+        sum(x.amount for x in incomes if x.recurring and x.due_date < today + timedelta(days=31)),
         sum(x.amount for x in expenses if x.recurring),
         sum(d.minimum_payment for d in debts),
         bool(debts),
@@ -369,10 +366,11 @@ async def plan(user: UserDep, db: DbDep) -> dict[str, object]:
     return await build_plan(user, db)
 
 
-@app.get("/plan/explanation")
-async def explanation(user: UserDep, db: DbDep) -> object:
+@app.get("/plan/explanation", response_model=AIExplanationEnvelope)
+async def explanation(user: UserDep, db: DbDep) -> dict[str, object]:
     context = await build_plan(user, db)
-    return await safe_explanation(FakeAIProvider(), context)
+    result = await safe_explanation(FakeAIProvider(), context)
+    return {**result.model_dump(), "generated_at": datetime.now(UTC), "source": "ai"}
 
 
 @app.get("/accounts", response_model=list[AccountOut])

@@ -182,8 +182,15 @@ class NextStep(BaseModel):
 
 
 class AIExplanation(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
     headline: str
     explanation: str
     reasons: list[str]
     next_steps: list[NextStep]
     uncertainties: list[str]
+
+
+class AIExplanationEnvelope(AIExplanation):
+    generated_at: datetime
+    source: Literal["ai", "fallback"]
