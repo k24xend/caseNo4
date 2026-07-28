@@ -117,6 +117,7 @@ class IdempotencyRecord(TimestampMixin, Base):
     user_id: Mapped[str] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"), index=True)
     scope: Mapped[str] = mapped_column(String(50))
     key: Mapped[str] = mapped_column(String(100))
+    request_fingerprint: Mapped[str | None] = mapped_column(String(64), nullable=True)
     response: Mapped[dict[str, object]] = mapped_column(JSON)
 
 
