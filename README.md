@@ -28,7 +28,11 @@ flutter run -d ios --dart-define=API_URL=http://127.0.0.1:8000
 
 Demo: `demo@vyhod.app` / `demo-vyhod`. Seed автоматически запускается в Compose. Без Docker: установите API (`pip install -e 'apps/api[dev]'`), затем из `apps/api` выполните `python -m app.seed && uvicorn app.main:app --reload`.
 
-### Запуск на iPhone
+### Нативное приложение iOS (A5–A7)
+
+Новый SwiftUI-клиент находится в `apps/ios`: откройте `apps/ios/Vyhod.xcodeproj` в Xcode 16.4+, выберите shared scheme **Vyhod** и iPhone Simulator (iOS 17+). Настройка backend URL, offline-очередь, тесты и сценарий проверки на iPhone описаны в [native iOS README](apps/ios/README.md). Flutter-клиент ниже сохранён как прототип.
+
+### Запуск Flutter-прототипа на iPhone
 
 В репозитории есть готовый iOS Runner (`apps/mobile/ios`) для iOS 15+. На Mac установите Xcode, Flutter и CocoaPods, запустите API, затем:
 

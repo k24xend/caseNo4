@@ -1,0 +1,40 @@
+name: Vyhod
+options:
+  bundleIdPrefix: app.vyhod
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    CURRENT_PROJECT_VERSION: 1
+    MARKETING_VERSION: 1.0
+targets:
+  Vyhod:
+    type: application
+    platform: iOS
+    sources: [Vyhod]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: app.vyhod.ios
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: ВЫХОД
+        INFOPLIST_KEY_UIApplicationSceneManifest_Generation: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        API_BASE_URL: "http://127.0.0.1:8000"
+        INFOPLIST_KEY_APIBaseURL: "$(API_BASE_URL)"
+    scheme:
+      testTargets: [VyhodTests, VyhodUITests]
+  VyhodTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources: [VyhodTests]
+    dependencies: [{target: Vyhod}]
+    settings:
+      base: {PRODUCT_BUNDLE_IDENTIFIER: app.vyhod.ios.tests, GENERATE_INFOPLIST_FILE: YES}
+  VyhodUITests:
+    type: bundle.ui-testing
+    platform: iOS
+    sources: [VyhodUITests]
+    dependencies: [{target: Vyhod}]
+    settings:
+      base: {PRODUCT_BUNDLE_IDENTIFIER: app.vyhod.ios.uitests, GENERATE_INFOPLIST_FILE: YES}

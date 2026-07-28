@@ -1,6 +1,7 @@
 name: CI
 on:
   push:
+    branches: [main, codex/a5-a7-swiftui]
   pull_request:
 permissions:
   contents: read

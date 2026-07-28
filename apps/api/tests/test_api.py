@@ -9,6 +9,8 @@ from app.database import get_db
 from app.main import app
 from app.models import Base
 
+pytestmark = pytest.mark.anyio
+
 
 @pytest.fixture
 async def client(tmp_path) -> AsyncIterator[AsyncClient]:
@@ -114,7 +116,9 @@ async def test_debt_crud_and_ownership(client: AsyncClient) -> None:
         "minimum_payment": 5_000,
         "due_day": 15,
     }
-    created = await client.post("/debts", headers=auth(owner), json=payload)
+    created = await client.post(
+        "/debts", headers={**auth(owner), "Idempotency-Key": "owner-debt-card"}, json=payload
+    )
     assert created.status_code == 201
     debt_id = created.json()["id"]
     assert (await client.get(f"/debts/{debt_id}", headers=auth(stranger))).status_code == 404
