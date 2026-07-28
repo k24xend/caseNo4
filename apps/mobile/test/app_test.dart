@@ -9,18 +9,19 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('ВЫХОД'), findsOneWidget);
-    expect(find.text('Создать мой план'), findsOneWidget);
+    expect(find.text('Создать аккаунт'), findsOneWidget);
+    expect(find.text('У меня есть аккаунт'), findsOneWidget);
     expect(find.text('Посмотреть демо'), findsOneWidget);
   });
 
-  testWidgets('onboarding progresses one question at a time', (tester) async {
+  testWidgets('registration is required before onboarding', (tester) async {
     await tester.pumpWidget(const ProviderScope(child: VyhodApp()));
     await tester.pumpAndSettle();
-    await tester.tap(find.text('Создать мой план'));
+    await tester.tap(find.text('Создать аккаунт'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Какая у вас базовая валюта?'), findsOneWidget);
-    expect(find.text('1 из 7'), findsOneWidget);
-    expect(find.byType(LinearProgressIndicator), findsOneWidget);
+    expect(find.text('Регистрация'), findsOneWidget);
+    expect(find.text('Email'), findsOneWidget);
+    expect(find.text('Пароль'), findsOneWidget);
   });
 }
