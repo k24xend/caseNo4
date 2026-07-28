@@ -44,10 +44,19 @@ class FinancialPlan {
 }
 
 class DebtDto {
-  const DebtDto(this.id, this.name, this.balance, this.currency, this.rateBps, this.minimumPayment);
+  const DebtDto(this.id, this.name, this.balance, this.currency, this.rateBps, this.minimumPayment,this.debtType,this.dueDay,this.overdue);
   factory DebtDto.fromJson(Map<String, dynamic> json) => DebtDto(json['id'] as String,
     json['name'] as String, json['balance'] as int, json['currency'] as String,
-    json['annual_rate_bps'] as int, json['minimum_payment'] as int);
-  final String id, name, currency;
-  final int balance, rateBps, minimumPayment;
+    json['annual_rate_bps'] as int, json['minimum_payment'] as int,json['debt_type'] as String? ?? 'credit',json['due_day'] as int? ?? 1,json['overdue'] as bool? ?? false);
+  final String id, name, currency, debtType;
+  final int balance, rateBps, minimumPayment,dueDay;
+  final bool overdue;
+}
+
+class TransactionDto {
+  const TransactionDto(this.id,this.kind,this.amount,this.currency,this.category,this.description,this.occurredAt);
+  factory TransactionDto.fromJson(Map<String,dynamic> json)=>TransactionDto(json['id'] as String,json['kind'] as String,json['amount'] as int,json['currency'] as String,json['category'] as String,json['description'] as String? ?? '',DateTime.parse(json['occurred_at'] as String));
+  final String id,kind,currency,category,description;
+  final int amount;
+  final DateTime occurredAt;
 }

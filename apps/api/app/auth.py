@@ -26,7 +26,13 @@ def verify_password(password: str, hashed: str) -> bool:
 def token(user_id: str, kind: str, minutes: int, token_id: str | None = None) -> str:
     now = datetime.now(UTC)
     return jwt.encode(
-        {"sub": user_id, "type": kind, "jti": token_id, "iat": now, "exp": now + timedelta(minutes=minutes)},
+        {
+            "sub": user_id,
+            "type": kind,
+            "jti": token_id,
+            "iat": now,
+            "exp": now + timedelta(minutes=minutes),
+        },
         get_settings().jwt_secret,
         algorithm="HS256",
     )
@@ -34,7 +40,11 @@ def token(user_id: str, kind: str, minutes: int, token_id: str | None = None) ->
 
 async def tokens(user_id: str, db: AsyncSession) -> dict[str, str]:
     token_id = str(uuid.uuid4())
-    db.add(RefreshSession(user_id=user_id, token_id=token_id, expires_at=datetime.now(UTC) + timedelta(days=30)))
+    db.add(
+        RefreshSession(
+            user_id=user_id, token_id=token_id, expires_at=datetime.now(UTC) + timedelta(days=30)
+        )
+    )
     await db.commit()
     return {
         "access_token": token(user_id, "access", 30),
