@@ -8,9 +8,11 @@ void main() {
         name: 'Debt', debtType: 'credit', balance: 10000,
         currency: currency, annualRateBps: 1000,
         minimumPayment: 1000, dueDay: 15, overdue: false,
+        customPriority: 7,
       );
       expect(payload['currency'], currency);
       expect(payload['balance'], 10000);
+      expect(payload['custom_priority'], 7);
     });
   }
 }
