@@ -155,7 +155,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             '${moneyInput(item.amount)} ${draft.currency} · ${_displayDate(item.date)}'
             '${item.confirmed ? ' · подтверждён' : ' · ожидается'}',
         edit: (index) => _editIncome(index),
-        remove: (index) => setState(() => draft.incomes.removeAt(index)),
+        remove: (index) {
+          setState(() => draft.incomes.removeAt(index));
+          _save();
+        },
         addLabel: 'Добавить доход',
         add: () => _editIncome(null),
       );
@@ -167,7 +170,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         subtitle: (item) =>
             '${moneyInput(item.amount)} ${draft.currency} · ${_displayDate(item.date)}',
         edit: (index) => _editExpense(index),
-        remove: (index) => setState(() => draft.expenses.removeAt(index)),
+        remove: (index) {
+          setState(() => draft.expenses.removeAt(index));
+          _save();
+        },
         addLabel: 'Добавить расход',
         add: () => _editExpense(null),
       );
@@ -179,7 +185,10 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
         subtitle: (item) =>
             '${moneyInput(item.balance)} ${draft.currency} · минимум ${moneyInput(item.minimum)}',
         edit: (index) => _editDebt(index),
-        remove: (index) => setState(() => draft.debts.removeAt(index)),
+        remove: (index) {
+          setState(() => draft.debts.removeAt(index));
+          _save();
+        },
         addLabel: 'Добавить долг',
         add: () => _editDebt(null),
       );
