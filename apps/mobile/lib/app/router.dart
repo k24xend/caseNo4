@@ -46,7 +46,7 @@ class AppShell extends StatelessWidget {
   const AppShell({super.key, required this.location, required this.child});
   final String location; final Widget child;
   static const paths=['/today','/plan','/debts','/transactions','/profile'];
-  @override Widget build(BuildContext context) { final index=paths.indexOf(location).clamp(0,paths.length-1); return Scaffold(body: child,bottomNavigationBar: NavigationBar(selectedIndex:index,onDestinationSelected:(value)=>context.go(paths[value]),destinations:const [NavigationDestination(icon:Icon(Icons.today),label:'Сегодня'),NavigationDestination(icon:Icon(Icons.route),label:'План'),NavigationDestination(icon:Icon(Icons.credit_card),label:'Долги'),NavigationDestination(icon:Icon(Icons.receipt_long),label:'Операции'),NavigationDestination(icon:Icon(Icons.person),label:'Профиль')])); }
+  @override Widget build(BuildContext context) { final matchedIndex=paths.indexOf(location); final index=matchedIndex<0?0:matchedIndex; return Scaffold(body: child,bottomNavigationBar: NavigationBar(selectedIndex:index,onDestinationSelected:(value)=>context.go(paths[value]),destinations:const [NavigationDestination(icon:Icon(Icons.today),label:'Сегодня'),NavigationDestination(icon:Icon(Icons.route),label:'План'),NavigationDestination(icon:Icon(Icons.credit_card),label:'Долги'),NavigationDestination(icon:Icon(Icons.receipt_long),label:'Операции'),NavigationDestination(icon:Icon(Icons.person),label:'Профиль')])); }
 }
 
 class WelcomeScreen extends ConsumerWidget {

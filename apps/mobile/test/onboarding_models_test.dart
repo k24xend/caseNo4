@@ -19,4 +19,29 @@ void main() {
     expect(payload['expenses'], hasLength(1));
     expect(payload['debts'], hasLength(1));
   });
+
+  test('onboarding restores stable idempotency key and recurrence flags', () {
+    final draft = OnboardingDraft()
+      ..incomes.add(IncomeDraft(
+        name: 'Salary',
+        amount: 12345,
+        date: DateTime(2026, 4, 1),
+        recurring: true,
+      ));
+    final restored = OnboardingDraft()..restore(draft.toJson());
+
+    expect(restored.idempotencyKey, draft.idempotencyKey);
+    expect(restored.incomes.single.recurring, isTrue);
+    expect(restored.incomes.single.amount, 12345);
+  });
+
+  test('expense JSON distinguishes recurring and one-off expenses', () {
+    final recurring = ExpenseDraft(
+      name: 'Rent', amount: 10000, date: DateTime(2026, 5, 1), recurring: true);
+    final oneOff = ExpenseDraft(
+      name: 'Repair', amount: 5000, date: DateTime(2026, 5, 2));
+
+    expect(recurring.toJson()['recurring'], isTrue);
+    expect(oneOff.toJson()['recurring'], isFalse);
+  });
 }

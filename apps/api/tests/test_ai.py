@@ -1,6 +1,15 @@
 import asyncio
 
+import pytest
+
 from app.ai import safe_explanation
+
+pytestmark = pytest.mark.anyio
+
+
+@pytest.fixture
+def anyio_backend() -> str:
+    return "asyncio"
 
 
 class Invalid:

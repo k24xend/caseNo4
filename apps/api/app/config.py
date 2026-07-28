@@ -5,7 +5,7 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 class Settings(BaseSettings):
     database_url: str = "sqlite+aiosqlite:///./vyhod.db"
-    jwt_secret: str = "local-development-only"
+    jwt_secret: str = "local-development-only-change-me-32"
     ai_provider: str = "fake"
     cors_origins: str = "http://localhost:3000"
     model_config = SettingsConfigDict(env_file=".env", extra="ignore")

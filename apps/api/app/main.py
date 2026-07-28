@@ -1,12 +1,16 @@
+import hashlib
+import json
 from datetime import UTC, date, datetime, timedelta
 from typing import Annotated, cast
 
 import jwt
 from fastapi import Depends, FastAPI, Header, HTTPException, Query, Request
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .ai import FakeAIProvider, safe_explanation
@@ -37,14 +41,19 @@ from .models import (
     UserSettings,
 )
 from .schemas import (
+    AccountOut,
     AuthIn,
     CheckinIn,
     DebtIn,
+    DebtOut,
     OnboardingIn,
     RefreshIn,
     ScenarioIn,
+    ScheduledItemOut,
     TokenPair,
     TransactionIn,
+    TransactionOut,
+    TransactionPage,
 )
 
 app = FastAPI(title="ВЫХОД API", version="1.0.0")
@@ -69,13 +78,15 @@ async def http_error(_: Request, exc: HTTPException) -> JSONResponse:
 async def validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(
         status_code=422,
-        content={
-            "error": {
-                "code": "validation_error",
-                "message": "Request validation failed",
-                "details": exc.errors(),
+        content=jsonable_encoder(
+            {
+                "error": {
+                    "code": "validation_error",
+                    "message": "Request validation failed",
+                    "details": exc.errors(),
+                }
             }
-        },
+        ),
     )
 
 
@@ -162,6 +173,10 @@ async def onboarding(
     db: DbDep,
     idempotency_key: Annotated[str, Header()] = "onboarding",
 ) -> dict[str, object]:
+    payload = body.model_dump(mode="json")
+    fingerprint = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
     existing_request = await db.scalar(
         select(IdempotencyRecord).where(
             IdempotencyRecord.user_id == user.id,
@@ -170,6 +185,11 @@ async def onboarding(
         )
     )
     if existing_request:
+        if (
+            existing_request.request_fingerprint is not None
+            and existing_request.request_fingerprint != fingerprint
+        ):
+            raise HTTPException(409, "Idempotency key was already used with different data")
         return existing_request.response
     account = await db.scalar(select(Account).where(Account.user_id == user.id))
     if account:
@@ -186,30 +206,33 @@ async def onboarding(
         user_id=user.id, name="Основной", balance=body.available_now, currency=body.currency
     )
     db.add(account)
-    for item in body.incomes:
+    for income_item in body.incomes:
         db.add(
             ScheduledItem(
-                user_id=user.id, kind="income", currency=body.currency, **item.model_dump()
+                user_id=user.id,
+                kind="income",
+                currency=body.currency,
+                **income_item.model_dump(),
             )
         )
-    for item in body.expenses:
+    for expense_item in body.expenses:
         db.add(
             ScheduledItem(
                 user_id=user.id,
                 kind="expense",
-                name=item.name,
-                amount=item.amount,
+                name=expense_item.name,
+                amount=expense_item.amount,
                 currency=body.currency,
-                due_date=item.due_date,
-                recurring=item.recurring,
+                due_date=expense_item.due_date,
+                recurring=expense_item.recurring,
             )
         )
-    for item in body.debts:
+    for debt_item in body.debts:
         db.add(
             Debt(
                 user_id=user.id,
                 currency=body.currency,
-                **item.model_dump(),
+                **debt_item.model_dump(),
             )
         )
     await db.flush()
@@ -220,7 +243,11 @@ async def onboarding(
     }
     db.add(
         IdempotencyRecord(
-            user_id=user.id, scope="onboarding", key=idempotency_key, response=response
+            user_id=user.id,
+            scope="onboarding",
+            key=idempotency_key,
+            request_fingerprint=fingerprint,
+            response=response,
         )
     )
     await db.commit()
@@ -282,14 +309,18 @@ async def build_plan(
     mandatory += overrides.get("mandatory_expense", 0)
     data = SnapshotInput(
         available,
-        sum(x.amount for x in incomes if x.due_date < today + timedelta(days=31)),
-        sum(x.amount for x in expenses if x.recurring),
-        sum(d.minimum_payment for d in debts),
-        settings.minimum_buffer,
-        (horizon - today).days,
         income,
         mandatory,
         minimums,
+        settings.minimum_buffer,
+        (horizon - today).days,
+        sum(
+            x.amount
+            for x in incomes
+            if x.recurring and x.due_date < today + timedelta(days=31)
+        ),
+        sum(x.amount for x in expenses if x.recurring),
+        sum(d.minimum_payment for d in debts),
         bool(debts),
         any(d.overdue for d in debts),
     )
@@ -313,7 +344,7 @@ async def build_plan(
         if debts
         else {}
     )
-    result = {
+    result: dict[str, object] = {
         "state": state,
         "currency": settings.currency,
         "snapshot": snap,
@@ -344,12 +375,12 @@ async def explanation(user: UserDep, db: DbDep) -> object:
     return await safe_explanation(FakeAIProvider(), context)
 
 
-@app.get("/accounts")
+@app.get("/accounts", response_model=list[AccountOut])
 async def accounts(user: UserDep, db: DbDep) -> list[Account]:
     return list((await db.scalars(select(Account).where(Account.user_id == user.id))).all())
 
 
-@app.get("/income")
+@app.get("/income", response_model=list[ScheduledItemOut])
 async def income(user: UserDep, db: DbDep) -> list[ScheduledItem]:
     return list(
         (
@@ -362,7 +393,7 @@ async def income(user: UserDep, db: DbDep) -> list[ScheduledItem]:
     )
 
 
-@app.get("/expenses")
+@app.get("/expenses", response_model=list[ScheduledItemOut])
 async def expenses(user: UserDep, db: DbDep) -> list[ScheduledItem]:
     return list(
         (
@@ -375,7 +406,7 @@ async def expenses(user: UserDep, db: DbDep) -> list[ScheduledItem]:
     )
 
 
-@app.post("/transactions", status_code=201)
+@app.post("/transactions", status_code=201, response_model=TransactionOut)
 async def create_transaction(
     body: TransactionIn,
     user: UserDep,
@@ -411,7 +442,7 @@ async def create_transaction(
     return tx
 
 
-@app.get("/transactions")
+@app.get("/transactions", response_model=TransactionPage)
 async def transactions(
     user: UserDep,
     db: DbDep,
@@ -451,25 +482,70 @@ async def delete_transaction(transaction_id: str, user: UserDep, db: DbDep) -> N
     await db.commit()
 
 
-@app.get("/debts")
+@app.get("/debts", response_model=list[DebtOut])
 async def debts(user: UserDep, db: DbDep) -> list[Debt]:
     return list((await db.scalars(select(Debt).where(Debt.user_id == user.id))).all())
 
 
-@app.post("/debts", status_code=201)
-async def add_debt(body: DebtIn, user: UserDep, db: DbDep) -> Debt:
-    settings = await db.scalar(select(UserSettings).where(UserSettings.user_id == user.id))
+@app.post("/debts", status_code=201, response_model=DebtOut)
+async def add_debt(
+    body: DebtIn,
+    user: UserDep,
+    db: DbDep,
+    idempotency_key: Annotated[str, Header(min_length=8, max_length=100)],
+) -> Debt | DebtOut:
+    user_id = user.id
+    payload = body.model_dump(mode="json")
+    fingerprint = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
+    existing = await db.scalar(
+        select(IdempotencyRecord).where(
+            IdempotencyRecord.user_id == user_id,
+            IdempotencyRecord.scope == "debt:create",
+            IdempotencyRecord.key == idempotency_key,
+        )
+    )
+    if existing:
+        if existing.request_fingerprint != fingerprint:
+            raise HTTPException(409, "Idempotency key was already used with different data")
+        return DebtOut.model_validate(existing.response)
+    settings = await db.scalar(select(UserSettings).where(UserSettings.user_id == user_id))
     if not settings or body.currency != settings.currency:
         raise HTTPException(409, "Debt currency must match the base currency")
-    debt = Debt(user_id=user.id, **body.model_dump())
+    debt = Debt(user_id=user_id, **body.model_dump())
     debt.currency = debt.currency.upper()
     db.add(debt)
-    await db.commit()
-    await db.refresh(debt)
-    return debt
+    await db.flush()
+    response = DebtOut.model_validate(debt).model_dump(mode="json")
+    db.add(
+        IdempotencyRecord(
+            user_id=user_id,
+            scope="debt:create",
+            key=idempotency_key,
+            request_fingerprint=fingerprint,
+            response=response,
+        )
+    )
+    try:
+        await db.commit()
+        await db.refresh(debt)
+        return debt
+    except IntegrityError as exc:
+        await db.rollback()
+        winner = await db.scalar(
+            select(IdempotencyRecord).where(
+                IdempotencyRecord.user_id == user_id,
+                IdempotencyRecord.scope == "debt:create",
+                IdempotencyRecord.key == idempotency_key,
+            )
+        )
+        if winner and winner.request_fingerprint == fingerprint:
+            return DebtOut.model_validate(winner.response)
+        raise HTTPException(409, "Concurrent idempotency conflict") from exc
 
 
-@app.get("/debts/{debt_id}")
+@app.get("/debts/{debt_id}", response_model=DebtOut)
 async def get_debt(debt_id: str, user: UserDep, db: DbDep) -> Debt:
     debt = await db.scalar(select(Debt).where(Debt.id == debt_id, Debt.user_id == user.id))
     if not debt:
@@ -477,7 +553,7 @@ async def get_debt(debt_id: str, user: UserDep, db: DbDep) -> Debt:
     return debt
 
 
-@app.put("/debts/{debt_id}")
+@app.put("/debts/{debt_id}", response_model=DebtOut)
 async def update_debt(debt_id: str, body: DebtIn, user: UserDep, db: DbDep) -> Debt:
     debt = await get_debt(debt_id, user, db)
     settings = await db.scalar(select(UserSettings).where(UserSettings.user_id == user.id))
@@ -524,17 +600,19 @@ async def scenario(body: ScenarioIn, user: UserDep, db: DbDep) -> dict[str, obje
 
 @app.get("/export")
 async def export(user: UserDep, db: DbDep, format: str = "json") -> object:
-    data = {
-        "accounts": [a.__dict__ for a in await accounts(user, db)],
-        "transactions": (await transactions(user, db, 100, 0))["items"],
-        "debts": [d.__dict__ for d in await debts(user, db)],
-    }
     if format != "json":
         raise HTTPException(422, "CSV export is available per entity; use format=json")
-    for values in data.values():
-        for value in values:
-            value.pop("_sa_instance_state", None)
-    return data
+    account_rows = await accounts(user, db)
+    debt_rows = await debts(user, db)
+    transaction_result = await transactions(user, db, 100, 0)
+    transaction_rows = cast(list[Transaction], transaction_result["items"])
+    return {
+        "accounts": [AccountOut.model_validate(row).model_dump() for row in account_rows],
+        "transactions": [
+            TransactionOut.model_validate(row).model_dump() for row in transaction_rows
+        ],
+        "debts": [DebtOut.model_validate(row).model_dump() for row in debt_rows],
+    }
 
 
 @app.get("/me")
