@@ -25,14 +25,16 @@ def verify_password(password: str, hashed: str) -> bool:
 
 def token(user_id: str, kind: str, minutes: int, token_id: str | None = None) -> str:
     now = datetime.now(UTC)
+    payload: dict[str, object] = {
+        "sub": user_id,
+        "type": kind,
+        "iat": now,
+        "exp": now + timedelta(minutes=minutes),
+    }
+    if token_id is not None:
+        payload["jti"] = token_id
     return jwt.encode(
-        {
-            "sub": user_id,
-            "type": kind,
-            "jti": token_id,
-            "iat": now,
-            "exp": now + timedelta(minutes=minutes),
-        },
+        payload,
         get_settings().jwt_secret,
         algorithm="HS256",
     )
