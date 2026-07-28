@@ -173,6 +173,10 @@ async def onboarding(
     db: DbDep,
     idempotency_key: Annotated[str, Header()] = "onboarding",
 ) -> dict[str, object]:
+    payload = body.model_dump(mode="json")
+    fingerprint = hashlib.sha256(
+        json.dumps(payload, sort_keys=True, separators=(",", ":")).encode()
+    ).hexdigest()
     existing_request = await db.scalar(
         select(IdempotencyRecord).where(
             IdempotencyRecord.user_id == user.id,
@@ -181,6 +185,11 @@ async def onboarding(
         )
     )
     if existing_request:
+        if (
+            existing_request.request_fingerprint is not None
+            and existing_request.request_fingerprint != fingerprint
+        ):
+            raise HTTPException(409, "Idempotency key was already used with different data")
         return existing_request.response
     account = await db.scalar(select(Account).where(Account.user_id == user.id))
     if account:
@@ -234,7 +243,11 @@ async def onboarding(
     }
     db.add(
         IdempotencyRecord(
-            user_id=user.id, scope="onboarding", key=idempotency_key, response=response
+            user_id=user.id,
+            scope="onboarding",
+            key=idempotency_key,
+            request_fingerprint=fingerprint,
+            response=response,
         )
     )
     await db.commit()
