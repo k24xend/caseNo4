@@ -19,6 +19,7 @@ Map<String, dynamic> debtPayload({
   required int minimumPayment,
   required int dueDay,
   required bool overdue,
+  required int customPriority,
 }) => {
   'name': name,
   'debt_type': debtType,
@@ -28,7 +29,7 @@ Map<String, dynamic> debtPayload({
   'minimum_payment': minimumPayment,
   'due_day': dueDay,
   'overdue': overdue,
-  'custom_priority': 0,
+  'custom_priority': customPriority,
 };
 
 class DebtsScreen extends ConsumerWidget {
@@ -190,6 +191,7 @@ class _DebtDialogState extends ConsumerState<DebtDialog> {
           minimumPayment: minor(minimum.text)!,
           dueDay: widget.debt?.dueDay ?? 15,
           overdue: widget.debt?.overdue ?? false,
+          customPriority: widget.debt?.customPriority ?? 0,
         ),
         id: widget.debt?.id,
         idempotencyKey: widget.debt == null ? creationKey : null,
