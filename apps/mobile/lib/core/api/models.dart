@@ -101,12 +101,34 @@ class FinancialPlan {
 }
 
 class DebtDto {
-  const DebtDto(this.id, this.name, this.balance, this.currency, this.rateBps, this.minimumPayment,this.debtType,this.dueDay,this.overdue);
-  factory DebtDto.fromJson(Map<String, dynamic> json) => DebtDto(json['id'] as String,
-    json['name'] as String, json['balance'] as int, json['currency'] as String,
-    json['annual_rate_bps'] as int, json['minimum_payment'] as int,json['debt_type'] as String? ?? 'credit',json['due_day'] as int? ?? 1,json['overdue'] as bool? ?? false);
+  const DebtDto(
+    this.id,
+    this.name,
+    this.balance,
+    this.currency,
+    this.rateBps,
+    this.minimumPayment,
+    this.debtType,
+    this.dueDay,
+    this.overdue,
+    this.customPriority,
+  );
+
+  factory DebtDto.fromJson(Map<String, dynamic> json) => DebtDto(
+        json['id'] as String,
+        json['name'] as String,
+        json['balance'] as int,
+        json['currency'] as String,
+        json['annual_rate_bps'] as int,
+        json['minimum_payment'] as int,
+        json['debt_type'] as String? ?? 'credit',
+        json['due_day'] as int? ?? 1,
+        json['overdue'] as bool? ?? false,
+        json['custom_priority'] as int? ?? 0,
+      );
+
   final String id, name, currency, debtType;
-  final int balance, rateBps, minimumPayment,dueDay;
+  final int balance, rateBps, minimumPayment, dueDay, customPriority;
   final bool overdue;
 }
 
