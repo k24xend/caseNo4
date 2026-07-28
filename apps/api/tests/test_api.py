@@ -109,6 +109,66 @@ async def test_onboarding_is_idempotent(client: AsyncClient) -> None:
     assert conflict.status_code == 409
 
 
+async def test_onboarding_replay_rejects_changed_payload(client: AsyncClient) -> None:
+    pair = await register(client, "onboarding-replay@example.com")
+    headers = {**auth(pair), "Idempotency-Key": "stable-onboarding-key"}
+    original = {
+        "currency": "RUB",
+        "available_now": 100_000,
+        "minimum_buffer": 10_000,
+        "incomes": [],
+        "expenses": [],
+        "debts": [],
+    }
+    first = await client.post("/onboarding", headers=headers, json=original)
+    replay = await client.post("/onboarding", headers=headers, json=original)
+    changed = await client.post(
+        "/onboarding", headers=headers, json={**original, "available_now": 200_000}
+    )
+    assert first.status_code == replay.status_code == 201
+    assert replay.json() == first.json()
+    assert changed.status_code == 409
+
+
+async def test_one_off_income_is_excluded_from_monthly_cash_flow(client: AsyncClient) -> None:
+    pair = await register(client, "one-off-income@example.com")
+    due = (date.today() + timedelta(days=1)).isoformat()
+    response = await client.post(
+        "/onboarding",
+        headers={**auth(pair), "Idempotency-Key": "one-off-income-onboarding"},
+        json={
+            "currency": "RUB",
+            "available_now": 100_000,
+            "minimum_buffer": 0,
+            "incomes": [
+                {
+                    "name": "Зарплата",
+                    "amount": 10_000,
+                    "due_date": due,
+                    "recurring": True,
+                },
+                {
+                    "name": "Разовая продажа",
+                    "amount": 50_000,
+                    "due_date": due,
+                    "recurring": False,
+                },
+            ],
+            "expenses": [
+                {
+                    "name": "Аренда",
+                    "amount": 3_000,
+                    "due_date": due,
+                    "recurring": True,
+                }
+            ],
+        },
+    )
+    assert response.status_code == 201
+    plan = (await client.get("/plan", headers=auth(pair))).json()
+    assert plan["snapshot"]["monthly_free_cash_flow"] == 7_000
+
+
 async def test_debt_crud_and_ownership(client: AsyncClient) -> None:
     owner = await register(client, "owner@example.com")
     stranger = await register(client, "stranger@example.com")
