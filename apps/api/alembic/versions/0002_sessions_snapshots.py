@@ -1,4 +1,5 @@
 """Add rotating refresh sessions and versioned financial snapshots."""
+
 from alembic import op
 from app.models import Base
 
