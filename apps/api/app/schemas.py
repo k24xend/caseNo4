@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, ValidationInfo, field_validator
 
 
 class ORMModel(BaseModel):
@@ -28,12 +28,14 @@ class IncomeIn(BaseModel):
     amount: int = Field(gt=0)
     due_date: date
     confirmed: bool = True
+    recurring: bool = False
 
 
 class ExpenseIn(BaseModel):
     name: str = Field(min_length=1, max_length=100)
     amount: int = Field(gt=0)
     due_date: date
+    recurring: bool = False
 
 
 class OnboardingDebtIn(BaseModel):
@@ -44,6 +46,14 @@ class OnboardingDebtIn(BaseModel):
     due_day: int = Field(ge=1, le=31)
     overdue: bool = False
     custom_priority: int = Field(default=0, ge=0)
+
+    @field_validator("minimum_payment")
+    @classmethod
+    def minimum_not_above_balance(cls, value: int, info: ValidationInfo) -> int:
+        balance = info.data.get("balance")
+        if balance is not None and value > balance:
+            raise ValueError("minimum payment cannot exceed debt balance")
+        return value
 
 
 class OnboardingIn(BaseModel):
@@ -75,15 +85,30 @@ class TransactionIn(BaseModel):
 
 
 class DebtIn(BaseModel):
-    name: str
-    debt_type: str = "credit"
+    name: str = Field(min_length=1, max_length=100)
+    debt_type: Literal["credit", "credit_card", "installment", "personal", "other"] = "credit"
     balance: int = Field(gt=0)
     currency: str = Field(min_length=3, max_length=3)
     annual_rate_bps: int = Field(ge=0, le=100_000)
     minimum_payment: int = Field(ge=0)
     due_day: int = Field(ge=1, le=31)
     overdue: bool = False
-    custom_priority: int = 0
+    custom_priority: int = Field(default=0, ge=0)
+
+    @field_validator("currency")
+    @classmethod
+    def debt_currency(cls, value: str) -> str:
+        if not value.isalpha():
+            raise ValueError("currency must be an ISO 4217 alpha-3 code")
+        return value.upper()
+
+    @field_validator("minimum_payment")
+    @classmethod
+    def debt_minimum_not_above_balance(cls, value: int, info: ValidationInfo) -> int:
+        balance = info.data.get("balance")
+        if balance is not None and value > balance:
+            raise ValueError("minimum payment cannot exceed debt balance")
+        return value
 
 
 class CheckinIn(BaseModel):

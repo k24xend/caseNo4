@@ -28,6 +28,7 @@ from .models import (
     Checkin,
     Debt,
     FinancialSnapshot,
+    IdempotencyRecord,
     RefreshSession,
     Scenario,
     ScheduledItem,
@@ -68,7 +69,13 @@ async def http_error(_: Request, exc: HTTPException) -> JSONResponse:
 async def validation_error(_: Request, exc: RequestValidationError) -> JSONResponse:
     return JSONResponse(
         status_code=422,
-        content={"error": {"code": "validation_error", "message": "Request validation failed", "details": exc.errors()}},
+        content={
+            "error": {
+                "code": "validation_error",
+                "message": "Request validation failed",
+                "details": exc.errors(),
+            }
+        },
     )
 
 
@@ -111,7 +118,14 @@ async def refresh(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> dict[s
             raise ValueError
     except (jwt.PyJWTError, KeyError, ValueError) as exc:
         raise HTTPException(401, "Invalid refresh token") from exc
-    session = await db.scalar(select(RefreshSession).where(RefreshSession.token_id == payload["jti"], RefreshSession.revoked.is_(False)))
+    session = await db.scalar(
+        select(RefreshSession).where(
+            RefreshSession.token_id == payload["jti"],
+            RefreshSession.user_id == payload["sub"],
+            RefreshSession.revoked.is_(False),
+            RefreshSession.expires_at > datetime.now(UTC),
+        )
+    )
     if not session:
         raise HTTPException(401, "Refresh token was revoked")
     session.revoked = True
@@ -122,7 +136,14 @@ async def refresh(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> dict[s
 async def logout(body: RefreshIn, db: AsyncSession = Depends(get_db)) -> None:
     try:
         payload = jwt.decode(body.refresh_token, get_settings().jwt_secret, algorithms=["HS256"])
-        session = await db.scalar(select(RefreshSession).where(RefreshSession.token_id == payload.get("jti")))
+        if payload.get("type") != "refresh":
+            return
+        session = await db.scalar(
+            select(RefreshSession).where(
+                RefreshSession.token_id == payload.get("jti"),
+                RefreshSession.user_id == payload.get("sub"),
+            )
+        )
         if session:
             session.revoked = True
             await db.commit()
@@ -141,9 +162,18 @@ async def onboarding(
     db: DbDep,
     idempotency_key: Annotated[str, Header()] = "onboarding",
 ) -> dict[str, object]:
+    existing_request = await db.scalar(
+        select(IdempotencyRecord).where(
+            IdempotencyRecord.user_id == user.id,
+            IdempotencyRecord.scope == "onboarding",
+            IdempotencyRecord.key == idempotency_key,
+        )
+    )
+    if existing_request:
+        return existing_request.response
     account = await db.scalar(select(Account).where(Account.user_id == user.id))
     if account:
-        return {"completed": True, "account_id": account.id}
+        raise HTTPException(409, "Onboarding was already completed")
     settings = await db.scalar(select(UserSettings).where(UserSettings.user_id == user.id))
     assert settings
     settings.language, settings.currency, settings.minimum_buffer, settings.onboarding_complete = (
@@ -157,7 +187,11 @@ async def onboarding(
     )
     db.add(account)
     for item in body.incomes:
-        db.add(ScheduledItem(user_id=user.id, kind="income", currency=body.currency, **item.model_dump()))
+        db.add(
+            ScheduledItem(
+                user_id=user.id, kind="income", currency=body.currency, **item.model_dump()
+            )
+        )
     for item in body.expenses:
         db.add(
             ScheduledItem(
@@ -167,7 +201,7 @@ async def onboarding(
                 amount=item.amount,
                 currency=body.currency,
                 due_date=item.due_date,
-                recurring=True,
+                recurring=item.recurring,
             )
         )
     for item in body.debts:
@@ -178,8 +212,19 @@ async def onboarding(
                 **item.model_dump(),
             )
         )
+    await db.flush()
+    response: dict[str, object] = {
+        "completed": True,
+        "account_id": account.id,
+        "idempotency_key": idempotency_key,
+    }
+    db.add(
+        IdempotencyRecord(
+            user_id=user.id, scope="onboarding", key=idempotency_key, response=response
+        )
+    )
     await db.commit()
-    return {"completed": True, "account_id": account.id, "idempotency_key": idempotency_key}
+    return response
 
 
 async def build_plan(
@@ -222,6 +267,7 @@ async def build_plan(
     eligible_incomes = [x for x in incomes if x.due_date <= horizon]
     income = sum(x.amount for x in eligible_incomes)
     mandatory = sum(x.amount for x in expenses)
+
     def debt_due_before_horizon(debt: Debt) -> bool:
         day = min(debt.due_day, 28)
         due = date(today.year, today.month, day)
@@ -278,7 +324,11 @@ async def build_plan(
         "generated_at": datetime.now(UTC).isoformat(),
         "calculation_version": 1,
     }
-    db.add(FinancialSnapshot(user_id=user.id, currency=settings.currency, state=str(state), values=result))
+    db.add(
+        FinancialSnapshot(
+            user_id=user.id, currency=settings.currency, state=str(state), values=result
+        )
+    )
     await db.commit()
     return result
 
@@ -408,12 +458,44 @@ async def debts(user: UserDep, db: DbDep) -> list[Debt]:
 
 @app.post("/debts", status_code=201)
 async def add_debt(body: DebtIn, user: UserDep, db: DbDep) -> Debt:
+    settings = await db.scalar(select(UserSettings).where(UserSettings.user_id == user.id))
+    if not settings or body.currency != settings.currency:
+        raise HTTPException(409, "Debt currency must match the base currency")
     debt = Debt(user_id=user.id, **body.model_dump())
     debt.currency = debt.currency.upper()
     db.add(debt)
     await db.commit()
     await db.refresh(debt)
     return debt
+
+
+@app.get("/debts/{debt_id}")
+async def get_debt(debt_id: str, user: UserDep, db: DbDep) -> Debt:
+    debt = await db.scalar(select(Debt).where(Debt.id == debt_id, Debt.user_id == user.id))
+    if not debt:
+        raise HTTPException(404, "Debt not found")
+    return debt
+
+
+@app.put("/debts/{debt_id}")
+async def update_debt(debt_id: str, body: DebtIn, user: UserDep, db: DbDep) -> Debt:
+    debt = await get_debt(debt_id, user, db)
+    settings = await db.scalar(select(UserSettings).where(UserSettings.user_id == user.id))
+    if not settings or body.currency != settings.currency:
+        raise HTTPException(409, "Debt currency must match the base currency")
+    for field, value in body.model_dump().items():
+        setattr(debt, field, value)
+    debt.version += 1
+    await db.commit()
+    await db.refresh(debt)
+    return debt
+
+
+@app.delete("/debts/{debt_id}", status_code=204)
+async def delete_debt(debt_id: str, user: UserDep, db: DbDep) -> None:
+    debt = await get_debt(debt_id, user, db)
+    await db.delete(debt)
+    await db.commit()
 
 
 @app.post("/checkins", status_code=201)

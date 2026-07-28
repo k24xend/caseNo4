@@ -18,6 +18,7 @@ jobs:
     defaults: {run: {working-directory: apps/api}}
     env:
       DATABASE_URL: postgresql+asyncpg://vyhod:vyhod@localhost:5432/vyhod_test
+      TEST_DATABASE_URL: postgresql+asyncpg://vyhod:vyhod@localhost:5432/vyhod_test
       JWT_SECRET: ci-only-secret-at-least-32-characters
     steps:
       - uses: actions/checkout@v4
@@ -26,8 +27,8 @@ jobs:
       - run: pip install -e '.[dev]'
       - run: ruff check .
       - run: mypy app
-      - run: pytest
       - run: alembic upgrade head
+      - run: pytest
       - run: alembic downgrade base && alembic upgrade head
   flutter:
     runs-on: ubuntu-latest
@@ -37,6 +38,7 @@ jobs:
       - uses: subosito/flutter-action@v2
         with: {channel: stable, cache: true}
       - run: flutter pub get
+      - run: dart format lib test
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --dart-define=APP_ENV=demo

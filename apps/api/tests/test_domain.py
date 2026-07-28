@@ -70,7 +70,10 @@ def test_negative_amortization_and_horizon() -> None:
 
 
 def test_custom_order_and_freed_payment_rollover() -> None:
-    debts = [DebtData("large", "Large", 10_000, 0, 100, 2), DebtData("small", "Small", 100, 0, 100, 1)]
+    debts = [
+        DebtData("large", "Large", 10_000, 0, 100, 2),
+        DebtData("small", "Small", 100, 0, 100, 1),
+    ]
     result = forecast_debts(debts, 0, "custom", date(2026, 1, 1))
     assert result["order"] == ["small", "large"]
     assert result["months"] == 51
@@ -83,7 +86,9 @@ def test_daily_amount_date_boundaries(days: int, expected: int) -> None:
 
 
 def test_interest_rounds_half_up_in_minor_units() -> None:
-    result = forecast_debts([DebtData("d", "Debt", 600, 10_000, 650)], 0, "avalanche", date(2024, 2, 29))
+    result = forecast_debts(
+        [DebtData("d", "Debt", 600, 10_000, 650)], 0, "avalanche", date(2024, 2, 29)
+    )
     assert result["months"] == 1
     assert result["total_paid"] == 650
 
