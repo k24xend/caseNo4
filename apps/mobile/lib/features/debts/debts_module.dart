@@ -10,6 +10,28 @@ final debtsProvider = FutureProvider<List<DebtDto>>(
   (ref) => ref.watch(apiClientProvider).debts(),
 );
 
+Map<String, dynamic> debtPayload({
+  required String name,
+  required String debtType,
+  required int balance,
+  required String currency,
+  required int annualRateBps,
+  required int minimumPayment,
+  required int dueDay,
+  required bool overdue,
+  required int customPriority,
+}) => {
+  'name': name,
+  'debt_type': debtType,
+  'balance': balance,
+  'currency': currency,
+  'annual_rate_bps': annualRateBps,
+  'minimum_payment': minimumPayment,
+  'due_day': dueDay,
+  'overdue': overdue,
+  'custom_priority': customPriority,
+};
+
 class DebtsScreen extends ConsumerWidget {
   const DebtsScreen({super.key});
 
@@ -19,10 +41,24 @@ class DebtsScreen extends ConsumerWidget {
     return Scaffold(
       appBar: AppBar(title: const Text('Долги')),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => showDialog<void>(
-          context: context,
-          builder: (_) => const DebtDialog(),
-        ),
+        onPressed: () async {
+          try {
+            final accounts = await ref.read(apiClientProvider).accounts();
+            if (!context.mounted || accounts.isEmpty) return;
+            await showDialog<void>(
+              context: context,
+              builder: (_) => DebtDialog(
+                currency: accounts.first['currency'] as String,
+              ),
+            );
+          } catch (_) {
+            if (context.mounted) {
+              ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
+                content: Text('Не удалось определить базовую валюту.'),
+              ));
+            }
+          }
+        },
         icon: const Icon(Icons.add),
         label: const Text('Добавить'),
       ),
@@ -46,7 +82,10 @@ class DebtsScreen extends ConsumerWidget {
                       isThreeLine: true,
                       onTap: () => showDialog<void>(
                         context: context,
-                        builder: (_) => DebtDialog(debt: debt),
+                        builder: (_) => DebtDialog(
+                          debt: debt,
+                          currency: debt.currency,
+                        ),
                       ),
                       trailing: IconButton(
                         tooltip: 'Удалить долг',
@@ -81,8 +120,9 @@ class DebtsScreen extends ConsumerWidget {
 }
 
 class DebtDialog extends ConsumerStatefulWidget {
-  const DebtDialog({super.key, this.debt});
+  const DebtDialog({super.key, this.debt, required this.currency});
   final DebtDto? debt;
+  final String currency;
 
   @override
   ConsumerState<DebtDialog> createState() => _DebtDialogState();
@@ -95,10 +135,12 @@ class _DebtDialogState extends ConsumerState<DebtDialog> {
   late final TextEditingController rate;
   late final TextEditingController minimum;
   bool saving = false;
+  late final String creationKey;
 
   @override
   void initState() {
     super.initState();
+    creationKey = 'debt-${DateTime.now().microsecondsSinceEpoch}';
     final debt = widget.debt;
     name = TextEditingController(text: debt?.name);
     balance = TextEditingController(text: debt == null ? '' : (debt.balance / 100).toStringAsFixed(2));
@@ -138,13 +180,22 @@ class _DebtDialogState extends ConsumerState<DebtDialog> {
     if (!formKey.currentState!.validate()) return;
     setState(() => saving = true);
     try {
-      await ref.read(apiClientProvider).saveDebt({
-        'name': name.text.trim(), 'debt_type': widget.debt?.debtType ?? 'credit',
-        'balance': minor(balance.text), 'currency': widget.debt?.currency ?? 'RUB',
-        'annual_rate_bps': (double.parse(rate.text.replaceAll(',', '.')) * 100).round(),
-        'minimum_payment': minor(minimum.text), 'due_day': widget.debt?.dueDay ?? 15,
-        'overdue': widget.debt?.overdue ?? false, 'custom_priority': 0,
-      }, id: widget.debt?.id);
+      await ref.read(apiClientProvider).saveDebt(
+        debtPayload(
+          name: name.text.trim(),
+          debtType: widget.debt?.debtType ?? 'credit',
+          balance: minor(balance.text)!,
+          currency: widget.currency,
+          annualRateBps:
+              (double.parse(rate.text.replaceAll(',', '.')) * 100).round(),
+          minimumPayment: minor(minimum.text)!,
+          dueDay: widget.debt?.dueDay ?? 15,
+          overdue: widget.debt?.overdue ?? false,
+          customPriority: widget.debt?.customPriority ?? 0,
+        ),
+        id: widget.debt?.id,
+        idempotencyKey: widget.debt == null ? creationKey : null,
+      );
       ref.invalidate(debtsProvider); ref.invalidate(planProvider);
       if (mounted) Navigator.pop(context);
     } catch (_) {
