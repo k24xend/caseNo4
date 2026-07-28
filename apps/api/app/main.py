@@ -314,7 +314,11 @@ async def build_plan(
         minimums,
         settings.minimum_buffer,
         (horizon - today).days,
-        sum(x.amount for x in incomes if x.due_date < today + timedelta(days=31)),
+        sum(
+            x.amount
+            for x in incomes
+            if x.recurring and x.due_date < today + timedelta(days=31)
+        ),
         sum(x.amount for x in expenses if x.recurring),
         sum(d.minimum_payment for d in debts),
         bool(debts),
