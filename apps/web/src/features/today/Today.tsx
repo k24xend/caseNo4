@@ -1,6 +1,5 @@
 import {
   ArrowDownLeft,
-  ArrowLeft,
   ArrowRight,
   ArrowUpRight,
   Coffee,
@@ -10,6 +9,7 @@ import {
   Sparkles,
   WalletCards,
   WifiOff,
+  X,
 } from 'lucide-react';
 import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -80,7 +80,7 @@ export function Today() {
           Сохранённый план · офлайн
         </div>
       )}
-      <section className="wallet-stage" aria-label="Кошелёк">
+      <section className="wallet-stage" aria-label="Кошелёк" data-testid="wallet-stage">
         <div className="wallet-aura" aria-hidden="true" />
         <button
           ref={trigger}
@@ -131,7 +131,7 @@ export function Today() {
         </button>
       </section>
 
-      <section className="assistant-capsule liquid-panel">
+      <section className="assistant-capsule liquid-panel" data-testid="assistant-capsule">
         <span className="assistant-shimmer" aria-hidden="true" />
         <span className="lens-dot">
           <MessageCircle aria-hidden="true" />
@@ -148,11 +148,6 @@ export function Today() {
           </div>
         </div>
       </section>
-      <p className="overview-note">
-        {settings.guidanceMode === 'base'
-          ? 'Base бережёт обязательства, резерв и выбранный комфорт.'
-          : 'Hard ускоряет действия, но не рискует обязательными деньгами.'}
-      </p>
       {open && <WalletExpanded onClose={closeWallet} />}
     </div>
   );
@@ -212,19 +207,20 @@ function WalletExpanded({ onClose }: { onClose: () => void }) {
   return (
     <div className="money-view" role="dialog" aria-modal="true" aria-labelledby={titleId}>
       <div className="money-backdrop-light" aria-hidden="true" />
-      <header>
-        <button ref={close} onClick={onClose} aria-label="Закрыть кошелёк">
-          <ArrowLeft aria-hidden="true" />
-        </button>
+      <header className="money-header" data-testid="money-header">
         <div>
-          <small id={titleId}>Деньги · Всего</small>
+          <span id={titleId}>Деньги</span>
+          <small>Всего</small>
           <h1>{formatMoney(data.plan.snapshot.available_now, currency)}</h1>
         </div>
         <span className="demo-mark">{data.scenario === 'empty' ? 'Новый' : 'Демо'}</span>
+        <button ref={close} onClick={onClose} aria-label="Закрыть кошелёк">
+          <X aria-hidden="true" />
+        </button>
       </header>
 
       <div className="expanded-scene">
-        <div className="expanded-fan" aria-hidden="true">
+        <div className="expanded-fan" aria-hidden="true" data-testid="expanded-fan">
           <i className="fan-comfort" />
           <i className="fan-obligations" />
           <i className="fan-reserve" />
