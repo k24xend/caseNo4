@@ -1,0 +1,1 @@
+import {describe,expect,it} from 'vitest';import {DebtSchema,PlanSchema} from './models';import {createDemo} from '../demo/data';describe('DTO parsing',()=>{it('accepts demo plan',()=>expect(PlanSchema.parse(createDemo().plan).currency).toBe('RUB'));it('rejects fractional money',()=>expect(DebtSchema.safeParse({...createDemo().debts[0],balance:1.2}).success).toBe(false))})
