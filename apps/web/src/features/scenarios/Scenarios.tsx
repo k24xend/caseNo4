@@ -1,179 +1,33 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { Page } from '../../components/Page';
 import { Banner, Button, Card, Field } from '../../components/ui';
 import { useApp } from '../../app/AppContext';
 import { formatMoney, parseMoney } from '../../domain/money';
-import { projectScenario, type ScenarioInputs } from '../../domain/navigationEngine';
+import { assessWorkload, calculatePlan, comparePlans, FORECAST_VARIANCE_MONTHS } from '../../domain/financialEngine';
+import type { ScenarioAdjustment } from '../../domain/models';
 
-const presets = [
-  { name: 'Мягкий', income: 500000, payment: 0, hours: 4, note: 'Ниже нагрузка, больше времени' },
-  {
-    name: 'Сбалансированный',
-    income: 1200000,
-    payment: 500000,
-    hours: 8,
-    note: 'Рекомендуемый баланс',
-  },
-  {
-    name: 'Ускоренный',
-    income: 2200000,
-    payment: 1000000,
-    hours: 16,
-    note: 'Быстрее, выше риск усталости',
-  },
-] as const;
-export function Scenarios() {
-  const { data, settings, patch } = useApp();
-  const [extraIncome, setExtraIncome] = useState(1200000),
-    [expense, setExpense] = useState(0);
-  const [payment, setPayment] = useState(500000),
-    [hours, setHours] = useState(8);
-  const [reserve, setReserve] = useState(1000000),
-    [applied, setApplied] = useState(false);
-  if (!data)
-    return (
-      <Page title="Сценарии">
-        <div />
-      </Page>
-    );
-  const base: ScenarioInputs = {
-    extraIncome,
-    fixedExpenseChange: expense,
-    variableExpenseChange: 0,
-    extraDebtPayment: payment,
-    reserve,
-    extraHours: hours,
-    toolCost: 0,
-    toolIncome: 0,
-    confidence: 75,
-  };
-  const custom = projectScenario(data.plan, data.debts, base);
-  return (
-    <Page title="Сценарии" sub="Проверь решение до того, как менять план">
-      <Card className="scenario-editor">
-        <h2>Настрой свой вариант</h2>
-        <div className="field-row">
-          <MoneyField label="Доп. доход / месяц" value={extraIncome} set={setExtraIncome} />
-          <MoneyField label="Рост расходов" value={expense} set={setExpense} />
-          <MoneyField label="Доплата по долгу" value={payment} set={setPayment} />
-          <MoneyField label="Защитить в резерве" value={reserve} set={setReserve} />
-        </div>
-        <label className="range">
-          <span>
-            Дополнительная нагрузка <b>{hours} ч/нед.</b>
-          </span>
-          <input
-            aria-label="Дополнительные часы"
-            type="range"
-            min="0"
-            max="24"
-            step="2"
-            value={hours}
-            onChange={(e) => setHours(Number(e.target.value))}
-          />
-        </label>
-      </Card>
-      <div className="scenario-grid">
-        {presets.map((p, i) => {
-          const result = projectScenario(data.plan, data.debts, {
-            ...base,
-            extraIncome: p.income,
-            extraDebtPayment: p.payment,
-            extraHours: p.hours,
-          });
-          return (
-            <Card className={i === 1 ? 'recommended' : ''} key={p.name}>
-              <div className="card-heading">
-                <h3>{p.name}</h3>
-                {i === 1 && <span className="state exit">Рекомендуем</span>}
-              </div>
-              <p className="muted">{p.note}</p>
-              <strong className="scenario-time">
-                {result.debtFreeMonths}–{result.debtFreeMonths + 2} мес.
-              </strong>
-              <small>до закрытия дорогих долгов</small>
-              <dl>
-                <div>
-                  <dt>Свободный поток</dt>
-                  <dd>{formatMoney(result.freeCashFlow, data.currency)}</dd>
-                </div>
-                <div>
-                  <dt>Проценты</dt>
-                  <dd>{formatMoney(result.interestCost, data.currency)}</dd>
-                </div>
-                <div>
-                  <dt>Нагрузка</dt>
-                  <dd>
-                    {result.load === 'high'
-                      ? 'Высокая'
-                      : result.load === 'medium'
-                        ? 'Средняя'
-                        : 'Низкая'}
-                  </dd>
-                </div>
-              </dl>
-            </Card>
-          );
-        })}
-      </div>
-      <Card className="scenario-result">
-        <p className="eyebrow">Твой вариант · пересчитано</p>
-        <h2>
-          {custom.debtFreeMonths}–{custom.debtFreeMonths + 2} месяцев
-        </h2>
-        <p>
-          Стабилизация через {custom.stabilizationMonths} мес. · свободный поток{' '}
-          {formatMoney(custom.freeCashFlow, data.currency)} · резерв через месяц{' '}
-          {formatMoney(custom.reserveAfterMonth, data.currency)}
-        </p>
-        {custom.cashGap && (
-          <Banner kind="danger">
-            План создаёт кассовый разрыв — не применяем ускоренную выплату.
-          </Banner>
-        )}
-        <Button
-          disabled={custom.cashGap}
-          onClick={async () => {
-            await patch({
-              acceptedScenario: {
-                extraIncome,
-                expenseChange: expense,
-                extraDebtPayment: payment,
-                reserve,
-                extraHours: hours,
-                acceptedAt: new Date().toISOString(),
-              },
-            });
-            setApplied(true);
-          }}
-        >
-          Принять как основной план
-        </Button>
-        {(applied || settings.acceptedScenario) && (
-          <Banner>План сохранён на устройстве. Операции и долги не изменены.</Banner>
-        )}
-      </Card>
-    </Page>
-  );
+const presets=[{name:'Бережный',income:500000,payment:0,hours:4},{name:'Сбалансированный',income:1200000,payment:500000,hours:8},{name:'Ускоренный',income:2200000,payment:1000000,hours:16}];
+export function Scenarios(){
+ const {data,settings,applyScenario}=useApp(); const active=data?.activeScenario ?? settings.acceptedScenario;
+ const [income,setIncome]=useState(active?.extraIncome??1200000),[expense,setExpense]=useState(active?.expenseChange??0),[payment,setPayment]=useState(active?.extraDebtPayment??500000),[reserve,setReserve]=useState(active?.reserve??1000000),[hours,setHours]=useState(active?.extraHours??8),[error,setError]=useState('');
+ const candidate:ScenarioAdjustment={extraIncome:income,expenseChange:expense,extraDebtPayment:payment,reserve,extraHours:hours,acceptedAt:new Date().toISOString()};
+ const result=useMemo(()=>data?calculatePlan(data.baseline,data.debts,candidate,data.updatedAt,data.currency):undefined,[data,income,expense,payment,reserve,hours]);
+ if(!data||!result)return <Page title="Сценарии"><div/></Page>;
+ const delta=comparePlans(calculatePlan(data.baseline,data.debts,undefined,data.updatedAt,data.currency).plan,result.plan);
+ const months=result.projection.debtFreeMonths;
+ const invalid=[income,expense,payment,reserve].some(x=>!Number.isSafeInteger(x)||Math.abs(x)>100_000_000_00)||income<0||payment<0||reserve<0;
+ const cashGap=result.plan.snapshot.projected_balance_before_next_income<0;
+ return <Page title="Сценарии" sub="Проверьте решение, не изменяя долги и операции">
+  {active&&<Banner><b>Активен пользовательский план.</b> Today и прогноз уже пересчитаны. <button onClick={()=>applyScenario(undefined)}>Вернуться к базовому</button></Banner>}
+  <Card className="scenario-editor"><p className="eyebrow">Кандидат</p><h2>Что изменится каждый месяц?</h2><div className="field-row">
+   <Money label="Доп. доход / месяц" value={income} set={setIncome}/><Money label="Изменение расходов" value={expense} set={setExpense}/><Money label="Доплата по долгу" value={payment} set={setPayment}/><Money label="Защищённый резерв" value={reserve} set={setReserve}/>
+  </div><label className="range"><span>Дополнительная нагрузка <b>{hours} ч/нед.</b></span><input aria-label="Дополнительные часы" type="range" min="0" max="30" value={hours} onChange={e=>setHours(Number(e.target.value))}/></label></Card>
+  <div className="scenario-grid">{presets.map(p=><button className="preset-card" key={p.name} onClick={()=>{setIncome(p.income);setPayment(p.payment);setHours(p.hours)}}><b>{p.name}</b><span>{p.hours} ч/нед. · {formatMoney(p.income,data.currency)}</span></button>)}</div>
+  <Card className="scenario-result"><p className="eyebrow">Base → candidate</p><h2>{months===null?'Больше 30 лет':`${Math.max(0,months-FORECAST_VARIANCE_MONTHS)}–${months+FORECAST_VARIANCE_MONTHS} мес.`}</h2><p className="muted">Оценка выхода из дорогих долгов, а не обещание. Допущения: доход стабилен, ставки не меняются.</p><dl>
+   <div><dt>Безопасная сумма</dt><dd>{formatMoney(result.plan.snapshot.safe_to_spend,data.currency)}</dd></div><div><dt>Изменение</dt><dd>{formatMoney(delta.safeDelta,data.currency)}</dd></div><div><dt>Свободный поток</dt><dd>{formatMoney(result.plan.snapshot.monthly_free_cash_flow,data.currency)}</dd></div><div><dt>Нагрузка</dt><dd>{assessWorkload(hours)==='high'?'Высокая':assessWorkload(hours)==='medium'?'Средняя':'Низкая'}</dd></div>
+  </dl>{cashGap&&<Banner kind="danger">Кандидат создаёт кассовый разрыв. Уменьшите доплату или расходы.</Banner>}{(invalid||error)&&<Banner kind="danger">{error||'Проверьте суммы: только неотрицательные значения до 100 млн.'}</Banner>}
+  <Button disabled={cashGap||invalid} onClick={async()=>{try{setError('');await applyScenario(candidate)}catch(e){setError(e instanceof Error?e.message:'Не удалось сохранить')}}}>Принять как основной план</Button>
+  </Card>
+ </Page>
 }
-function MoneyField({
-  label,
-  value,
-  set,
-}: {
-  label: string;
-  value: number;
-  set: (n: number) => void;
-}) {
-  return (
-    <Field
-      label={label}
-      inputMode="decimal"
-      value={String(value / 100)}
-      onChange={(e) => {
-        const n = parseMoney(e.target.value);
-        if (n !== null) set(n);
-      }}
-    />
-  );
-}
+function Money({label,value,set}:{label:string;value:number;set:(n:number)=>void}){return <Field label={label} inputMode="decimal" value={String(value/100)} onChange={e=>{const n=parseMoney(e.target.value);set(n??-1)}}/>}

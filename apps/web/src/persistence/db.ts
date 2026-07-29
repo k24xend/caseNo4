@@ -24,15 +24,22 @@ export const setDemo = (v: DemoData) => setRecord('demo', v);
 export const getDraft = () => getRecord<OnboardingDraft>('onboarding');
 export const setDraft = (v: OnboardingDraft) => setRecord('onboarding', v);
 export const defaultSettings: AppSettings = {
+  version: 2,
   theme: 'system',
   language: 'ru',
   demoOffline: false,
   demoError: false,
   scenario: 'normal',
   entered: false,
+  resources: { phone: true, computer: false, hoursPerWeek: 8, skills: ['Тексты'], investmentLimit: 0 },
 };
+export function normalizeSettings(raw?: Partial<AppSettings>): AppSettings {
+  const resources={...defaultSettings.resources,...raw?.resources};
+  return { ...defaultSettings, ...raw, version:2, resources } as AppSettings;
+}
 export async function getSettings() {
-  return { ...defaultSettings, ...(await getRecord<Partial<AppSettings>>('settings')) };
+  const value=normalizeSettings(await getRecord<Partial<AppSettings>>('settings'));
+  await setRecord('settings',value); return value;
 }
 export const setSettings = (v: AppSettings) => setRecord('settings', v);
 export async function clearUserData() {

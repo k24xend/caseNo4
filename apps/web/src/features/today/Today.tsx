@@ -6,6 +6,7 @@ import { Page } from '../../components/Page';
 import { formatMoney } from '../../domain/money';
 import { formatDate } from '../../i18n';
 import { stateLabel } from '../plan/stateLabel';
+import { stageIndex } from '../../domain/navigationEngine';
 export function Today() {
   const { data, loading, error, settings, refresh } = useApp();
   if (loading)
@@ -25,16 +26,19 @@ export function Today() {
   if (!data) return null;
   const p = data.plan,
     s = p.snapshot;
+  const stage=stageIndex(p.state)+1, months=data.projection.stabilizationMonths;
+  const payment=data.projection.nextPayment;
+  const day=new Date().getDay()||7;
   return (
-    <Page title="Добрый вечер" sub="Держим курс без резких решений">
+    <Page title="Сегодня" sub="Ваш следующий безопасный шаг">
       {settings.demoOffline && (
         <Banner kind="offline">
           <WifiOff /> Офлайн: показаны сохранённые данные
         </Banner>
       )}
       <div className="journey-summary">
-        <span className={`state ${p.state}`}>{stateLabel(p.state)} · этап 3 из 5</span>
-        <strong>До устойчивости около 10–12 недель</strong>
+        <span className={`state ${p.state}`}>{stateLabel(p.state)} · этап {stage} из 5</span>
+        <strong>{months===null?'Срок устойчивости требует новых данных':months===0?'Обязательства защищены':`До устойчивости около ${Math.max(1,months*4-2)}–${months*4+2} недель`}</strong>
         <Link to="/plan">
           Весь путь <ArrowRight />
         </Link>
@@ -67,17 +71,17 @@ export function Today() {
         <CalendarClock />
         <div>
           <small>Ближайший обязательный платёж</small>
-          <strong>Аренда · 5 августа</strong>
-          <span>26 000 ₽ защищены планом</span>
+          <strong>{payment?`${payment.name} · ${new Intl.DateTimeFormat(settings.language==='ru'?'ru-RU':'en-US',{day:'numeric',month:'long'}).format(new Date(payment.date))}`:'Нет подтверждённых платежей'}</strong>
+          <span>{payment?`${formatMoney(payment.amount,p.currency)} ${s.projected_balance_before_next_income>=0?'защищены планом':'под риском'} в текущем прогнозе`:'Добавьте обязательства в онбординге'}</span>
         </div>
       </Card>
       <Card>
         <div className="card-heading">
           <h3>Эта неделя</h3>
-          <strong>4 из 7 дней</strong>
+          <strong>{day} из 7 дней</strong>
         </div>
         <div className="week-progress">
-          <i style={{ width: '57%' }} />
+          <i style={{ width: `${Math.round(day/7*100)}%` }} />
         </div>
         <p className="muted">Расходы в ориентире. Следующая сверка — в воскресенье.</p>
       </Card>

@@ -1,5 +1,6 @@
 import { Moon, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { api } from '../../api/client';
 import { dataMode, useApp } from '../../app/AppContext';
 import { Button, Card } from '../../components/ui';
@@ -19,6 +20,8 @@ export function Profile() {
   };
   return (
     <Page title="Профиль" sub="Настройки и состояние приложения">
+      <Card><h3>Разделы</h3><div className="hub-grid"><Link to="/debts">Долги</Link><Link to="/scenarios">Сценарии</Link><Link to="/opportunities">Возможности</Link><Link to="/transactions">Операции</Link></div></Card>
+      <Card><h3>Ресурсы для подработки</h3><label className="check"><input type="checkbox" checked={settings.resources?.phone??false} onChange={e=>patch({resources:{...settings.resources!,phone:e.target.checked}})}/> Есть смартфон</label><label className="check"><input type="checkbox" checked={settings.resources?.computer??false} onChange={e=>patch({resources:{...settings.resources!,computer:e.target.checked}})}/> Есть компьютер</label><label className="field"><span>Часов в неделю</span><input aria-label="Часов в неделю" type="number" min="0" max="40" value={settings.resources?.hoursPerWeek??0} onChange={e=>patch({resources:{...settings.resources!,hoursPerWeek:Number(e.target.value)}})}/></label></Card>
       <Card>
         <div className="setting">
           <span>

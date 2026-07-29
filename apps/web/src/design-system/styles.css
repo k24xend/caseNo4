@@ -606,6 +606,7 @@ dd {
     scroll-behavior: auto !important;
   }
 }
+.hub-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hub-grid a,.preset-card{min-height:48px;padding:14px;border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface-2);color:var(--text);font-weight:700;text-decoration:none}.preset-card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left}.preset-card span{font-size:12px;color:var(--muted)}
 .diagnosis-page {
   min-height: 100dvh;
   max-width: 600px;

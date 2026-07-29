@@ -29,14 +29,14 @@ test('complete durable mobile demo flow', async ({ page, context }) => {
   await assertMobile(page);
 
   await page.getByRole('link', { name: /План/ }).click();
-  await page.getByRole('link', { name: /Сценарии/ }).click();
+  await page.getByRole('link', { name: /Проверить ускорение/ }).click();
   const initialResult = await page.locator('.scenario-result h2').textContent();
   await page.getByLabel('Доп. доход / месяц').fill('30000');
   await expect(page.locator('.scenario-result h2')).not.toHaveText(initialResult ?? '');
   await page.getByRole('button', { name: 'Принять как основной план' }).click();
-  await expect(page.getByText(/План сохранён/)).toBeVisible();
+  await expect(page.getByText(/Активен пользовательский план/)).toBeVisible();
   await page.reload();
-  await expect(page.getByText(/План сохранён/)).toBeVisible();
+  await expect(page.getByText(/Активен пользовательский план/)).toBeVisible();
   await page.getByRole('link', { name: /План/ }).click();
   await page.getByRole('link', { name: /Долги и стратегия/ }).click();
   await page.getByRole('button', { name: /Добавить долг/ }).click();
@@ -93,3 +93,5 @@ test('complete durable mobile demo flow', async ({ page, context }) => {
   await context.setOffline(false);
   expect(errors).toEqual([]);
 });
+
+for (const width of [375,390,430]) test(`no horizontal overflow at ${width}px`,async({page})=>{await page.setViewportSize({width,height:844});await page.goto('/');await page.getByRole('button',{name:'Открыть демо'}).click();for(const path of ['/today','/plan','/scenarios','/debts','/transactions','/opportunities','/profile']){await page.goto(path);await assertMobile(page)}});

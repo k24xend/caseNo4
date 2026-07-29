@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
 import { api } from '../api/client';
 import { ApiRepository, DemoDataRepository, type DataRepository } from '../api/repository';
-import type { AppSettings, DemoData, Scenario } from '../domain/models';
+import type { AppSettings, DemoData, Scenario, ScenarioAdjustment } from '../domain/models';
 import { getSettings, setSettings } from '../persistence/db';
 
 export const dataMode = ((import.meta.env.VITE_DATA_MODE as string | undefined) ?? 'demo') as
@@ -19,15 +19,18 @@ type Context = {
   patch: (value: Partial<AppSettings>) => Promise<void>;
   setScenario: (value: Scenario) => Promise<void>;
   reset: () => Promise<void>;
+  applyScenario: (value?: ScenarioAdjustment) => Promise<void>;
 };
 const AppContext = createContext<Context | null>(null);
 const fallbackSettings: AppSettings = {
+  version: 2,
   theme: 'system',
   language: 'ru',
   demoOffline: false,
   demoError: false,
   scenario: 'normal',
   entered: false,
+  resources: { phone:true,computer:false,hoursPerWeek:8,skills:['Тексты'],investmentLimit:0 },
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -101,8 +104,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     await patch({ scenario: 'normal', demoOffline: false, demoError: false });
     await refresh();
   };
+  const applyScenario = async (value?: ScenarioAdjustment) => {
+    if (!repository.applyScenario) return;
+    const next=await repository.applyScenario(value); setData(next);
+    await patch({ acceptedScenario:value });
+  };
   const context = useMemo(
-    () => ({ settings, data, loading, error, repository, refresh, patch, setScenario, reset }),
+    () => ({ settings, data, loading, error, repository, refresh, patch, setScenario, reset, applyScenario }),
     [settings, data, loading, error],
   );
   return <AppContext.Provider value={context}>{children}</AppContext.Provider>;
