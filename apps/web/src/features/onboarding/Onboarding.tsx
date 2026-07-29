@@ -1,5 +1,6 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Button, Card, Field } from '../../components/ui';
 import type { Currency, Debt, DraftLine, OnboardingDraft } from '../../domain/models';
 import { formatMoney, moneyInput, newId, parseMoney } from '../../domain/money';
@@ -38,6 +39,7 @@ const initialDraft = (): OnboardingDraft => ({
 
 export function Onboarding() {
   const { repository, patch } = useApp();
+  const nav = useNavigate();
   const [step, setStep] = useState(0);
   const [draft, setLocal] = useState<OnboardingDraft>(initialDraft);
   const [lineEditor, setLineEditor] = useState<{
