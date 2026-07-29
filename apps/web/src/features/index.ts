@@ -8,4 +8,5 @@ export { Transactions } from './transactions/Transactions';
 export { Profile } from './profile/Profile';
 export { Scenarios } from './scenarios/Scenarios';
 export { Opportunities } from './opportunities/Opportunities';
+export { Assistant } from './assistant/Assistant';
 export { NotFound } from './NotFound';

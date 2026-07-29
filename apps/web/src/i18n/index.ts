@@ -1,15 +1,15 @@
 export const copy = {
   ru: {
-    today: 'Сегодня',
+    today: 'Обзор',
     plan: 'План',
-    transactions: 'Операции',
+    transactions: 'Помощник',
     profile: 'Профиль',
     debts: 'Долги',
   },
   en: {
-    today: 'Today',
+    today: 'Overview',
     plan: 'Plan',
-    transactions: 'Transactions',
+    transactions: 'Assistant',
     profile: 'Profile',
     debts: 'Debts',
   },

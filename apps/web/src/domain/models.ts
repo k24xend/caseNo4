@@ -79,22 +79,49 @@ export interface DemoData {
   activeScenario?: ScenarioAdjustment;
   projection: FinancialProjection;
 }
-export interface ScheduledItem { id: string; name: string; amount: number; date: string; confirmed: boolean }
+export interface ScheduledItem {
+  id: string;
+  name: string;
+  amount: number;
+  date: string;
+  confirmed: boolean;
+}
 export interface FinancialInputs {
-  availableNow: number; monthlyIncome: number; minimumBuffer: number; nextIncomeDate: string;
-  incomes: ScheduledItem[]; expenses: ScheduledItem[];
+  availableNow: number;
+  monthlyIncome: number;
+  minimumBuffer: number;
+  nextIncomeDate: string;
+  incomes: ScheduledItem[];
+  expenses: ScheduledItem[];
 }
 export interface ScenarioAdjustment {
-  extraIncome: number; expenseChange: number; extraDebtPayment: number; reserve: number;
-  extraHours: number; acceptedAt: string;
+  extraIncome: number;
+  expenseChange: number;
+  extraDebtPayment: number;
+  reserve: number;
+  extraHours: number;
+  acceptedAt: string;
 }
-export interface ProjectionPoint { date: string; debt: number; reserve: number; interest: number }
+export interface ProjectionPoint {
+  date: string;
+  debt: number;
+  reserve: number;
+  interest: number;
+}
 export interface FinancialProjection {
-  points: ProjectionPoint[]; debtFreeMonths: number | null; stabilizationMonths: number | null;
-  totalInterest: number; nextPayment?: ScheduledItem; assumptions: string[];
+  points: ProjectionPoint[];
+  debtFreeMonths: number | null;
+  stabilizationMonths: number | null;
+  totalInterest: number;
+  nextPayment?: ScheduledItem;
+  assumptions: string[];
 }
 export interface UserResources {
-  phone: boolean; computer: boolean; hoursPerWeek: number; skills: string[]; investmentLimit: number;
+  phone: boolean;
+  computer: boolean;
+  hoursPerWeek: number;
+  skills: string[];
+  investmentLimit: number;
 }
 export interface DraftLine {
   id: string;
@@ -144,4 +171,29 @@ export interface AppSettings {
     acceptedAt: string;
   };
   resources?: UserResources;
+  guidanceMode: 'base' | 'hard';
+  hardRiskLevel: 'moderate' | 'high' | 'extreme';
+  primaryGoal: FinancialGoal;
+  secondaryGoals: FinancialGoal[];
+  comfortBudget: number;
+  protectedComfortCategories: string[];
+  advice: AdviceItem[];
+  notifications: boolean;
+}
+export type FinancialGoal =
+  | 'stability'
+  | 'debt_free'
+  | 'income'
+  | 'freelance'
+  | 'business'
+  | 'capital'
+  | 'custom';
+export type AdviceStatus = 'active' | 'hidden' | 'archived' | 'completed';
+export interface AdviceItem {
+  id: string;
+  topic: 'income' | 'plan' | 'spending';
+  title: string;
+  body: string;
+  status: AdviceStatus;
+  updatedAt: string;
 }

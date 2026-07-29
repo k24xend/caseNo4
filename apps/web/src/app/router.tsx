@@ -13,6 +13,7 @@ import {
   Scenarios,
   Opportunities,
   Diagnosis,
+  Assistant,
 } from '../features';
 
 const validRoutes = new Set([
@@ -23,6 +24,8 @@ const validRoutes = new Set([
   '/debts',
   '/transactions',
   '/profile',
+  '/assistant',
+  '/transactions',
 ]);
 export function EntryRoute() {
   const { settings, loading } = useApp();
@@ -50,6 +53,7 @@ export const router = createBrowserRouter([
       { path: '/debts', element: <Debts /> },
       { path: '/transactions', element: <Transactions /> },
       { path: '/profile', element: <Profile /> },
+      { path: '/assistant', element: <Assistant /> },
       { path: '*', element: <NotFound /> },
     ],
   },

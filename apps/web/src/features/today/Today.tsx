@@ -1,117 +1,227 @@
-import { ArrowRight, CalendarClock, RefreshCw, ShieldCheck, WifiOff } from 'lucide-react';
+import { ArrowLeft, ArrowRight, MessageCircle, WifiOff } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
-import { Banner, Card, Skeleton } from '../../components/ui';
-import { Page } from '../../components/Page';
+import { Skeleton } from '../../components/ui';
 import { formatMoney } from '../../domain/money';
-import { formatDate } from '../../i18n';
-import { stateLabel } from '../plan/stateLabel';
-import { stageIndex } from '../../domain/navigationEngine';
+
 export function Today() {
   const { data, loading, error, settings, refresh } = useApp();
+  const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (!open) trigger.current?.focus();
+  }, [open]);
   if (loading)
     return (
-      <Page title="Сегодня">
+      <div className="overview">
         <Skeleton />
-      </Page>
+      </div>
     );
   if (error)
     return (
-      <Page title="Сегодня">
-        <Banner kind="danger">
-          {error} <button onClick={refresh}>Повторить</button>
-        </Banner>
-      </Page>
+      <div className="overview">
+        <div className="empty-state">
+          <h2>Не удалось открыть обзор</h2>
+          <p>{error}</p>
+          <button className="button" onClick={refresh}>
+            Повторить
+          </button>
+        </div>
+      </div>
     );
   if (!data) return null;
-  const p = data.plan,
-    s = p.snapshot;
-  const stage=stageIndex(p.state)+1, months=data.projection.stabilizationMonths;
-  const payment=data.projection.nextPayment;
-  const day=new Date().getDay()||7;
+  const { plan } = data,
+    s = plan.snapshot;
+  const comfort = Math.min(settings.comfortBudget, Math.max(0, s.available_now));
+  const obligations = s.mandatory_before_next_income + s.minimum_debt_payments_before_next_income;
+  const reserve = Math.max(0, s.available_now - comfort - obligations);
   return (
-    <Page title="Сегодня" sub="Ваш следующий безопасный шаг">
+    <div className="overview">
       {settings.demoOffline && (
-        <Banner kind="offline">
-          <WifiOff /> Офлайн: показаны сохранённые данные
-        </Banner>
+        <div className="status-banner">
+          <WifiOff />
+          Сохранённый план · офлайн
+        </div>
       )}
-      <div className="journey-summary">
-        <span className={`state ${p.state}`}>{stateLabel(p.state)} · этап {stage} из 5</span>
-        <strong>{months===null?'Срок устойчивости требует новых данных':months===0?'Обязательства защищены':`До устойчивости около ${Math.max(1,months*4-2)}–${months*4+2} недель`}</strong>
-        <Link to="/plan">
-          Весь путь <ArrowRight />
-        </Link>
-      </div>
-      <Card className="hero command-card">
-        <div className="card-heading">
-          <span className="eyebrow">Главное сегодня</span>
-          <ShieldCheck />
-        </div>
-        <h2>{p.action.title}</h2>
-        <strong>{formatMoney(p.action.amount, p.currency)}</strong>
-        <p>Так аренда, транспорт и минимальные платежи останутся покрыты без нового долга.</p>
-        <Link className="button" to="/scenarios">
-          Изменить план
-        </Link>
-      </Card>
-      <div className="metrics">
-        <Card>
-          <span>Безопасно потратить</span>
-          <strong>{formatMoney(s.safe_to_spend, p.currency)}</strong>
-          <small>до следующего дохода</small>
-        </Card>
-        <Card>
-          <span>Ориентир в день</span>
-          <strong>{formatMoney(s.safe_daily_amount, p.currency)}</strong>
-          <small>без ущерба обязательствам</small>
-        </Card>
-      </div>
-      <Card className="risk-line">
-        <CalendarClock />
-        <div>
-          <small>Ближайший обязательный платёж</small>
-          <strong>{payment?`${payment.name} · ${new Intl.DateTimeFormat(settings.language==='ru'?'ru-RU':'en-US',{day:'numeric',month:'long'}).format(new Date(payment.date))}`:'Нет подтверждённых платежей'}</strong>
-          <span>{payment?`${formatMoney(payment.amount,p.currency)} ${s.projected_balance_before_next_income>=0?'защищены планом':'под риском'} в текущем прогнозе`:'Добавьте обязательства в онбординге'}</span>
-        </div>
-      </Card>
-      <Card>
-        <div className="card-heading">
-          <h3>Эта неделя</h3>
-          <strong>{day} из 7 дней</strong>
-        </div>
-        <div className="week-progress">
-          <i style={{ width: `${Math.round(day/7*100)}%` }} />
-        </div>
-        <p className="muted">Расходы в ориентире. Следующая сверка — в воскресенье.</p>
-      </Card>
-      <Card>
-        <h3>Прогноз</h3>
-        <dl>
-          <div>
-            <dt>Доступно сейчас</dt>
-            <dd>{formatMoney(s.available_now, p.currency)}</dd>
-          </div>
-          <div>
-            <dt>Обязательные платежи</dt>
-            <dd>− {formatMoney(s.mandatory_before_next_income, p.currency)}</dd>
-          </div>
-          <div>
-            <dt>Минимумы по долгам</dt>
-            <dd>− {formatMoney(s.minimum_debt_payments_before_next_income, p.currency)}</dd>
-          </div>
-          <div className="total">
-            <dt>Остаток до дохода</dt>
-            <dd>{formatMoney(s.projected_balance_before_next_income, p.currency)}</dd>
-          </div>
-        </dl>
-      </Card>
-      <p className="sync-line">
-        Обновлено {formatDate(data.updatedAt, settings.language)}{' '}
-        <button aria-label="Синхронизировать" onClick={refresh}>
-          <RefreshCw />
+      <section className="wallet-stage" aria-label="Кошелёк">
+        <button
+          ref={trigger}
+          className="wallet-stack"
+          onClick={() => setOpen(true)}
+          aria-haspopup="dialog"
+          aria-label="Открыть кошелёк и историю"
+        >
+          <span className="wallet-layer comfort">
+            <small>Комфорт</small>
+            <b>{formatMoney(comfort, plan.currency)}</b>
+          </span>
+          <span className="wallet-layer obligations">
+            <small>Платежи</small>
+            <b>{formatMoney(obligations, plan.currency)}</b>
+          </span>
+          <span className="wallet-layer reserve">
+            <span className="clasp" aria-hidden="true">
+              <i />
+            </span>
+            <small>Запас</small>
+            <b className="wallet-amount">{formatMoney(reserve, plan.currency)}</b>
+            <span className="safe-strip">
+              Безопасно сегодня · <strong>{formatMoney(s.safe_daily_amount, plan.currency)}</strong>
+            </span>
+            <span className="wallet-lip">
+              <em>
+                Всего <b>{formatMoney(s.available_now, plan.currency)}</b>
+              </em>
+              <em>
+                Платежи <b>{formatMoney(obligations, plan.currency)}</b>
+              </em>
+            </span>
+          </span>
         </button>
+      </section>
+      <section className="assistant-capsule liquid-panel">
+        <span className="lens-dot">
+          <MessageCircle />
+        </span>
+        <div>
+          <small>Помощник</small>
+          <h2>{s.available_now === 0 ? 'Начнём с нуля — без спешки' : 'С чего начнём?'}</h2>
+          <div>
+            <Link to="/assistant">Доход</Link>
+            <Link to="/plan">План</Link>
+            <Link to="/assistant">
+              Спросить <ArrowRight />
+            </Link>
+          </div>
+        </div>
+      </section>
+      <p className="overview-note">
+        {settings.guidanceMode === 'base'
+          ? 'Base бережёт обязательства, резерв и выбранный комфорт.'
+          : 'Hard ускоряет действия, но не рискует обязательными деньгами.'}
       </p>
-    </Page>
+      {open && <WalletExpanded onClose={() => setOpen(false)} />}
+    </div>
+  );
+}
+
+function WalletExpanded({ onClose }: { onClose: () => void }) {
+  const { data, settings } = useApp();
+  const [tab, setTab] = useState<'summary' | 'history' | 'chart'>('summary');
+  if (!data) return null;
+  const currency = data.currency;
+  const points = data.transactions.slice(0, 8).reverse();
+  let level = 0;
+  const values = points.map((x) => {
+    level += x.kind === 'income' ? x.amount : -x.amount;
+    return level;
+  });
+  const min = Math.min(0, ...values),
+    max = Math.max(1, ...values);
+  const coords = values
+    .map(
+      (v, i) =>
+        `${i * (100 / Math.max(1, values.length - 1))},${88 - ((v - min) / (max - min || 1)) * 70}`,
+    )
+    .join(' ');
+  return (
+    <div className="money-view" role="dialog" aria-modal="true" aria-label="Деньги">
+      <header>
+        <button onClick={onClose} aria-label="Закрыть кошелёк">
+          <ArrowLeft />
+        </button>
+        <div>
+          <small>Деньги</small>
+          <h1>{formatMoney(data.plan.snapshot.available_now, currency)}</h1>
+        </div>
+        <span className="demo-mark">{data.scenario === 'empty' ? 'Новый' : 'Демо'}</span>
+      </header>
+      <div className="expanded-fan" aria-hidden="true">
+        <i />
+        <i />
+        <i className="fan-clasp" />
+      </div>
+      <div className="money-tabs" role="tablist">
+        {(
+          [
+            ['summary', 'Сводка'],
+            ['history', 'История'],
+            ['chart', 'График'],
+          ] as const
+        ).map(([id, label]) => (
+          <button role="tab" aria-selected={tab === id} onClick={() => setTab(id)} key={id}>
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="money-scroll">
+        {(tab === 'summary' || tab === 'chart') && (
+          <section className="movement">
+            <div>
+              <h2>Движение денег</h2>
+              <span>Последние операции</span>
+            </div>
+            {values.length ? (
+              <svg
+                viewBox="0 0 100 100"
+                role="img"
+                aria-label={`График движения денег от ${formatMoney(min, currency)} до ${formatMoney(max, currency)}`}
+                preserveAspectRatio="none"
+              >
+                <line x1="0" y1="88" x2="100" y2="88" />
+                <polyline points={coords} />
+                {values.map((v, i) => (
+                  <circle
+                    key={i}
+                    tabIndex={0}
+                    aria-label={formatMoney(v, currency)}
+                    cx={i * (100 / Math.max(1, values.length - 1))}
+                    cy={88 - ((v - min) / (max - min || 1)) * 70}
+                    r="2"
+                  />
+                ))}
+              </svg>
+            ) : (
+              <div className="chart-empty">Пока нет операций для графика</div>
+            )}
+          </section>
+        )}
+        {(tab === 'summary' || tab === 'history') && (
+          <section className="transactions-preview">
+            <h2>Последние операции</h2>
+            {data.transactions.length ? (
+              data.transactions.map((tx) => (
+                <article key={tx.id}>
+                  <span className={tx.kind === 'income' ? 'income' : 'expense'}>
+                    {tx.category.slice(0, 1)}
+                  </span>
+                  <div>
+                    <b>{tx.description || tx.category}</b>
+                    <small>
+                      {new Intl.DateTimeFormat(settings.language === 'ru' ? 'ru-RU' : 'en-US', {
+                        day: 'numeric',
+                        month: 'short',
+                      }).format(new Date(tx.occurred_at))}
+                    </small>
+                  </div>
+                  <strong className={tx.kind === 'income' ? 'income-text' : 'expense-text'}>
+                    {tx.kind === 'income' ? '+' : '−'} {formatMoney(tx.amount, currency)}
+                  </strong>
+                </article>
+              ))
+            ) : (
+              <div className="empty-state">
+                <h3>Операций пока нет</h3>
+                <p>Добавьте первую, когда будете готовы.</p>
+              </div>
+            )}
+            <Link className="row-link" to="/transactions">
+              Все операции <ArrowRight />
+            </Link>
+          </section>
+        )}
+      </div>
+    </div>
   );
 }

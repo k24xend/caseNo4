@@ -1,109 +1,156 @@
-import { ArrowUpRight, ChevronRight } from 'lucide-react';
-import { stageIndex } from '../../domain/navigationEngine';
+import { ArrowRight, Check, ChevronDown, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
-import { Card, Skeleton } from '../../components/ui';
+import { ModeDial } from '../../components/ModeDial';
 import { Page } from '../../components/Page';
+import type { FinancialGoal } from '../../domain/models';
 import { formatMoney } from '../../domain/money';
-import { formatDate } from '../../i18n';
-import { stateLabel } from './stateLabel';
+
+const goals: Array<[FinancialGoal, string, string]> = [
+  ['stability', 'Стабильность', 'Подушка и спокойный ритм'],
+  ['debt_free', 'Выйти из минуса', 'Закрыть долги без стыда'],
+  ['income', 'Увеличить доход', 'Найти устойчивый прирост'],
+  ['freelance', 'Фриланс', 'Проверить переход'],
+  ['business', 'Своё дело', 'Тестировать спрос'],
+  ['capital', 'Капитал', 'Резерв и инвестиции'],
+  ['custom', 'Своя комбинация', 'Собрать личный путь'],
+];
 export function Plan() {
-  const { data, settings } = useApp();
+  const { data, settings, patch } = useApp();
   if (!data)
     return (
       <Page title="План">
-        <Skeleton />
+        <div className="empty-state">План загружается…</div>
       </Page>
     );
-  const p = data.plan;
-  const points=data.projection.points.slice(0,12); const max=Math.max(1,...points.flatMap(x=>[x.debt,x.reserve]));
-  const transition=data.projection.stabilizationMonths;
-  const milestones:{date:string;text:string}[]=[];
-  if(data.projection.nextPayment) milestones.push({date:data.projection.nextPayment.date,text:`Оплатить «${data.projection.nextPayment.name}»`});
-  if(transition!==null&&points[transition]) milestones.push({date:points[transition].date,text:'Защитить минимальный резерв'});
-  const debtMonth=data.projection.debtFreeMonths;
-  if(debtMonth!==null&&data.projection.points[debtMonth]) milestones.push({date:data.projection.points[debtMonth].date,text:'Закрыть потребительские долги'});
+  const goal = goals.find((x) => x[0] === settings.primaryGoal)!;
+  const toggleSecondary = (id: FinancialGoal) => {
+    const exists = settings.secondaryGoals.includes(id);
+    const next = exists
+      ? settings.secondaryGoals.filter((x) => x !== id)
+      : [...settings.secondaryGoals, id].slice(-2);
+    void patch({ secondaryGoals: next });
+  };
   return (
-    <Page title="Путь" sub="От кассового разрыва — к свободе выбора">
-      <Card className="route-card">
-        <div className="route-track">
-          {['Кризис', 'Стабилизация', 'Выход', 'Резерв', 'Рост'].map((x, i) => (
-            <div className={i <= stageIndex(p.state) ? 'passed' : ''} key={x}>
-              <i>{i < stageIndex(p.state) ? '✓' : i + 1}</i>
-              <span>{x}</span>
-            </div>
+    <Page title="План" sub="Куда вы хотите прийти с деньгами?">
+      <section className="plan-focus liquid-panel">
+        <span className="eyebrow">Главная цель</span>
+        <h2>{goal[1]}</h2>
+        <p>{goal[2]}. Цифры плана рассчитываются детерминированно.</p>
+        <details>
+          <summary>
+            Изменить цель <ChevronDown />
+          </summary>
+          <div className="goal-grid">
+            {goals.map(([id, name, sub]) => (
+              <button
+                className={settings.primaryGoal === id ? 'active' : ''}
+                onClick={() => void patch({ primaryGoal: id })}
+                key={id}
+              >
+                <b>{name}</b>
+                <small>{sub}</small>
+                {settings.primaryGoal === id && <Check />}
+              </button>
+            ))}
+          </div>
+        </details>
+      </section>
+      <section className="mode-plan">
+        <div>
+          <small>Темп сопровождения</small>
+          <h2>{settings.guidanceMode === 'base' ? 'Base · устойчиво' : 'Hard · интенсивно'}</h2>
+          <p>Режим меняет приоритет и тон советов, но не финансовые факты.</p>
+        </div>
+        <ModeDial expanded={false} />
+      </section>
+      {settings.guidanceMode === 'hard' && (
+        <section className="risk-section">
+          <h2>Допустимый риск</h2>
+          <p>Обязательные деньги и комфорт остаются защищены.</p>
+          <div>
+            {(
+              [
+                ['moderate', 'Умеренный'],
+                ['high', 'Высокий'],
+                ['extreme', 'Предельный'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                className={settings.hardRiskLevel === id ? 'active' : ''}
+                onClick={() => void patch({ hardRiskLevel: id })}
+                key={id}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+          {settings.hardRiskLevel === 'extreme' && (
+            <small>
+              <Shield />
+              Проверьте максимальную потерю и путь назад перед подтверждением.
+            </small>
+          )}
+        </section>
+      )}
+      <section className="plan-numbers">
+        <div>
+          <small>Безопасно сегодня</small>
+          <strong>{formatMoney(data.plan.snapshot.safe_daily_amount, data.currency)}</strong>
+        </div>
+        <div>
+          <small>Свободный поток</small>
+          <strong>{formatMoney(data.plan.snapshot.monthly_free_cash_flow, data.currency)}</strong>
+        </div>
+      </section>
+      <section className="comfort-plan">
+        <span>Неприкосновенный комфорт</span>
+        <strong>{formatMoney(settings.comfortBudget, data.currency)}</strong>
+        <p>Уважается и в Base, и в Hard.</p>
+        <Link to="/profile">
+          Настроить <ArrowRight />
+        </Link>
+      </section>
+      <section className="what-if">
+        <span className="eyebrow">Что если</span>
+        <h2>Проверьте сценарий до решения</h2>
+        <div>
+          <Link to="/scenarios">
+            Уйду во фриланс <ArrowRight />
+          </Link>
+          <Link to="/scenarios">
+            Доход упадёт <ArrowRight />
+          </Link>
+          <Link to="/scenarios">
+            Увеличу платёж <ArrowRight />
+          </Link>
+        </div>
+        <small>Сценарий не меняет реальные данные до подтверждения.</small>
+      </section>
+      <details className="secondary-goals">
+        <summary>
+          Дополнительные цели · {settings.secondaryGoals.length}/2 <ChevronDown />
+        </summary>
+        {goals
+          .filter((x) => x[0] !== settings.primaryGoal)
+          .map(([id, name]) => (
+            <label key={id}>
+              <input
+                type="checkbox"
+                checked={settings.secondaryGoals.includes(id)}
+                onChange={() => toggleSecondary(id)}
+              />
+              {name}
+            </label>
           ))}
-        </div>
-        <p>Текущий этап</p>
-        <h2>{stateLabel(p.state)}</h2>
-        <strong>{transition===null?'Переход пока не достигается':transition===0?'Условия этапа уже выполнены':`Переход ожидается через ${Math.max(1,transition*4-2)}–${transition*4+2} недель`}</strong>
-        <small>Диапазон изменится при новых операциях</small>
-      </Card>
-      <Card className="plan-state">
-        <span className={`state ${p.state}`}>{stateLabel(p.state)}</span>
-        <h2>{p.action.title}</h2>
-        <strong>{formatMoney(p.action.amount, p.currency)}</strong>
-        <p>Свободный поток: {formatMoney(p.snapshot.monthly_free_cash_flow, p.currency)}</p>
-        <p>Защищённый резерв: {formatMoney(p.snapshot.minimum_buffer_target, p.currency)}</p>
-      </Card>
-      <Card>
-        <div className="card-heading">
-          <h3>Как меняется положение</h3>
-          <span className="muted">{points.length} месяцев</span>
-        </div>
-        <div className="forecast-chart" aria-label="Прогноз: долг снижается, резерв растёт">
-          <div className="chart-debt">
-            {points.map((v, i) => (
-              <i key={v.date} style={{ height: `${Math.max(2,v.debt/max*100)}%` }}>
-                <span>{i === 0 ? 'Долг' : ''}</span>
-              </i>
-            ))}
-          </div>
-          <div className="chart-buffer">
-            {points.map((v, i) => (
-              <i key={v.date} style={{ height: `${Math.max(2,v.reserve/max*100)}%` }}>
-                <span>{i === points.length-1 ? 'Резерв' : ''}</span>
-              </i>
-            ))}
-          </div>
-        </div>
-        <p className="muted">
-          Долг уменьшается после защиты обязательных расходов; резерв растёт без кассового разрыва.
-        </p>
-      </Card>
-      <Card>
-        <h3>Ближайшие вехи</h3>
-        <ol className="milestones">{milestones.map((m)=><li key={m.text}><b>{new Intl.DateTimeFormat(settings.language==='ru'?'ru-RU':'en-US',{month:'long',year:'numeric'}).format(new Date(m.date))}</b><span>{m.text}</span></li>)}</ol>
-      </Card>
-      <Link className="button full" to="/scenarios">
-        Проверить ускорение <ArrowUpRight />
-      </Link>
+      </details>
       <Link className="row-link" to="/debts">
         <span>
           <b>Долги и стратегия</b>
-          <small>{data.debts.length} обязательства</small>
+          <small>Avalanche, snowball и свой порядок</small>
         </span>
-        <ChevronRight />
+        <ArrowRight />
       </Link>
-      <Card>
-        <div className="card-heading">
-          <h3>Почему этот шаг</h3>
-          <span className="source">
-            {data.explanation.source === 'ai' ? 'AI' : 'Fallback · детерминировано'}
-          </span>
-        </div>
-        <h4>{data.explanation.headline}</h4>
-        <p>{data.explanation.explanation}</p>
-        <ul>
-          {data.explanation.reasons.map((x) => (
-            <li key={x}>{x}</li>
-          ))}
-        </ul>
-        <small>Сформировано {formatDate(data.explanation.generated_at, settings.language)}</small>
-      </Card>
-      <p className="disclaimer">
-        Информация носит справочный характер и не является индивидуальной финансовой рекомендацией.
-      </p>
     </Page>
   );
 }
