@@ -17,14 +17,15 @@ const debtForm = z.object({
   due: z.coerce.number().int().min(1).max(31),
   overdue: z.boolean(),
 });
-type DebtForm = z.infer<typeof debtForm>;
+type DebtFormInput = z.input<typeof debtForm>;
+type DebtFormOutput = z.output<typeof debtForm>;
 function DebtEditor({ item, onClose }: { item?: Debt; onClose: () => void }) {
   const { settings, refresh, repository, data } = useApp();
   const {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<DebtForm>({
+  } = useForm<DebtFormInput, unknown, DebtFormOutput>({
     resolver: zodResolver(debtForm),
     defaultValues: {
       name: item?.name ?? '',
