@@ -29,6 +29,15 @@ test('complete durable mobile demo flow', async ({ page, context }) => {
   await assertMobile(page);
 
   await page.getByRole('link', { name: /План/ }).click();
+  await page.getByRole('link', { name: /Сценарии/ }).click();
+  const initialResult = await page.locator('.scenario-result h2').textContent();
+  await page.getByLabel('Доп. доход / месяц').fill('30000');
+  await expect(page.locator('.scenario-result h2')).not.toHaveText(initialResult ?? '');
+  await page.getByRole('button', { name: 'Принять как основной план' }).click();
+  await expect(page.getByText(/План сохранён/)).toBeVisible();
+  await page.reload();
+  await expect(page.getByText(/План сохранён/)).toBeVisible();
+  await page.getByRole('link', { name: /План/ }).click();
   await page.getByRole('link', { name: /Долги и стратегия/ }).click();
   await page.getByRole('button', { name: /Добавить долг/ }).click();
   await page.getByLabel('Название').fill('E2E долг');
@@ -70,7 +79,7 @@ test('complete durable mobile demo flow', async ({ page, context }) => {
   await page.getByRole('link', { name: /Профиль/ }).click();
   await page.getByLabel('Сценарий').selectOption('critical');
   await page.getByRole('link', { name: /Сегодня/ }).click();
-  await expect(page.getByText('Критическая ситуация')).toBeVisible();
+  await expect(page.getByText(/Кризис · защищаем/).first()).toBeVisible();
   await page.getByRole('link', { name: /Профиль/ }).click();
   await page.getByLabel('Сценарий').selectOption('empty');
   await page.getByText('Тёмная').click();

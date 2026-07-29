@@ -10,9 +10,20 @@ import {
   Today,
   Transactions,
   Welcome,
+  Scenarios,
+  Opportunities,
+  Diagnosis,
 } from '../features';
 
-const validRoutes = new Set(['/today', '/plan', '/debts', '/transactions', '/profile']);
+const validRoutes = new Set([
+  '/today',
+  '/plan',
+  '/scenarios',
+  '/opportunities',
+  '/debts',
+  '/transactions',
+  '/profile',
+]);
 export function EntryRoute() {
   const { settings, loading } = useApp();
   if (loading) return null;
@@ -28,11 +39,14 @@ export function ProtectedRoute() {
 export const router = createBrowserRouter([
   { path: '/', element: <EntryRoute /> },
   { path: '/onboarding', element: <Onboarding /> },
+  { path: '/diagnosis', element: <Diagnosis /> },
   {
     element: <ProtectedRoute />,
     children: [
       { path: '/today', element: <Today /> },
       { path: '/plan', element: <Plan /> },
+      { path: '/scenarios', element: <Scenarios /> },
+      { path: '/opportunities', element: <Opportunities /> },
       { path: '/debts', element: <Debts /> },
       { path: '/transactions', element: <Transactions /> },
       { path: '/profile', element: <Profile /> },

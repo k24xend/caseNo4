@@ -41,7 +41,11 @@ export function Welcome() {
   });
   return (
     <div className="welcome">
-      <div className="brand-mark">В</div>
+      <div className="brand-symbol" aria-hidden="true">
+        <i />
+        <i />
+        <i />
+      </div>
       <p className="eyebrow">Финансовый навигатор</p>
       <h1>ВЫХОД</h1>
       <h2>
@@ -53,6 +57,9 @@ export function Welcome() {
       {mode === 'welcome' ? (
         <div className="welcome-actions">
           <Button onClick={demo}>Открыть демо</Button>
+          <Button className="secondary" onClick={() => location.assign('/onboarding')}>
+            Пройти диагностику
+          </Button>
           {dataMode === 'api' && (
             <>
               <Button className="secondary" onClick={() => setMode('login')}>

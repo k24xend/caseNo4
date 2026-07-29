@@ -114,4 +114,12 @@ export interface AppSettings {
   demoError: boolean;
   scenario: Scenario;
   entered: boolean;
+  acceptedScenario?: {
+    extraIncome: number;
+    expenseChange: number;
+    extraDebtPayment: number;
+    reserve: number;
+    extraHours: number;
+    acceptedAt: string;
+  };
 }
