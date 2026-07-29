@@ -1,0 +1,114 @@
+import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react';
+import { api } from '../api/client';
+import { ApiRepository, DemoDataRepository, type DataRepository } from '../api/repository';
+import type { AppSettings, DemoData, Scenario } from '../domain/models';
+import { getSettings, setSettings } from '../persistence/db';
+
+export const dataMode = ((import.meta.env.VITE_DATA_MODE as string | undefined) ?? 'demo') as
+  | 'demo'
+  | 'api';
+const repository: DataRepository =
+  dataMode === 'demo' ? new DemoDataRepository() : new ApiRepository();
+type Context = {
+  settings: AppSettings;
+  data?: DemoData;
+  loading: boolean;
+  error?: string;
+  repository: DataRepository;
+  refresh: () => Promise<void>;
+  patch: (value: Partial<AppSettings>) => Promise<void>;
+  setScenario: (value: Scenario) => Promise<void>;
+  reset: () => Promise<void>;
+};
+const AppContext = createContext<Context | null>(null);
+const fallbackSettings: AppSettings = {
+  theme: 'system',
+  language: 'ru',
+  demoOffline: false,
+  demoError: false,
+  scenario: 'normal',
+  entered: false,
+};
+
+export function AppProvider({ children }: { children: ReactNode }) {
+  const [settingsState, setSettingsState] = useState<AppSettings>();
+  const [data, setData] = useState<DemoData>();
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string>();
+  const settings = settingsState ?? fallbackSettings;
+  const refresh = async () => {
+    if (dataMode === 'api' && !settings.entered) {
+      setLoading(false);
+      return;
+    }
+    setLoading(true);
+    setError(undefined);
+    try {
+      setData(await repository.load({ error: settings.demoError, offline: settings.demoOffline }));
+    } catch (reason) {
+      setError(reason instanceof Error ? reason.message : 'Не удалось загрузить данные');
+    } finally {
+      setLoading(false);
+    }
+  };
+  useEffect(() => {
+    void getSettings()
+      .then(async (saved) => {
+        setSettingsState(saved);
+        if (dataMode === 'api' && saved.entered && !(await api.restore())) {
+          const anonymous = { ...saved, entered: false };
+          setSettingsState(anonymous);
+          await setSettings(anonymous);
+          return;
+        }
+        if (dataMode === 'demo' || saved.entered)
+          setData(await repository.load({ offline: saved.demoOffline }));
+      })
+      .catch((reason: unknown) =>
+        setError(reason instanceof Error ? reason.message : 'Не удалось открыть данные'),
+      )
+      .finally(() => setLoading(false));
+  }, []);
+  useEffect(() => {
+    const dark =
+      settings.theme === 'dark' ||
+      (settings.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
+    document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.documentElement.lang = settings.language;
+  }, [settings.theme, settings.language]);
+  useEffect(() => {
+    if (dataMode === 'demo' && settingsState) void refresh();
+  }, [settings.demoError]);
+  useEffect(() => {
+    const online = () => {
+      if (!settings.demoOffline) void repository.sync(false).then(refresh);
+    };
+    addEventListener('online', online);
+    return () => removeEventListener('online', online);
+  }, [settings.demoOffline, settings.entered]);
+  const patch = async (value: Partial<AppSettings>) => {
+    const next = { ...settings, ...value };
+    setSettingsState(next);
+    await setSettings(next);
+  };
+  const setScenario = async (value: Scenario) => {
+    if (dataMode !== 'demo') return;
+    await patch({ scenario: value });
+    setData(await repository.scenario(value));
+  };
+  const reset = async () => {
+    await repository.reset();
+    await patch({ scenario: 'normal', demoOffline: false, demoError: false });
+    await refresh();
+  };
+  const context = useMemo(
+    () => ({ settings, data, loading, error, repository, refresh, patch, setScenario, reset }),
+    [settings, data, loading, error],
+  );
+  return <AppContext.Provider value={context}>{children}</AppContext.Provider>;
+}
+export function useApp() {
+  const value = useContext(AppContext);
+  if (!value) throw new Error('AppProvider missing');
+  return value;
+}

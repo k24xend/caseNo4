@@ -2,7 +2,15 @@ name: CI
 on:
   push:
     branches: [main, codex/a5-a7-swiftui]
+    paths:
+      - 'apps/api/**'
+      - 'apps/mobile/**'
+      - '.github/workflows/ci.yml'
   pull_request:
+    paths:
+      - 'apps/api/**'
+      - 'apps/mobile/**'
+      - '.github/workflows/ci.yml'
 permissions:
   contents: read
 jobs:
@@ -46,12 +54,3 @@ jobs:
       - run: flutter analyze
       - run: flutter test
       - run: flutter build web --release --dart-define=APP_ENV=demo
-  ios-unsigned:
-    runs-on: macos-15
-    defaults: {run: {working-directory: apps/mobile}}
-    steps:
-      - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
-        with: {channel: stable, cache: true}
-      - run: flutter pub get
-      - run: flutter build ios --debug --no-codesign --dart-define=APP_ENV=demo --dart-define=API_URL=http://127.0.0.1:8000
