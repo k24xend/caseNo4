@@ -5,10 +5,10 @@ const debts: Debt[] = [
     id: 'debt-card',
     name: 'Кредитная карта',
     debt_type: 'credit_card',
-    balance: 18640000,
+    balance: 8400000,
     currency: 'RUB',
-    annual_rate_bps: 2990,
-    minimum_payment: 1120000,
+    annual_rate_bps: 3490,
+    minimum_payment: 550000,
     due_day: 8,
     overdue: false,
     custom_priority: 1,
@@ -16,12 +16,12 @@ const debts: Debt[] = [
   },
   {
     id: 'debt-phone',
-    name: 'Рассрочка на телефон',
+    name: 'Рассрочка',
     debt_type: 'installment',
-    balance: 4790000,
+    balance: 2800000,
     currency: 'RUB',
     annual_rate_bps: 0,
-    minimum_payment: 799000,
+    minimum_payment: 400000,
     due_day: 15,
     overdue: false,
     custom_priority: 3,
@@ -31,10 +31,10 @@ const debts: Debt[] = [
     id: 'debt-friend',
     name: 'Долг другу',
     debt_type: 'personal',
-    balance: 3000000,
+    balance: 2000000,
     currency: 'RUB',
     annual_rate_bps: 0,
-    minimum_payment: 500000,
+    minimum_payment: 0,
     due_day: 25,
     overdue: false,
     custom_priority: 2,
@@ -70,9 +70,9 @@ const transactions: Transaction[] = labels.map((x, i) => ({
 function plan(scenario: Scenario): Plan {
   const critical = scenario === 'critical';
   const empty = scenario === 'empty';
-  const available = empty ? 0 : critical ? 4300000 : 24850000;
-  const mandatory = empty ? 0 : critical ? 6100000 : 9200000;
-  const minimum = empty ? 0 : 2419000;
+  const available = empty ? 0 : critical ? 4300000 : 3800000;
+  const mandatory = empty ? 0 : critical ? 6100000 : 3130000;
+  const minimum = empty ? 0 : 950000;
   const projected = available - mandatory - minimum;
   const reserve = empty ? 0 : 10000000;
   const safe = Math.max(0, projected - reserve);
@@ -86,14 +86,18 @@ function plan(scenario: Scenario): Plan {
       projected_balance_before_next_income: projected,
       safe_to_spend: safe,
       safe_daily_amount: Math.floor(safe / 12),
-      monthly_free_cash_flow: empty ? 0 : critical ? -4219000 : 5781000,
-      minimum_buffer_target: reserve,
+      monthly_free_cash_flow: empty ? 0 : critical ? -4219000 : 570000,
+      minimum_buffer_target: empty ? 0 : 1000000,
     },
     action: critical
       ? { type: 'review_expense', title: 'Защитите обязательные платежи', amount: -projected }
       : empty
         ? { type: 'build_buffer', title: 'Добавьте исходные данные', amount: 0 }
-        : { type: 'pay_target_debt', title: 'Ускорьте кредитную карту', amount: 5781000 },
+        : {
+            type: 'protect_cashflow',
+            title: 'Оставьте деньги до следующего дохода',
+            amount: Math.max(0, projected),
+          },
     generated_at: now(),
     debt_forecasts: { avalanche: { months: 31 }, snowball: { months: 34 }, custom: { months: 33 } },
   };

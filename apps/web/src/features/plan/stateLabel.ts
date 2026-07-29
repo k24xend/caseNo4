@@ -1,6 +1,6 @@
 export const stateLabel = (s: string) =>
   ({
-    critical: 'Критическая ситуация',
+    critical: 'Кризис · защищаем базовые расходы',
     stabilization: 'Стабилизация',
     exit: 'Выход из долгов',
     buffer: 'Создание подушки',

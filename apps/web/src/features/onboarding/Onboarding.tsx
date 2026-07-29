@@ -187,10 +187,10 @@ export function Onboarding() {
         </Button>
         <Button
           onClick={() =>
-            step === steps.length - 1 ? nav('/today') : setStep((value) => value + 1)
+            step === steps.length - 1 ? nav('/diagnosis') : setStep((value) => value + 1)
           }
         >
-          {step === steps.length - 1 ? 'Открыть план' : 'Далее'}
+          {step === steps.length - 1 ? 'Получить диагноз' : 'Далее'}
         </Button>
       </footer>
       {lineEditor && (
