@@ -1,97 +1,58 @@
 import { expect, test, type Page } from '@playwright/test';
-
-async function assertMobile(page: Page) {
+async function enter(page: Page) {
+  await page.goto('/');
+  await page.getByRole('button', { name: 'Открыть демо' }).click();
+  await expect(page.getByRole('button', { name: 'Открыть кошелёк и историю' })).toBeVisible();
+}
+async function noOverflow(page: Page) {
   expect(
     await page.evaluate(
       () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
     ),
   ).toBe(true);
 }
-async function addTransaction(page: Page, kind: 'Расход' | 'Доход', description: string) {
-  await page.getByRole('button', { name: 'Добавить операцию' }).click();
-  await page.getByText(kind, { exact: true }).click();
-  await page.getByLabel('Сумма, ₽').fill(kind === 'Расход' ? '1250' : '3000');
-  await page.getByLabel('Категория').fill(kind === 'Расход' ? 'Продукты' : 'Подработка');
-  await page.getByLabel('Описание').fill(description);
-  await page.getByRole('button', { name: 'Добавить', exact: true }).click();
-  await expect(page.getByText(description)).toBeVisible();
-}
-
-test('complete durable mobile demo flow', async ({ page, context }) => {
+test('liquid wallet, mode, comfort and advice lifecycle persist', async ({ page }) => {
   const errors: string[] = [];
-  page.on('console', (message) => {
-    if (message.type() === 'error') errors.push(message.text());
+  page.on('pageerror', (e) => errors.push(e.message));
+  page.on('console', (m) => {
+    if (m.type() === 'error') errors.push(m.text());
   });
-  page.on('pageerror', (error) => errors.push(error.message));
-  await page.goto('/');
-  await page.getByRole('button', { name: 'Открыть демо' }).click();
-  await expect(page.getByRole('heading', { name: 'Сегодня' })).toBeVisible();
-  await assertMobile(page);
-
+  await enter(page);
+  await expect(page.getByText(/Безопасно сегодня/)).toBeVisible();
+  await page.getByRole('button', { name: 'Открыть кошелёк и историю' }).click();
+  await expect(page.getByRole('dialog', { name: 'Деньги' })).toBeVisible();
+  await page.getByRole('tab', { name: 'График' }).click();
+  await page.getByRole('button', { name: 'Закрыть кошелёк' }).click();
+  await expect(page.getByRole('button', { name: 'Открыть кошелёк и историю' })).toBeFocused();
+  await page.getByRole('button', { name: /Режим base/i }).click();
+  await page.getByRole('button', { name: /Hard/ }).click();
   await page.getByRole('link', { name: /План/ }).click();
-  await page.getByRole('link', { name: /Проверить ускорение/ }).click();
-  const initialResult = await page.locator('.scenario-result h2').textContent();
-  await page.getByLabel('Доп. доход / месяц').fill('30000');
-  await expect(page.locator('.scenario-result h2')).not.toHaveText(initialResult ?? '');
-  await page.getByRole('button', { name: 'Принять как основной план' }).click();
-  await expect(page.getByText(/Активен пользовательский план/)).toBeVisible();
-  await page.reload();
-  await expect(page.getByText(/Активен пользовательский план/)).toBeVisible();
-  await page.getByRole('link', { name: /План/ }).click();
-  await page.getByRole('link', { name: /Долги и стратегия/ }).click();
-  await page.getByRole('button', { name: /Добавить долг/ }).click();
-  await page.getByLabel('Название').fill('E2E долг');
-  await page.getByLabel('Остаток, ₽').fill('24000');
-  await page.getByLabel('Ставка, %').fill('12');
-  await page.getByLabel('Минимальный платёж, ₽').fill('2000');
-  await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByText('E2E долг')).toBeVisible();
-  await page.getByText('E2E долг').click();
-  await page.getByLabel('Название').fill('E2E долг изменён');
-  await page.getByRole('button', { name: 'Сохранить' }).click();
-  await expect(page.getByText('E2E долг изменён')).toBeVisible();
-  await page.getByRole('button', { name: 'Удалить E2E долг изменён' }).click();
-  await page.getByRole('button', { name: 'Удалить', exact: true }).click();
-  await expect(page.getByText('E2E долг изменён')).toHaveCount(0);
-
-  await page.getByRole('link', { name: /Операции/ }).click();
-  await addTransaction(page, 'Расход', 'E2E покупка');
-  await addTransaction(page, 'Доход', 'E2E доход');
-  await page.reload();
-  await expect(page.getByText('E2E покупка')).toBeVisible();
-  await expect(page.getByText('E2E доход')).toBeVisible();
-  await assertMobile(page);
-
+  await expect(page.getByText(/Hard · интенсивно/)).toBeVisible();
+  await page.getByRole('button', { name: 'Высокий' }).click();
   await page.getByRole('link', { name: /Профиль/ }).click();
-  await page.getByLabel('Искусственный offline').check();
-  await page.getByRole('link', { name: /Операции/ }).click();
-  await addTransaction(page, 'Расход', 'E2E offline');
-  await expect(page.getByText('Ожидает').first()).toBeVisible();
+  await page.getByLabel('Мягкий лимит в месяц').fill('10000');
+  await page.getByRole('link', { name: /Помощник/ }).click();
+  await page.getByRole('button', { name: 'Не предлагать снова' }).first().click();
+  await page.getByRole('button', { name: 'Архив' }).click();
+  await expect(page.getByRole('button', { name: /Вернуть/ })).toBeVisible();
+  await page.getByRole('button', { name: /Вернуть/ }).click();
   await page.reload();
-  await expect(page.getByText('E2E offline')).toBeVisible();
-  await page.getByRole('link', { name: /Профиль/ }).click();
-  await page.getByLabel('Искусственный offline').uncheck();
-  await page.getByRole('button', { name: 'Синхронизировать' }).click();
-  await page.getByRole('link', { name: /Операции/ }).click();
-  await expect(page.getByText('E2E offline')).toHaveCount(1);
-  await expect(page.getByText('Синхронизировано').first()).toBeVisible();
-
-  await page.getByRole('link', { name: /Профиль/ }).click();
-  await page.getByLabel('Сценарий').selectOption('critical');
-  await page.getByRole('link', { name: /Сегодня/ }).click();
-  await expect(page.getByText(/Кризис · защищаем/).first()).toBeVisible();
-  await page.getByRole('link', { name: /Профиль/ }).click();
-  await page.getByLabel('Сценарий').selectOption('empty');
-  await page.getByText('Тёмная').click();
-  await expect(page.locator('html')).toHaveAttribute('data-theme', 'dark');
-
-  await page.goto('/plan');
-  await expect(page.getByRole('heading', { name: 'План' })).toBeVisible();
-  await context.setOffline(true);
-  await page.reload();
-  await expect(page.getByRole('heading', { name: 'План' })).toBeVisible();
-  await context.setOffline(false);
+  await expect(page.getByText('Архив пуст')).toBeVisible();
+  await noOverflow(page);
   expect(errors).toEqual([]);
 });
-
-for (const width of [375,390,430]) test(`no horizontal overflow at ${width}px`,async({page})=>{await page.setViewportSize({width,height:844});await page.goto('/');await page.getByRole('button',{name:'Открыть демо'}).click();for(const path of ['/today','/plan','/scenarios','/debts','/transactions','/opportunities','/profile']){await page.goto(path);await assertMobile(page)}});
+for (const [width, height] of [
+  [320, 568],
+  [375, 667],
+  [390, 844],
+  [393, 852],
+  [430, 932],
+])
+  test(`responsive ${width}x${height}`, async ({ page }) => {
+    await page.setViewportSize({ width, height });
+    await enter(page);
+    for (const path of ['/today', '/plan', '/assistant', '/profile']) {
+      await page.goto(path);
+      await noOverflow(page);
+    }
+  });

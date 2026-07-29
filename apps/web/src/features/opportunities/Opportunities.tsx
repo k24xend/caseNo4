@@ -1,17 +1,213 @@
 import { useState } from 'react';
-import { Page } from '../../components/Page'; import { Banner,Card } from '../../components/ui'; import { useApp } from '../../app/AppContext'; import { formatMoney } from '../../domain/money'; import { assessPurchase } from '../../domain/financialEngine';
-type Idea={id:string;title:string;devices:('phone'|'computer')[];hours:number;skills:string[];investment:number;range:[number,number];risk:'низкий'|'средний';reason:string;step:string};
-const ideas:Idea[]=[
- {id:'sell',title:'Продать неиспользуемые вещи',devices:['phone'],hours:2,skills:[],investment:0,range:[300000,1200000],risk:'низкий',reason:'Быстрый разовый результат без нового обязательства',step:'Выберите три вещи и разместите одно объявление.'},
- {id:'shift',title:'Дополнительная смена',devices:['phone'],hours:8,skills:[],investment:0,range:[350000,650000],risk:'низкий',reason:'Понятная оплата до принятия нагрузки',step:'Уточните чистую оплату и доступную дату смены.'},
- {id:'texts',title:'Редактура коротких текстов',devices:['phone','computer'],hours:5,skills:['Тексты'],investment:0,range:[500000,1200000],risk:'низкий',reason:'Совпадает с указанным навыком текстов',step:'Подготовьте два примера «до/после».'},
- {id:'slides',title:'Оформление презентаций',devices:['computer'],hours:6,skills:['Дизайн'],investment:0,range:[700000,1800000],risk:'средний',reason:'Выше чек, но нужен компьютер и портфолио',step:'Соберите три слайда в один пример.'},
- {id:'tutor',title:'Онлайн-помощь с учёбой',devices:['phone','computer'],hours:4,skills:['Обучение'],investment:0,range:[600000,1600000],risk:'средний',reason:'Можно ограничить нагрузку доступными часами',step:'Опишите одну тему, которую готовы объяснять.'},
- {id:'pets',title:'Присмотр за питомцами',devices:['phone'],hours:6,skills:[],investment:0,range:[400000,1000000],risk:'средний',reason:'Не требует покупки оборудования',step:'Уточните график и разместите анкету в районе.'},
- {id:'delivery',title:'Пешая доставка',devices:['phone'],hours:8,skills:[],investment:100000,range:[500000,1400000],risk:'средний',reason:'Гибкий график, но доход зависит от спроса',step:'Проверьте тарифы и не покупайте экипировку заранее.'},
- {id:'photo',title:'Контент для локального бизнеса',devices:['phone'],hours:7,skills:['Дизайн'],investment:0,range:[800000,2000000],risk:'средний',reason:'Использует смартфон и визуальный навык',step:'Снимите один бесплатный пример без платного инструмента.'}
+import { Page } from '../../components/Page';
+import { Banner, Card } from '../../components/ui';
+import { useApp } from '../../app/AppContext';
+import { formatMoney } from '../../domain/money';
+import { assessPurchase } from '../../domain/financialEngine';
+type Idea = {
+  id: string;
+  title: string;
+  devices: ('phone' | 'computer')[];
+  hours: number;
+  skills: string[];
+  investment: number;
+  range: [number, number];
+  risk: 'низкий' | 'средний';
+  reason: string;
+  step: string;
+};
+const ideas: Idea[] = [
+  {
+    id: 'sell',
+    title: 'Продать неиспользуемые вещи',
+    devices: ['phone'],
+    hours: 2,
+    skills: [],
+    investment: 0,
+    range: [300000, 1200000],
+    risk: 'низкий',
+    reason: 'Быстрый разовый результат без нового обязательства',
+    step: 'Выберите три вещи и разместите одно объявление.',
+  },
+  {
+    id: 'shift',
+    title: 'Дополнительная смена',
+    devices: ['phone'],
+    hours: 8,
+    skills: [],
+    investment: 0,
+    range: [350000, 650000],
+    risk: 'низкий',
+    reason: 'Понятная оплата до принятия нагрузки',
+    step: 'Уточните чистую оплату и доступную дату смены.',
+  },
+  {
+    id: 'texts',
+    title: 'Редактура коротких текстов',
+    devices: ['phone', 'computer'],
+    hours: 5,
+    skills: ['Тексты'],
+    investment: 0,
+    range: [500000, 1200000],
+    risk: 'низкий',
+    reason: 'Совпадает с указанным навыком текстов',
+    step: 'Подготовьте два примера «до/после».',
+  },
+  {
+    id: 'slides',
+    title: 'Оформление презентаций',
+    devices: ['computer'],
+    hours: 6,
+    skills: ['Дизайн'],
+    investment: 0,
+    range: [700000, 1800000],
+    risk: 'средний',
+    reason: 'Выше чек, но нужен компьютер и портфолио',
+    step: 'Соберите три слайда в один пример.',
+  },
+  {
+    id: 'tutor',
+    title: 'Онлайн-помощь с учёбой',
+    devices: ['phone', 'computer'],
+    hours: 4,
+    skills: ['Обучение'],
+    investment: 0,
+    range: [600000, 1600000],
+    risk: 'средний',
+    reason: 'Можно ограничить нагрузку доступными часами',
+    step: 'Опишите одну тему, которую готовы объяснять.',
+  },
+  {
+    id: 'pets',
+    title: 'Присмотр за питомцами',
+    devices: ['phone'],
+    hours: 6,
+    skills: [],
+    investment: 0,
+    range: [400000, 1000000],
+    risk: 'средний',
+    reason: 'Не требует покупки оборудования',
+    step: 'Уточните график и разместите анкету в районе.',
+  },
+  {
+    id: 'delivery',
+    title: 'Пешая доставка',
+    devices: ['phone'],
+    hours: 8,
+    skills: [],
+    investment: 100000,
+    range: [500000, 1400000],
+    risk: 'средний',
+    reason: 'Гибкий график, но доход зависит от спроса',
+    step: 'Проверьте тарифы и не покупайте экипировку заранее.',
+  },
+  {
+    id: 'photo',
+    title: 'Контент для локального бизнеса',
+    devices: ['phone'],
+    hours: 7,
+    skills: ['Дизайн'],
+    investment: 0,
+    range: [800000, 2000000],
+    risk: 'средний',
+    reason: 'Использует смартфон и визуальный навык',
+    step: 'Снимите один бесплатный пример без платного инструмента.',
+  },
 ];
-export function Opportunities(){const {data,settings}=useApp();const [filter,setFilter]=useState<'fit'|'free'|'all'>('fit');if(!data)return null;const r=settings.resources!;const scored=ideas.map(i=>({...i,score:(i.devices.some(d=>d==='phone'?r.phone:r.computer)?40:0)+(i.hours<=r.hoursPerWeek?35:0)+(i.investment<=r.investmentLimit?15:0)+(i.skills.some(s=>r.skills.includes(s))?10:0)})).filter(i=>filter==='all'||filter==='free'?filter==='all'||i.investment===0:i.score>=75).sort((a,b)=>b.score-a.score);const tool=assessPurchase(5500000,3000000,50,data.plan.snapshot.safe_to_spend);
-return <Page title="Возможности" sub="Идеи по вашим ресурсам — без гарантии дохода"><Card className="skill-card"><p className="eyebrow">Ваши ресурсы</p><h2>{r.hoursPerWeek} ч/нед. · {[r.phone&&'смартфон',r.computer&&'компьютер'].filter(Boolean).join(' · ')||'устройство не выбрано'}</h2><p>Изменить ресурсы можно в профиле. Диапазоны — ориентир для демо, не обещание рынка.</p><div className="chips"><button className={filter==='fit'?'active':''} onClick={()=>setFilter('fit')}>Подходят</button><button className={filter==='free'?'active':''} onClick={()=>setFilter('free')}>Без вложений</button><button className={filter==='all'?'active':''} onClick={()=>setFilter('all')}>Все</button></div></Card>
-<div className="opportunity-list">{scored.map(i=><Card key={i.id}><div><div className="card-heading"><h3>{i.title}</h3><span className="state exit">{i.score}/100</span></div><p><b>Почему:</b> {i.reason}</p><dl><div><dt>Время</dt><dd>{i.hours} ч/нед.</dd></div><div><dt>Вложения</dt><dd>{formatMoney(i.investment,data.currency)}</dd></div><div><dt>Диапазон</dt><dd>{formatMoney(i.range[0],data.currency)}–{formatMoney(i.range[1],data.currency)}</dd></div><div><dt>Риск</dt><dd>{i.risk}</dd></div></dl><p><b>Первый шаг:</b> {i.step}</p></div></Card>)}</div>
-<Card><h2>Проверка покупки ноутбука</h2><p>Консервативный доход {formatMoney(tool.conservativeIncome,data.currency)}; окупаемость {tool.paybackMonths??'—'} мес.</p><Banner kind={tool.createsCashGap?'danger':'info'}>{tool.createsCashGap?'Покупка создаст кассовый разрыв. Не финансируйте её новым долгом.':'Покупка укладывается в безопасную сумму, но доход не гарантирован.'}</Banner></Card></Page>}
+export function Opportunities() {
+  const { data, settings } = useApp();
+  const [filter, setFilter] = useState<'fit' | 'free' | 'all'>('fit');
+  if (!data) return null;
+  const r = settings.resources!;
+  const scored = ideas
+    .map((i) => ({
+      ...i,
+      score:
+        (i.devices.some((d) => (d === 'phone' ? r.phone : r.computer)) ? 40 : 0) +
+        (i.hours <= r.hoursPerWeek ? 35 : 0) +
+        (i.investment <= r.investmentLimit ? 15 : 0) +
+        (i.skills.some((s) => r.skills.includes(s)) ? 10 : 0),
+    }))
+    .filter((i) =>
+      filter === 'all' || filter === 'free'
+        ? filter === 'all' || i.investment === 0
+        : i.score >= 75,
+    )
+    .sort((a, b) => b.score - a.score);
+  const tool = assessPurchase(5500000, 3000000, 50, data.plan.snapshot.safe_to_spend);
+  return (
+    <Page title="Возможности" sub="Идеи по вашим ресурсам — без гарантии дохода">
+      <Card className="skill-card">
+        <p className="eyebrow">Ваши ресурсы</p>
+        <h2>
+          {r.hoursPerWeek} ч/нед. ·{' '}
+          {[r.phone && 'смартфон', r.computer && 'компьютер'].filter(Boolean).join(' · ') ||
+            'устройство не выбрано'}
+        </h2>
+        <p>Изменить ресурсы можно в профиле. Диапазоны — ориентир для демо, не обещание рынка.</p>
+        <div className="chips">
+          <button className={filter === 'fit' ? 'active' : ''} onClick={() => setFilter('fit')}>
+            Подходят
+          </button>
+          <button className={filter === 'free' ? 'active' : ''} onClick={() => setFilter('free')}>
+            Без вложений
+          </button>
+          <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>
+            Все
+          </button>
+        </div>
+      </Card>
+      <div className="opportunity-list">
+        {scored.map((i) => (
+          <Card key={i.id}>
+            <div>
+              <div className="card-heading">
+                <h3>{i.title}</h3>
+                <span className="state exit">{i.score}/100</span>
+              </div>
+              <p>
+                <b>Почему:</b> {i.reason}
+              </p>
+              <dl>
+                <div>
+                  <dt>Время</dt>
+                  <dd>{i.hours} ч/нед.</dd>
+                </div>
+                <div>
+                  <dt>Вложения</dt>
+                  <dd>{formatMoney(i.investment, data.currency)}</dd>
+                </div>
+                <div>
+                  <dt>Диапазон</dt>
+                  <dd>
+                    {formatMoney(i.range[0], data.currency)}–
+                    {formatMoney(i.range[1], data.currency)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>Риск</dt>
+                  <dd>{i.risk}</dd>
+                </div>
+              </dl>
+              <p>
+                <b>Первый шаг:</b> {i.step}
+              </p>
+            </div>
+          </Card>
+        ))}
+      </div>
+      <Card>
+        <h2>Проверка покупки ноутбука</h2>
+        <p>
+          Консервативный доход {formatMoney(tool.conservativeIncome, data.currency)}; окупаемость{' '}
+          {tool.paybackMonths ?? '—'} мес.
+        </p>
+        <Banner kind={tool.createsCashGap ? 'danger' : 'info'}>
+          {tool.createsCashGap
+            ? 'Покупка создаст кассовый разрыв. Не финансируйте её новым долгом.'
+            : 'Покупка укладывается в безопасную сумму, но доход не гарантирован.'}
+        </Banner>
+      </Card>
+    </Page>
+  );
+}

@@ -16,13 +16,7 @@ describe('deterministic financial engine', () => {
     'calculates %s from source data',
     (scenario) => {
       const data = createDemo(scenario, new Date(reference));
-      const result = calculatePlan(
-        data.baseline,
-        data.debts,
-        undefined,
-        reference,
-        'RUB',
-      );
+      const result = calculatePlan(data.baseline, data.debts, undefined, reference, 'RUB');
       const firstPoint = result.projection.points[0];
 
       expect(result.plan.generated_at).toBe(reference);
@@ -50,9 +44,7 @@ describe('deterministic financial engine', () => {
   });
 
   it('selects avalanche priority', () => {
-    expect(priorityDebt(createDemo('normal', new Date(reference)).debts)?.id).toBe(
-      'debt-card',
-    );
+    expect(priorityDebt(createDemo('normal', new Date(reference)).debts)?.id).toBe('debt-card');
   });
 
   it('applies and cancels scenario without mutating base', () => {

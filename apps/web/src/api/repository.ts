@@ -1,4 +1,11 @@
-import type { Debt, DemoData, OnboardingDraft, Scenario, ScenarioAdjustment, Transaction } from '../domain/models';
+import type {
+  Debt,
+  DemoData,
+  OnboardingDraft,
+  Scenario,
+  ScenarioAdjustment,
+  Transaction,
+} from '../domain/models';
 import { newId } from '../domain/money';
 import { createDemo } from '../demo/data';
 import { demoRepository } from '../demo/repository';
@@ -52,7 +59,9 @@ export class DemoDataRepository implements DataRepository {
   scenario(value: Scenario) {
     return demoRepository.scenario(value);
   }
-  applyScenario(value?: ScenarioAdjustment) { return demoRepository.applyScenario(value); }
+  applyScenario(value?: ScenarioAdjustment) {
+    return demoRepository.applyScenario(value);
+  }
 }
 
 export class ApiRepository implements DataRepository {
@@ -101,6 +110,7 @@ export class ApiRepository implements DataRepository {
     throw new Error('Сброс доступен только в demo mode');
   }
   async scenario(_scenario: Scenario): Promise<DemoData> {
+    void _scenario;
     throw new Error('Сценарии доступны только в demo mode');
   }
 }

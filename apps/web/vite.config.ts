@@ -10,9 +10,9 @@ export default defineConfig({
       manifest: {
         name: 'ВЫХОД — финансовый навигатор',
         short_name: 'ВЫХОД',
-        description: 'Спокойный план выхода из долгов',
-        theme_color: '#f3f5f2',
-        background_color: '#f3f5f2',
+        description: 'Личный финансовый навигатор: выбор, план и безопасное действие сегодня',
+        theme_color: '#ECEAF1',
+        background_color: '#ECEAF1',
         display: 'standalone',
         orientation: 'portrait-primary',
         start_url: '/',
@@ -31,5 +31,9 @@ export default defineConfig({
       },
     }),
   ],
-  test: { environment: 'jsdom', setupFiles: ['./src/test/setup.ts'] },
+  test: {
+    environment: 'jsdom',
+    setupFiles: ['./src/test/setup.ts'],
+    exclude: ['e2e/**', 'node_modules/**'],
+  },
 });

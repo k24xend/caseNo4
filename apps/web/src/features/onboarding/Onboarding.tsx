@@ -81,6 +81,16 @@ export function Onboarding() {
           Шаг {step + 1} из {steps.length}
         </span>
         <progress value={step + 1} max={steps.length} />
+        <button
+          className="text-button"
+          onClick={async () => {
+            await repository.scenario('empty');
+            await patch({ entered: true });
+            nav('/today');
+          }}
+        >
+          Пропустить
+        </button>
       </header>
       <main>
         <p className="eyebrow">{steps[step]}</p>
@@ -190,7 +200,7 @@ export function Onboarding() {
             step === steps.length - 1 ? nav('/diagnosis') : setStep((value) => value + 1)
           }
         >
-          {step === steps.length - 1 ? 'Получить диагноз' : 'Далее'}
+          {step === steps.length - 1 ? 'Собрать мой план' : 'Далее'}
         </Button>
       </footer>
       {lineEditor && (

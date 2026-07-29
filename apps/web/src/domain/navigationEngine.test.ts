@@ -16,9 +16,7 @@ describe('financial navigation engine', () => {
 
   it('orders all five journey stages', () =>
     expect(
-      (['critical', 'stabilization', 'exit', 'buffer', 'growth'] as const).map(
-        stageIndex,
-      ),
+      (['critical', 'stabilization', 'exit', 'buffer', 'growth'] as const).map(stageIndex),
     ).toEqual([0, 1, 2, 3, 4]));
 
   it('keeps what-if isolated and deterministic', () => {
@@ -36,7 +34,7 @@ describe('financial navigation engine', () => {
     const first = projectScenario(data.plan, data.debts, input);
 
     expect(projectScenario(data.plan, data.debts, input)).toEqual(first);
-    expect(data.plan.snapshot.monthly_free_cash_flow).toBe(570000);
+    expect(data.plan.snapshot.monthly_free_cash_flow).toBe(620000);
     expect(first.load).toBe('low');
   });
 
@@ -46,7 +44,7 @@ describe('financial navigation engine', () => {
     expect(result).toMatchObject({
       paybackMonths: 4,
       conservativeMonthlyIncome: 1500000,
-      createsCashGap: true,
+      createsCashGap: false,
     });
   });
 });

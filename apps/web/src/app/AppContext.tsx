@@ -23,14 +23,28 @@ type Context = {
 };
 const AppContext = createContext<Context | null>(null);
 const fallbackSettings: AppSettings = {
-  version: 2,
+  version: 3,
   theme: 'system',
   language: 'ru',
   demoOffline: false,
   demoError: false,
   scenario: 'normal',
   entered: false,
-  resources: { phone:true,computer:false,hoursPerWeek:8,skills:['Тексты'],investmentLimit:0 },
+  resources: {
+    phone: true,
+    computer: false,
+    hoursPerWeek: 8,
+    skills: ['Тексты'],
+    investmentLimit: 0,
+  },
+  guidanceMode: 'base',
+  hardRiskLevel: 'moderate',
+  primaryGoal: 'stability',
+  secondaryGoals: [],
+  comfortBudget: 840000,
+  protectedComfortCategories: ['Кофе', 'Подписки'],
+  notifications: false,
+  advice: [],
 };
 
 export function AppProvider({ children }: { children: ReactNode }) {
@@ -106,11 +120,23 @@ export function AppProvider({ children }: { children: ReactNode }) {
   };
   const applyScenario = async (value?: ScenarioAdjustment) => {
     if (!repository.applyScenario) return;
-    const next=await repository.applyScenario(value); setData(next);
-    await patch({ acceptedScenario:value });
+    const next = await repository.applyScenario(value);
+    setData(next);
+    await patch({ acceptedScenario: value });
   };
   const context = useMemo(
-    () => ({ settings, data, loading, error, repository, refresh, patch, setScenario, reset, applyScenario }),
+    () => ({
+      settings,
+      data,
+      loading,
+      error,
+      repository,
+      refresh,
+      patch,
+      setScenario,
+      reset,
+      applyScenario,
+    }),
     [settings, data, loading, error],
   );
   return <AppContext.Provider value={context}>{children}</AppContext.Provider>;
