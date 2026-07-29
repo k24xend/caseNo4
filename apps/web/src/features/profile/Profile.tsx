@@ -1,62 +1,75 @@
-import { Moon, Sun } from 'lucide-react';
+import { Bell, ChevronRight, Database, Globe2, Moon, ShieldCheck, Sun } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { api } from '../../api/client';
-import { dataMode, useApp } from '../../app/AppContext';
-import { Button, Card } from '../../components/ui';
+import { useApp, dataMode } from '../../app/AppContext';
+import { Button } from '../../components/ui';
 import { Page } from '../../components/Page';
+import { formatMoney, moneyInput, parseMoney } from '../../domain/money';
 import type { Scenario } from '../../domain/models';
-import { clearUserData } from '../../persistence/db';
+
 export function Profile() {
-  const { settings, patch, setScenario, reset, refresh, repository } = useApp();
+  const { settings, patch, data, repository, refresh, reset, setScenario } = useApp();
+  const [amount, setAmount] = useState(moneyInput(settings.comfortBudget));
   const [stats, setStats] = useState({ pending: 0, failed: 0, total: 0 });
   useEffect(() => {
     void repository.queueStats().then(setStats);
   }, [settings.demoOffline]);
-  const sync = async () => {
-    await repository.sync(settings.demoOffline);
-    await refresh();
-    setStats(await repository.queueStats());
-  };
+  const categories = ['Кофе', 'Такси', 'Игры', 'Подписки', 'Снеки'];
   return (
-    <Page title="Профиль" sub="Настройки и состояние приложения">
-      <Card><h3>Разделы</h3><div className="hub-grid"><Link to="/debts">Долги</Link><Link to="/scenarios">Сценарии</Link><Link to="/opportunities">Возможности</Link><Link to="/transactions">Операции</Link></div></Card>
-      <Card><h3>Ресурсы для подработки</h3><label className="check"><input type="checkbox" checked={settings.resources?.phone??false} onChange={e=>patch({resources:{...settings.resources!,phone:e.target.checked}})}/> Есть смартфон</label><label className="check"><input type="checkbox" checked={settings.resources?.computer??false} onChange={e=>patch({resources:{...settings.resources!,computer:e.target.checked}})}/> Есть компьютер</label><label className="field"><span>Часов в неделю</span><input aria-label="Часов в неделю" type="number" min="0" max="40" value={settings.resources?.hoursPerWeek??0} onChange={e=>patch({resources:{...settings.resources!,hoursPerWeek:Number(e.target.value)}})}/></label></Card>
-      <Card>
-        <div className="setting">
+    <Page title="Профиль" sub="Ваши правила, данные и комфорт">
+      <section className="profile-section">
+        <div className="section-heading">
           <span>
-            <b>Режим данных</b>
-            <small>{dataMode === 'demo' ? 'Вымышленный demo-набор' : 'FastAPI'}</small>
+            <ShieldCheck />
+            <b>Неприкосновенный комфорт</b>
           </span>
-          <span className="demo-pill">{dataMode.toUpperCase()}</span>
+          <strong>{formatMoney(settings.comfortBudget, data?.currency ?? 'RUB')}</strong>
         </div>
-        <div className="setting">
-          <span>
-            <b>Сеть</b>
-            <small>navigator.onLine — только подсказка</small>
-          </span>
-          <b>{settings.demoOffline ? 'Офлайн' : 'Онлайн'}</b>
+        <p>То, что помогает нормально жить и работать, не считается «плохим» расходом.</p>
+        <label className="field">
+          <span>Мягкий лимит в месяц</span>
+          <input
+            aria-label="Мягкий лимит в месяц"
+            inputMode="decimal"
+            value={amount}
+            onChange={(e) => {
+              setAmount(e.target.value);
+              const value = parseMoney(e.target.value);
+              if (value !== null) void patch({ comfortBudget: value });
+            }}
+          />
+        </label>
+        <div className="comfort-chips">
+          {categories.map((x) => (
+            <button
+              className={settings.protectedComfortCategories.includes(x) ? 'active' : ''}
+              key={x}
+              onClick={() =>
+                void patch({
+                  protectedComfortCategories: settings.protectedComfortCategories.includes(x)
+                    ? settings.protectedComfortCategories.filter((v) => v !== x)
+                    : [...settings.protectedComfortCategories, x],
+                })
+              }
+            >
+              {settings.protectedComfortCategories.includes(x) && <CheckIcon />}
+              {x}
+            </button>
+          ))}
         </div>
-        <div className="setting">
-          <span>
-            <b>Очередь</b>
-            <small>
-              {stats.pending} ожидает · {stats.failed} ошибок
-            </small>
-          </span>
-          <Button className="tiny" onClick={sync}>
-            Синхронизировать
-          </Button>
+        <div className="comfort-actions">
+          <button>Оставить</button>
+          <button>Сократить временно</button>
         </div>
-      </Card>
-      <Card>
-        <h3>Внешний вид</h3>
+      </section>
+      <section className="profile-section">
+        <h2>Внешний вид</h2>
         <div className="theme-picker">
           {(['system', 'light', 'dark'] as const).map((x) => (
             <button
               className={settings.theme === x ? 'active' : ''}
+              onClick={() => void patch({ theme: x })}
               key={x}
-              onClick={() => patch({ theme: x })}
             >
               {x === 'light' ? <Sun /> : x === 'dark' ? <Moon /> : <span>◐</span>}
               {x === 'system' ? 'Система' : x === 'light' ? 'Светлая' : 'Тёмная'}
@@ -64,93 +77,106 @@ export function Profile() {
           ))}
         </div>
         <div className="setting">
-          <b>Язык</b>
+          <span>
+            <Globe2 />
+            <b>Язык</b>
+          </span>
           <div className="chips">
             <button
               className={settings.language === 'ru' ? 'active' : ''}
-              onClick={() => patch({ language: 'ru' })}
+              onClick={() => void patch({ language: 'ru' })}
             >
               RU
             </button>
             <button
               className={settings.language === 'en' ? 'active' : ''}
-              onClick={() => patch({ language: 'en' })}
+              onClick={() => void patch({ language: 'en' })}
             >
               EN
             </button>
           </div>
         </div>
-      </Card>
-      <Card>
-        <h3>Управление демо</h3>
-        <label className="setting">
+      </section>
+      <section className="profile-section profile-links">
+        <label>
           <span>
-            <b>Искусственный offline</b>
-            <small>Новые записи попадут в очередь</small>
+            <Bell />
+            <b>Напоминания</b>
           </span>
           <input
             className="switch"
             type="checkbox"
-            checked={settings.demoOffline}
-            onChange={(e) => patch({ demoOffline: e.target.checked })}
+            checked={settings.notifications}
+            onChange={(e) => void patch({ notifications: e.target.checked })}
           />
         </label>
-        <label className="setting">
+        <button>
           <span>
-            <b>Искусственная ошибка</b>
-            <small>Проверка error state</small>
+            <Database />
+            <b>Данные и приватность</b>
           </span>
+          <ChevronRight />
+        </button>
+        <Link to="/transactions">
+          <span>
+            <Database />
+            <b>Операции</b>
+          </span>
+          <ChevronRight />
+        </Link>
+      </section>
+      <details className="demo-settings">
+        <summary>Демо и диагностика</summary>
+        <p>
+          {dataMode === 'demo' ? 'Вымышленный demo-набор' : 'FastAPI'} · очередь: {stats.pending}{' '}
+          ожидает, {stats.failed} ошибок
+        </p>
+        <label>
+          <span>Искусственный offline</span>
           <input
-            className="switch"
+            type="checkbox"
+            checked={settings.demoOffline}
+            onChange={(e) => void patch({ demoOffline: e.target.checked })}
+          />
+        </label>
+        <label>
+          <span>Искусственная ошибка</span>
+          <input
             type="checkbox"
             checked={settings.demoError}
-            onChange={(e) => patch({ demoError: e.target.checked })}
+            onChange={(e) => void patch({ demoError: e.target.checked })}
           />
         </label>
         <label className="field">
           <span>Сценарий</span>
           <select
             value={settings.scenario}
-            onChange={(e) => setScenario(e.target.value as Scenario)}
+            onChange={(e) => void setScenario(e.target.value as Scenario)}
           >
             <option value="normal">Normal</option>
             <option value="critical">Critical</option>
             <option value="empty">Empty</option>
           </select>
         </label>
+        <Button
+          onClick={async () => {
+            await repository.sync(settings.demoOffline);
+            await refresh();
+          }}
+        >
+          Синхронизировать
+        </Button>
         <Button className="secondary" onClick={reset}>
           Сбросить demo-данные
         </Button>
-      </Card>
-      <Card>
-        <h3>Установка на iPhone</h3>
-        <p>В Safari нажмите «Поделиться» → «На экран Домой».</p>
-        <small>
-          {matchMedia('(display-mode: standalone)').matches
-            ? 'Приложение запущено с экрана Домой'
-            : 'Открыто в браузере'}
-        </small>
-      </Card>
-      <Card>
-        <h3>О приложении</h3>
-        <p>Версия 0.1.0 · портфолио preview</p>
-        <p className="muted">
-          Не банк и не платёжный сервис. Данные вводятся вручную. Расчёты не являются гарантией
-          результата.
-        </p>
-      </Card>
-      <Button
-        className="secondary"
-        onClick={async () => {
-          if (dataMode === 'api') await api.logout();
-          await clearUserData();
-          sessionStorage.clear();
-          await patch({ entered: false });
-          location.href = '/';
-        }}
-      >
-        Выйти и очистить данные
-      </Button>
+      </details>
+      <p className="privacy-note">
+        Финансовые числа считает локальный детерминированный движок. Помощник не может менять баланс
+        без подтверждения.
+      </p>
     </Page>
   );
+}
+function CheckIcon() {
+  return <span aria-hidden="true">✓</span>;
 }
