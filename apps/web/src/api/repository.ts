@@ -1,4 +1,4 @@
-import type { Debt, DemoData, OnboardingDraft, Scenario, Transaction } from '../domain/models';
+import type { Debt, DemoData, OnboardingDraft, Scenario, ScenarioAdjustment, Transaction } from '../domain/models';
 import { newId } from '../domain/money';
 import { createDemo } from '../demo/data';
 import { demoRepository } from '../demo/repository';
@@ -18,6 +18,7 @@ export interface DataRepository {
   queueStats(): Promise<{ pending: number; failed: number; total: number }>;
   reset(): Promise<void>;
   scenario(scenario: Scenario): Promise<DemoData>;
+  applyScenario?(scenario?: ScenarioAdjustment): Promise<DemoData>;
 }
 
 export class DemoDataRepository implements DataRepository {
@@ -51,6 +52,7 @@ export class DemoDataRepository implements DataRepository {
   scenario(value: Scenario) {
     return demoRepository.scenario(value);
   }
+  applyScenario(value?: ScenarioAdjustment) { return demoRepository.applyScenario(value); }
 }
 
 export class ApiRepository implements DataRepository {

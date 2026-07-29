@@ -36,3 +36,32 @@ Backend CORS must contain the exact HTTPS frontend origin (never `*` with creden
 - **Deterministic:** all displayed authoritative amounts come from a plan/snapshot contract; money remains integer minor units with explicit ISO currency. The web UI does not invent or recalculate plan authority. AI/fallback only explains.
 - **Demo adapter:** Russian scenario, simulated latency/error/offline, local CRUD, and simulated reconciliation implement the same repository boundary without pretending to be bank data.
 - **API adapter:** authentication and typed reads are implemented. The current backend does not expose a cookie refresh flow; API-mode onboarding and full mutation reconciliation need end-to-end verification against a deployed backend before production use.
+
+## Deterministic web planning model
+
+The demo now derives Today, Diagnosis, the Path chart and milestones from `FinancialInputs` and a
+passed reference clock. Scenario edits are candidate-only until accepted; acceptance persists the
+adjustment separately from debts and transactions, recalculates every plan surface, and can be
+reverted to the baseline. Forecast dates are ranges because income timing, rates and spending can
+change. Money remains integer minor units throughout.
+
+Opportunity ranking uses the phone/computer, weekly-hours, skills and investment-limit settings in
+Profile. Its income ranges are illustrative and never guaranteed; tool purchases use conservative
+income, payback time and cash-gap risk.
+
+## Web validation
+
+```bash
+cd apps/web
+npm ci
+npm run typecheck
+npm run lint
+npm test
+npm run build
+npx playwright install chromium
+npm run test:e2e
+```
+
+For visual QA, run `npm run dev -- --host 0.0.0.0`, capture the routes at 390×844, then repeat after
+fixes at 375×667, 430×932 and 1280 px. Playwright artifacts belong in `test-results/` and are not
+committed.

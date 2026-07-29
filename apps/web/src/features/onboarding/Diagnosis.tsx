@@ -10,6 +10,14 @@ export function Diagnosis() {
   if (!data) return null;
   const snapshot = data.plan.snapshot;
   const gap = Math.max(0, -snapshot.projected_balance_before_next_income);
+  const empty=data.debts.length===0&&data.baseline.incomes.length===0&&data.baseline.expenses.length===0;
+  const headline=empty?'Начните с трёх опор: деньги, доход и обязательства':gap?'До следующего дохода возможен кассовый разрыв':'Обязательства покрыты — можно двигаться к резерву';
+  const factors=empty?['Укажите доступный остаток','Добавьте ближайший доход','Запишите обязательные расходы']:[
+    `Доступно ${formatMoney(snapshot.available_now,data.currency)}`,
+    `Обязательства ${formatMoney(snapshot.mandatory_before_next_income+snapshot.minimum_debt_payments_before_next_income,data.currency)}`,
+    gap?`Не хватает ${formatMoney(gap,data.currency)}`:`Безопасно ${formatMoney(snapshot.safe_to_spend,data.currency)}`,
+    data.debts.length?`${data.debts.length} долговых обязательства`:'Долгов не указано'
+  ];
   return (
     <main className="diagnosis-page">
       <div className="brand-symbol" aria-hidden="true">
@@ -18,10 +26,9 @@ export function Diagnosis() {
         <i />
       </div>
       <p className="eyebrow">Твой финансовый диагноз</p>
-      <h1>Обычный месяц почти сходится. Уязвимость — дни до дохода.</h1>
+      <h1>{headline}</h1>
       <p className="diagnosis-lead">
-        Это не оценка тебя. Мы нашли место, где плану нужна защита: резерв пока не перекрывает
-        обязательные платежи и нерегулярные траты.
+        Это не оценка вас. Диагноз построен из введённых сумм и меняется вместе с данными.
       </p>
       <Card className="diagnosis-risk">
         <CircleAlert />
@@ -30,24 +37,11 @@ export function Diagnosis() {
           <strong>
             {gap
               ? `Кассовый разрыв ${formatMoney(gap, data.currency)}`
-              : 'Запас слишком близок к нулю'}
+              : empty?'Пока недостаточно данных':'Подтверждённые платежи покрыты'}
           </strong>
         </div>
       </Card>
-      <div className="diagnosis-factors">
-        <div>
-          <ShieldCheck />
-          <span>
-            <b>Сначала</b> жильё, еда и транспорт
-          </span>
-        </div>
-        <div>
-          <TrendingUp />
-          <span>
-            <b>Затем</b> резерв 10 000 ₽ и дорогой долг
-          </span>
-        </div>
-      </div>
+      <div className="diagnosis-factors">{factors.map((x,i)=><div key={x}>{i%2?<TrendingUp/>:<ShieldCheck/>}<span>{x}</span></div>)}</div>
       <Button
         onClick={async () => {
           await patch({ entered: true });

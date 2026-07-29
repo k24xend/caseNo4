@@ -16,6 +16,13 @@ export function Plan() {
       </Page>
     );
   const p = data.plan;
+  const points=data.projection.points.slice(0,12); const max=Math.max(1,...points.flatMap(x=>[x.debt,x.reserve]));
+  const transition=data.projection.stabilizationMonths;
+  const milestones:{date:string;text:string}[]=[];
+  if(data.projection.nextPayment) milestones.push({date:data.projection.nextPayment.date,text:`Оплатить «${data.projection.nextPayment.name}»`});
+  if(transition!==null&&points[transition]) milestones.push({date:points[transition].date,text:'Защитить минимальный резерв'});
+  const debtMonth=data.projection.debtFreeMonths;
+  if(debtMonth!==null&&data.projection.points[debtMonth]) milestones.push({date:data.projection.points[debtMonth].date,text:'Закрыть потребительские долги'});
   return (
     <Page title="Путь" sub="От кассового разрыва — к свободе выбора">
       <Card className="route-card">
@@ -29,7 +36,7 @@ export function Plan() {
         </div>
         <p>Текущий этап</p>
         <h2>{stateLabel(p.state)}</h2>
-        <strong>Переход ожидается через 8–12 недель</strong>
+        <strong>{transition===null?'Переход пока не достигается':transition===0?'Условия этапа уже выполнены':`Переход ожидается через ${Math.max(1,transition*4-2)}–${transition*4+2} недель`}</strong>
         <small>Диапазон изменится при новых операциях</small>
       </Card>
       <Card className="plan-state">
@@ -42,20 +49,20 @@ export function Plan() {
       <Card>
         <div className="card-heading">
           <h3>Как меняется положение</h3>
-          <span className="muted">6 месяцев</span>
+          <span className="muted">{points.length} месяцев</span>
         </div>
         <div className="forecast-chart" aria-label="Прогноз: долг снижается, резерв растёт">
           <div className="chart-debt">
-            {[100, 88, 73, 58, 42, 29].map((v, i) => (
-              <i key={i} style={{ height: `${v}%` }}>
+            {points.map((v, i) => (
+              <i key={v.date} style={{ height: `${Math.max(2,v.debt/max*100)}%` }}>
                 <span>{i === 0 ? 'Долг' : ''}</span>
               </i>
             ))}
           </div>
           <div className="chart-buffer">
-            {[8, 18, 30, 43, 57, 72].map((v, i) => (
-              <i key={i} style={{ height: `${v}%` }}>
-                <span>{i === 5 ? 'Резерв' : ''}</span>
+            {points.map((v, i) => (
+              <i key={v.date} style={{ height: `${Math.max(2,v.reserve/max*100)}%` }}>
+                <span>{i === points.length-1 ? 'Резерв' : ''}</span>
               </i>
             ))}
           </div>
@@ -66,20 +73,7 @@ export function Plan() {
       </Card>
       <Card>
         <h3>Ближайшие вехи</h3>
-        <ol className="milestones">
-          <li>
-            <b>5 августа</b>
-            <span>Пройти месяц без нового долга</span>
-          </li>
-          <li>
-            <b>Сентябрь</b>
-            <span>Защитить резерв 10 000 ₽</span>
-          </li>
-          <li>
-            <b>Октябрь–ноябрь</b>
-            <span>Ускорить дорогую кредитную карту</span>
-          </li>
-        </ol>
+        <ol className="milestones">{milestones.map((m)=><li key={m.text}><b>{new Intl.DateTimeFormat(settings.language==='ru'?'ru-RU':'en-US',{month:'long',year:'numeric'}).format(new Date(m.date))}</b><span>{m.text}</span></li>)}</ol>
       </Card>
       <Link className="button full" to="/scenarios">
         Проверить ускорение <ArrowUpRight />

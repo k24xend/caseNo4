@@ -75,6 +75,26 @@ export interface DemoData {
   debts: Debt[];
   transactions: Transaction[];
   updatedAt: string;
+  baseline: FinancialInputs;
+  activeScenario?: ScenarioAdjustment;
+  projection: FinancialProjection;
+}
+export interface ScheduledItem { id: string; name: string; amount: number; date: string; confirmed: boolean }
+export interface FinancialInputs {
+  availableNow: number; monthlyIncome: number; minimumBuffer: number; nextIncomeDate: string;
+  incomes: ScheduledItem[]; expenses: ScheduledItem[];
+}
+export interface ScenarioAdjustment {
+  extraIncome: number; expenseChange: number; extraDebtPayment: number; reserve: number;
+  extraHours: number; acceptedAt: string;
+}
+export interface ProjectionPoint { date: string; debt: number; reserve: number; interest: number }
+export interface FinancialProjection {
+  points: ProjectionPoint[]; debtFreeMonths: number | null; stabilizationMonths: number | null;
+  totalInterest: number; nextPayment?: ScheduledItem; assumptions: string[];
+}
+export interface UserResources {
+  phone: boolean; computer: boolean; hoursPerWeek: number; skills: string[]; investmentLimit: number;
 }
 export interface DraftLine {
   id: string;
@@ -108,6 +128,7 @@ export interface QueuedMutation {
   error?: string;
 }
 export interface AppSettings {
+  version?: number;
   theme: 'system' | 'light' | 'dark';
   language: 'ru' | 'en';
   demoOffline: boolean;
@@ -122,4 +143,5 @@ export interface AppSettings {
     extraHours: number;
     acceptedAt: string;
   };
+  resources?: UserResources;
 }

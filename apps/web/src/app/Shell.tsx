@@ -1,5 +1,5 @@
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
-import { CalendarDays, CircleUserRound, Landmark, Sparkles, SlidersHorizontal } from 'lucide-react';
+import { CalendarDays, CircleUserRound, Landmark, ReceiptText } from 'lucide-react';
 import { dataMode, useApp } from './AppContext';
 import { copy } from '../i18n';
 export function Shell() {
@@ -8,8 +8,7 @@ export function Shell() {
   const items = [
     ['/today', CalendarDays, t.today],
     ['/plan', Landmark, t.plan],
-    ['/scenarios', SlidersHorizontal, 'Сценарии'],
-    ['/opportunities', Sparkles, 'Возможности'],
+    ['/transactions', ReceiptText, t.transactions],
     ['/profile', CircleUserRound, t.profile],
   ] as const;
   const location = useLocation();
