@@ -1,10 +1,6 @@
 name: Native iOS
 on:
-  pull_request:
-    paths: ['apps/ios/**', '.github/workflows/ios-native.yml']
-  push:
-    branches: [main, codex/a5-a7-swiftui]
-    paths: ['apps/ios/**', '.github/workflows/ios-native.yml']
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
