@@ -28,7 +28,15 @@ flutter run -d ios --dart-define=API_URL=http://127.0.0.1:8000
 
 Demo: `demo@vyhod.app` / `demo-vyhod`. Seed автоматически запускается в Compose. Без Docker: установите API (`pip install -e 'apps/api[dev]'`), затем из `apps/api` выполните `python -m app.seed && uvicorn app.main:app --reload`.
 
-### Запуск на iPhone
+### Нативное приложение iOS (A5–A7)
+
+Новый SwiftUI-клиент находится в `apps/ios`: откройте `apps/ios/Vyhod.xcodeproj` в Xcode 16.4+, выберите shared scheme **Vyhod** и iPhone Simulator (iOS 17+). Настройка backend URL, offline-очередь, тесты и сценарий проверки на iPhone описаны в [native iOS README](apps/ios/README.md). Flutter-клиент ниже сохранён как прототип.
+
+### Mobile Web / PWA preview
+
+The installable React PWA lives in `apps/web` and runs in explicit demo mode without the backend: `cd apps/web && npm ci && npm run dev`. Deployment, iPhone Home Screen, offline-queue, and API-mode instructions are in [the web README](apps/web/README.md). The SwiftUI client remains the future primary iOS implementation.
+
+### Запуск Flutter-прототипа на iPhone
 
 В репозитории есть готовый iOS Runner (`apps/mobile/ios`) для iOS 15+. На Mac установите Xcode, Flutter и CocoaPods, запустите API, затем:
 
@@ -46,8 +54,10 @@ flutter run -d ios --dart-define=API_URL=http://127.0.0.1:8000
 ```bash
 cd apps/api && ruff check . && mypy app && pytest
 DATABASE_URL=postgresql+asyncpg://vyhod:vyhod@localhost/vyhod alembic upgrade head
-cd apps/mobile && flutter analyze && flutter test && flutter build apk --debug
+cd apps/mobile && flutter analyze && flutter test && flutter build web
 docker compose config && docker compose up --build -d
+# Только macOS с Xcode:
+cd apps/mobile && flutter build ios --no-codesign
 git grep -nEi '(api[_-]?key|secret|token|password)\s*[:=]\s*["'"'][^"'"']+["'"']'
 ```
 

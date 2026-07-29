@@ -1,3 +1,4 @@
+import uuid
 from datetime import UTC, datetime, timedelta
 
 import jwt
@@ -8,7 +9,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .config import get_settings
 from .database import get_db
-from .models import User
+from .models import RefreshSession, User
 
 password_hash = PasswordHash.recommended()
 bearer = HTTPBearer()
@@ -22,19 +23,34 @@ def verify_password(password: str, hashed: str) -> bool:
     return password_hash.verify(password, hashed)
 
 
-def token(user_id: str, kind: str, minutes: int) -> str:
+def token(user_id: str, kind: str, minutes: int, token_id: str | None = None) -> str:
     now = datetime.now(UTC)
+    payload: dict[str, object] = {
+        "sub": user_id,
+        "type": kind,
+        "iat": now,
+        "exp": now + timedelta(minutes=minutes),
+    }
+    if token_id is not None:
+        payload["jti"] = token_id
     return jwt.encode(
-        {"sub": user_id, "type": kind, "iat": now, "exp": now + timedelta(minutes=minutes)},
+        payload,
         get_settings().jwt_secret,
         algorithm="HS256",
     )
 
 
-def tokens(user_id: str) -> dict[str, str]:
+async def tokens(user_id: str, db: AsyncSession) -> dict[str, str]:
+    token_id = str(uuid.uuid4())
+    db.add(
+        RefreshSession(
+            user_id=user_id, token_id=token_id, expires_at=datetime.now(UTC) + timedelta(days=30)
+        )
+    )
+    await db.commit()
     return {
         "access_token": token(user_id, "access", 30),
-        "refresh_token": token(user_id, "refresh", 60 * 24 * 30),
+        "refresh_token": token(user_id, "refresh", 60 * 24 * 30, token_id),
         "token_type": "bearer",
     }
 

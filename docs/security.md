@@ -17,3 +17,7 @@
 
 Нет ротации/revocation JWT, field encryption, production WAF/rate-limit storage и malware scanning импорта (сам file import отсутствует). Compose credentials предназначены только для локальной разработки. Перед production нужны managed secrets, TLS, backups, monitoring, penetration test и DPIA.
 
+
+## Web PWA auth and CORS
+
+The static web client reads its API origin from `VITE_API_BASE_URL`. Deployments must set `CORS_ORIGINS` to an exact comma-separated HTTPS allowlist; wildcard origins are incompatible with credentialed requests. The current JSON refresh-token contract is supported only through a temporary sessionStorage adapter (access token remains memory-only). A production web deployment requires a separate Secure, HttpOnly, SameSite refresh cookie and CSRF protection for cookie-authenticated mutations. Native SwiftUI/Flutter bearer-token flows remain unchanged.

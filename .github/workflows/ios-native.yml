@@ -1,0 +1,24 @@
+name: Native iOS
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build-and-test:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+      - name: Show schemes and simulators
+        working-directory: apps/ios
+        run: |
+          xcodebuild -version
+          xcodebuild -project Vyhod.xcodeproj -list
+          xcrun simctl list devices available
+      - name: Build without signing
+        working-directory: apps/ios
+        run: xcodebuild -project Vyhod.xcodeproj -scheme Vyhod -sdk iphonesimulator -configuration Debug CODE_SIGNING_ALLOWED=NO build
+      - name: Unit and smoke tests
+        working-directory: apps/ios
+        run: xcodebuild -project Vyhod.xcodeproj -scheme Vyhod -destination 'platform=iOS Simulator,name=iPhone 16 Pro,OS=latest' CODE_SIGNING_ALLOWED=NO test

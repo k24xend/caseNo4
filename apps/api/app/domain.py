@@ -52,7 +52,11 @@ def calculate_snapshot(data: SnapshotInput) -> dict[str, int]:
 def classify(snapshot: dict[str, int], *, has_debts: bool, has_overdue: bool) -> JourneyState:
     if snapshot["projected_balance_before_next_income"] < 0:
         return JourneyState.CRITICAL
-    if has_overdue or snapshot["available_now"] < snapshot["minimum_buffer_target"]:
+    if has_overdue:
+        return JourneyState.STABILIZATION
+    if not has_debts and snapshot["available_now"] < snapshot["minimum_buffer_target"]:
+        return JourneyState.BUFFER
+    if snapshot["available_now"] < snapshot["minimum_buffer_target"]:
         return JourneyState.STABILIZATION
     if has_debts:
         return JourneyState.EXIT
@@ -98,7 +102,9 @@ def order_debts(debts: list[DebtData], strategy: str) -> list[DebtData]:
         return sorted(debts, key=lambda d: (-d.annual_rate_bps, d.balance, d.id))
     if strategy == "snowball":
         return sorted(debts, key=lambda d: (d.balance, -d.annual_rate_bps, d.id))
-    return sorted(debts, key=lambda d: (d.custom_priority, d.id))
+    if strategy == "custom":
+        return sorted(debts, key=lambda d: (d.custom_priority, d.id))
+    raise ValueError(f"Unknown debt strategy: {strategy}")
 
 
 def forecast_debts(
@@ -107,6 +113,9 @@ def forecast_debts(
     ordered = order_debts(debts, strategy)
     balances = {d.id: d.balance for d in ordered}
     total_paid = 0
+    # The original minimum-payment envelope stays available after a debt is
+    # closed. This is the deterministic "rollover" used by all strategies.
+    monthly_envelope = sum(d.minimum_payment for d in ordered) + max(0, extra_payment)
     negative_amortization: list[str] = []
     for month in range(1, 361):
         active = [d for d in ordered if balances[d.id] > 0]
@@ -115,24 +124,25 @@ def forecast_debts(
             return {
                 "strategy": strategy,
                 "months": month - 1,
-                "debt_free_date": origin + timedelta(days=30 * (month - 1)),
+                "debt_free_date": (origin + timedelta(days=30 * (month - 1))).isoformat(),
                 "total_paid": total_paid,
                 "negative_amortization": negative_amortization,
                 "order": [d.id for d in ordered],
             }
-        rollover = 0
+        remaining_envelope = monthly_envelope
         for debt in active:
+            # Monthly nominal APR / 12, rounded half-up to one minor unit.
             interest = (balances[debt.id] * debt.annual_rate_bps + 60_000) // 120_000
             balances[debt.id] += interest
-            payment = min(balances[debt.id], debt.minimum_payment)
+            payment = min(balances[debt.id], debt.minimum_payment, remaining_envelope)
             if debt.minimum_payment <= interest and debt.id not in negative_amortization:
                 negative_amortization.append(debt.id)
             balances[debt.id] -= payment
             total_paid += payment
-            rollover += max(0, debt.minimum_payment - payment)
+            remaining_envelope -= payment
         target = next((d for d in ordered if balances[d.id] > 0), None)
         if target:
-            payment = min(balances[target.id], extra_payment + rollover)
+            payment = min(balances[target.id], remaining_envelope)
             balances[target.id] -= payment
             total_paid += payment
     return {

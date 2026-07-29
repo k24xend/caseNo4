@@ -1,11 +1,62 @@
 from datetime import date, datetime
 from typing import Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr, Field, field_validator
+from pydantic import BaseModel, ConfigDict, EmailStr, Field, ValidationInfo, field_validator
 
 
 class ORMModel(BaseModel):
     model_config = ConfigDict(from_attributes=True)
+
+
+class EntityOut(ORMModel):
+    id: str
+    created_at: datetime
+    updated_at: datetime
+    version: int
+
+
+class AccountOut(EntityOut):
+    name: str
+    balance: int
+    currency: str
+
+
+class ScheduledItemOut(EntityOut):
+    kind: str
+    name: str
+    amount: int
+    currency: str
+    due_date: date
+    confirmed: bool
+    recurring: bool
+
+
+class DebtOut(EntityOut):
+    name: str
+    debt_type: str
+    balance: int
+    currency: str
+    annual_rate_bps: int
+    minimum_payment: int
+    due_day: int
+    overdue: bool
+    custom_priority: int
+
+
+class TransactionOut(EntityOut):
+    account_id: str
+    kind: str
+    amount: int
+    currency: str
+    category: str
+    description: str
+    occurred_at: datetime
+
+
+class TransactionPage(BaseModel):
+    items: list[TransactionOut]
+    limit: int
+    offset: int
 
 
 class AuthIn(BaseModel):
@@ -19,15 +70,51 @@ class TokenPair(BaseModel):
     token_type: str = "bearer"
 
 
+class RefreshIn(BaseModel):
+    refresh_token: str = Field(min_length=20)
+
+
+class IncomeIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    amount: int = Field(gt=0)
+    due_date: date
+    confirmed: bool = True
+    recurring: bool = False
+
+
+class ExpenseIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    amount: int = Field(gt=0)
+    due_date: date
+    recurring: bool = False
+
+
+class OnboardingDebtIn(BaseModel):
+    name: str = Field(min_length=1, max_length=100)
+    balance: int = Field(gt=0)
+    annual_rate_bps: int = Field(ge=0, le=100_000)
+    minimum_payment: int = Field(ge=0)
+    due_day: int = Field(ge=1, le=31)
+    overdue: bool = False
+    custom_priority: int = Field(default=0, ge=0)
+
+    @field_validator("minimum_payment")
+    @classmethod
+    def minimum_not_above_balance(cls, value: int, info: ValidationInfo) -> int:
+        balance = info.data.get("balance")
+        if balance is not None and value > balance:
+            raise ValueError("minimum payment cannot exceed debt balance")
+        return value
+
+
 class OnboardingIn(BaseModel):
     language: Literal["ru", "en"] = "ru"
     currency: str = "RUB"
     available_now: int = Field(ge=0)
     minimum_buffer: int = Field(ge=0)
-    next_income_amount: int = Field(ge=0)
-    next_income_date: date
-    expenses: list[dict[str, object]] = []
-    debts: list[dict[str, object]] = []
+    incomes: list[IncomeIn] = Field(default_factory=list)
+    expenses: list[ExpenseIn] = Field(default_factory=list)
+    debts: list[OnboardingDebtIn] = Field(default_factory=list)
 
     @field_validator("currency")
     @classmethod
@@ -49,15 +136,30 @@ class TransactionIn(BaseModel):
 
 
 class DebtIn(BaseModel):
-    name: str
-    debt_type: str = "credit"
+    name: str = Field(min_length=1, max_length=100)
+    debt_type: Literal["credit", "credit_card", "installment", "personal", "other"] = "credit"
     balance: int = Field(gt=0)
     currency: str = Field(min_length=3, max_length=3)
     annual_rate_bps: int = Field(ge=0, le=100_000)
     minimum_payment: int = Field(ge=0)
     due_day: int = Field(ge=1, le=31)
     overdue: bool = False
-    custom_priority: int = 0
+    custom_priority: int = Field(default=0, ge=0)
+
+    @field_validator("currency")
+    @classmethod
+    def debt_currency(cls, value: str) -> str:
+        if not value.isalpha():
+            raise ValueError("currency must be an ISO 4217 alpha-3 code")
+        return value.upper()
+
+    @field_validator("minimum_payment")
+    @classmethod
+    def debt_minimum_not_above_balance(cls, value: int, info: ValidationInfo) -> int:
+        balance = info.data.get("balance")
+        if balance is not None and value > balance:
+            raise ValueError("minimum payment cannot exceed debt balance")
+        return value
 
 
 class CheckinIn(BaseModel):
@@ -80,8 +182,15 @@ class NextStep(BaseModel):
 
 
 class AIExplanation(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
     headline: str
     explanation: str
     reasons: list[str]
     next_steps: list[NextStep]
     uncertainties: list[str]
+
+
+class AIExplanationEnvelope(AIExplanation):
+    generated_at: datetime
+    source: Literal["ai", "fallback"]

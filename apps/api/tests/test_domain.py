@@ -30,6 +30,7 @@ def test_money_snapshot_is_integer_and_reserve_protected() -> None:
         (10, 5, 10, True, False, JourneyState.STABILIZATION),
         (10, 20, 10, True, True, JourneyState.STABILIZATION),
         (10, 20, 10, True, False, JourneyState.EXIT),
+        (10, 5, 10, False, False, JourneyState.BUFFER),
         (10, 20, 10, False, False, JourneyState.GROWTH),
     ],
 )
@@ -66,6 +67,35 @@ def test_negative_amortization_and_horizon() -> None:
     result = forecast_debts([DebtData("bad", "Bad", 1_000_000, 100_000, 1)], 0, "avalanche")
     assert "bad" in result["negative_amortization"]
     assert result["months"] is None
+
+
+def test_custom_order_and_freed_payment_rollover() -> None:
+    debts = [
+        DebtData("large", "Large", 10_000, 0, 100, 2),
+        DebtData("small", "Small", 100, 0, 100, 1),
+    ]
+    result = forecast_debts(debts, 0, "custom", date(2026, 1, 1))
+    assert result["order"] == ["small", "large"]
+    assert result["months"] == 51
+
+
+@pytest.mark.parametrize(("days", "expected"), [(0, 900), (1, 900), (2, 450)])
+def test_daily_amount_date_boundaries(days: int, expected: int) -> None:
+    result = calculate_snapshot(SnapshotInput(1_000, 0, 100, 0, 0, days, 0, 0, 0, False, False))
+    assert result["safe_daily_amount"] == expected
+
+
+def test_interest_rounds_half_up_in_minor_units() -> None:
+    result = forecast_debts(
+        [DebtData("d", "Debt", 600, 10_000, 650)], 0, "avalanche", date(2024, 2, 29)
+    )
+    assert result["months"] == 1
+    assert result["total_paid"] == 650
+
+
+def test_unknown_strategy_is_rejected() -> None:
+    with pytest.raises(ValueError):
+        forecast_debts([], 0, "magic")
 
 
 def test_main_action_is_deterministic() -> None:
