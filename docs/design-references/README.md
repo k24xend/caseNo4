@@ -11,3 +11,5 @@ Implementation requirements and interpretation rules are in:
 `/VYHOD_ULTIMATE_REDESIGN_CODEX_PROMPT.txt`
 
 Do not use these PNG files as UI backgrounds or substitutes for coded components. Recreate the system responsively with HTML/CSS/SVG and real application data.
+
+> **Note:** `vyhod-selected-direction-b.png` was restored from a full user-supplied JPEG (2026-07-31). Phone crops: `screenshots/direction-b-overview-full.png`, `screenshots/direction-b-money-full.png`.
