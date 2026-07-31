@@ -7,17 +7,12 @@ import {
   WifiOff,
   X,
 } from 'lucide-react';
-import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
 import { Skeleton } from '../../components/ui';
 import { formatMoney } from '../../domain/money';
-import type { WalletPhase } from './Wallet3D';
-
-const LiquidWallet = lazy(async () => {
-  const mod = await import('./Wallet3D');
-  return { default: mod.LiquidWallet };
-});
+import { LiquidWallet, type WalletPhase } from './Wallet3D';
 
 type MoneyTab = 'summary' | 'history' | 'chart';
 
@@ -138,21 +133,13 @@ export function Today() {
         </div>
       )}
 
-      <Suspense
-        fallback={
-          <section className="wallet3d-root" aria-label="Кошелёк" data-testid="wallet-stage">
-            <Skeleton />
-          </section>
-        }
-      >
-        <LiquidWallet
-          phase={phase}
-          amounts={amounts}
-          onOpen={openWallet}
-          triggerRef={trigger}
-          reducedMotion={prefersReducedMotion()}
-        />
-      </Suspense>
+      <LiquidWallet
+        phase={phase}
+        amounts={amounts}
+        onOpen={openWallet}
+        triggerRef={trigger}
+        reducedMotion={prefersReducedMotion()}
+      />
 
       <section className="assistant-capsule liquid-panel" data-testid="assistant-capsule">
         <span className="assistant-shimmer" aria-hidden="true" />

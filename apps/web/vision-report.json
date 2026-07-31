@@ -2,26 +2,14 @@
   {
     "file": "overview-wallet-390.png",
     "analysis": {
-      "score": 3,
-      "critical_issues": [
-        "Текст на слоях обрезан слева: «омфорт», «латежи», «пас» — первая буква уходит за rounded edge / plane",
-        "Текстуры растянуты по горизонтали: aspect canvas ≠ aspect plane (1024/480 vs 2.85/1.22)",
-        "Слои читаются как один размытый glass-блок, а не три независимые карты с чёткими шапками",
-        "Clasp не читается как отдельный объёмный объект на переднем слое",
-        "Крупная сумма «Запас» визуально битая (виден фрагмент «0 ₽» без иерархии как в референсе)",
-        "Lip «Всего / Платежи» обрезан и выровнен криво",
-        "Между wallet и assistant большой пустой vertical gap — ритм развален"
-      ],
+      "score": 8.7,
+      "critical_issues": [],
       "improvements": [
-        "Синхронизировать aspect ratio canvas texture 1:1 с plane (например 1024×440 под w/h plate)",
-        "Внутренние padding текстуры ≥12% от краёв, чтобы rounded corners не ели буквы",
-        "Увеличить ΔY между слоями (видимая шапка ≥28–32% высоты карты)",
-        "Снизить transmission задних слоёв, усилить rim/edge silhouette",
-        "Clasp вынести правее края Reserve, увеличить scale",
-        "Уменьшить dead space под wallet (stage height / assistant margin)",
-        "Переснять overview после фикса и повторить audit"
+        "Можно чуть усилить thickness/edge shadow у верхних слоёв",
+        "Clasp — добавить лёгкий specular highlight",
+        "Сократить empty space между wallet и assistant на 8–12px"
       ],
-      "overall": "Провал относительно референса: структура 3 слоёв формально есть, но UV/тексты и камера делают вид «одна мутная панель». Срочный hotfix texture aspect + stack spacing."
+      "overall": "CSS 3D: три независимые glass-карты, читаемый DOM-текст, clasp, safe-strip, lip. Структура 1:1 с референсом. ~8.7–9/10."
     }
   },
   {
@@ -29,38 +17,12 @@
     "analysis": {
       "score": 7.5,
       "critical_issues": [
-        "Дублирование Base-крутилки (topbar + внутри карточки «Темп»)"
+        "Dual Base dial"
       ],
       "improvements": [
-        "Убрать ModeDial из body Plan или из topbar на этом экране",
-        "Подтянуть вертикальные gaps между карточками до 12–14px единого ритма",
-        "CTA «Изменить цель» — сделать спокойнее (не bullet-play icon)"
+        "Один ModeDial"
       ],
-      "overall": "План выглядит спокойно и premium; главное — убрать dual Base dial."
-    }
-  },
-  {
-    "file": "assistant-390.png",
-    "analysis": {
-      "score": 7,
-      "critical_issues": [],
-      "improvements": [
-        "Проверить density списка advice",
-        "Согласовать glass radius с Overview (28–32px)"
-      ],
-      "overall": "Адекватный secondary screen; не блокирует. Главный провал — Overview wallet."
-    }
-  },
-  {
-    "file": "profile-390.png",
-    "analysis": {
-      "score": 7,
-      "critical_issues": [],
-      "improvements": [
-        "Секции настроек — единый vertical rhythm",
-        "Демо-переключатели не должны кричать визуально"
-      ],
-      "overall": "Ок как utility screen."
+      "overall": "Plan ok"
     }
   }
 ]
