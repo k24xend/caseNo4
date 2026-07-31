@@ -27,6 +27,8 @@ apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/*.png
 
 # Binary assets and local data are not stored in this source-only repository
 *.png
+!apps/web/public/
+!apps/web/public/**/*.png
 *.jpg
 *.jpeg
 *.gif
