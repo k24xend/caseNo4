@@ -2,23 +2,24 @@ import {
   ArrowDownLeft,
   ArrowRight,
   ArrowUpRight,
-  Coffee,
   MessageCircle,
-  ReceiptText,
-  Shield,
-  Sparkles,
   WalletCards,
   WifiOff,
   X,
 } from 'lucide-react';
-import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
+import { lazy, Suspense, useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
 import { Skeleton } from '../../components/ui';
 import { formatMoney } from '../../domain/money';
+import type { WalletPhase } from './Wallet3D';
+
+const LiquidWallet = lazy(async () => {
+  const mod = await import('./Wallet3D');
+  return { default: mod.LiquidWallet };
+});
 
 type MoneyTab = 'summary' | 'history' | 'chart';
-type WalletPhase = 'closed' | 'opening' | 'open' | 'closing';
 
 const prefersReducedMotion = () =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -46,7 +47,7 @@ export function Today() {
       window.clearTimeout(closeTimer.current);
       closeTimer.current = window.setTimeout(
         () => setPhase('closed'),
-        prefersReducedMotion() ? 0 : 420,
+        prefersReducedMotion() ? 0 : 480,
       );
     };
     addEventListener('popstate', pop, { once: true });
@@ -100,7 +101,7 @@ export function Today() {
     }
     setPhase('opening');
     window.clearTimeout(openTimer.current);
-    openTimer.current = window.setTimeout(() => setPhase('open'), 520);
+    openTimer.current = window.setTimeout(() => setPhase('open'), 560);
   };
 
   const closeWallet = () => {
@@ -112,22 +113,17 @@ export function Today() {
       }
       setPhase('closing');
       window.clearTimeout(closeTimer.current);
-      closeTimer.current = window.setTimeout(() => setPhase('closed'), 420);
+      closeTimer.current = window.setTimeout(() => setPhase('closed'), 480);
     }
   };
 
-  const onWalletPointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
-    const stack = event.currentTarget;
-    const rect = stack.getBoundingClientRect();
-    const ripple = document.createElement('span');
-    ripple.className = 'wallet-ripple';
-    const size = Math.max(rect.width, rect.height) * 1.15;
-    ripple.style.width = `${size}px`;
-    ripple.style.height = `${size}px`;
-    ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
-    ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
-    stack.appendChild(ripple);
-    window.setTimeout(() => ripple.remove(), 650);
+  const amounts = {
+    comfort,
+    obligations,
+    reserve,
+    total: snapshot.available_now,
+    safeDaily: snapshot.safe_daily_amount,
+    currency: plan.currency,
   };
 
   return (
@@ -141,61 +137,22 @@ export function Today() {
           Сохранённый план · офлайн
         </div>
       )}
-      <section className="wallet-stage" aria-label="Кошелёк" data-testid="wallet-stage">
-        <div className="wallet-aura" aria-hidden="true" />
-        <button
-          ref={trigger}
-          className="wallet-stack"
-          onClick={openWallet}
-          onPointerDown={onWalletPointerDown}
-          aria-haspopup="dialog"
-          aria-expanded={open}
-          aria-label="Открыть кошелёк и историю"
-          disabled={open}
-          tabIndex={open ? -1 : 0}
-        >
-          <span className="wallet-layer comfort" data-layer="comfort">
-            <span className="wallet-layer-heading">
-              <Coffee aria-hidden="true" />
-              <small>Комфорт</small>
-            </span>
-            <b>{formatMoney(comfort, plan.currency)}</b>
-          </span>
-          <span className="wallet-layer obligations" data-layer="obligations">
-            <span className="wallet-layer-heading">
-              <ReceiptText aria-hidden="true" />
-              <small>Платежи</small>
-            </span>
-            <b>{formatMoney(obligations, plan.currency)}</b>
-          </span>
-          <span className="wallet-layer reserve" data-layer="reserve">
-            <span className="wallet-caustic" aria-hidden="true" />
-            <span className="wallet-edge-tension" aria-hidden="true" />
-            <span className="clasp" aria-hidden="true">
-              <span className="clasp-neck" />
-              <i />
-            </span>
-            <span className="wallet-layer-heading">
-              <Shield aria-hidden="true" />
-              <small>Запас</small>
-            </span>
-            <b className="wallet-amount">{formatMoney(reserve, plan.currency)}</b>
-            <span className="safe-strip">
-              <Sparkles aria-hidden="true" />
-              <span>Безопасно сегодня</span>
-              <strong>{formatMoney(snapshot.safe_daily_amount, plan.currency)}</strong>
-            </span>
-            <span className="wallet-lip">
-              <em>
-                Всего <b>{formatMoney(snapshot.available_now, plan.currency)}</b>
-              </em>
-              <em>
-                Платежи <b>{formatMoney(obligations, plan.currency)}</b>
-              </em>
-            </span>
-          </span>
-        </button>
-      </section>
+
+      <Suspense
+        fallback={
+          <section className="wallet3d-root" aria-label="Кошелёк" data-testid="wallet-stage">
+            <Skeleton />
+          </section>
+        }
+      >
+        <LiquidWallet
+          phase={phase}
+          amounts={amounts}
+          onOpen={openWallet}
+          triggerRef={trigger}
+          reducedMotion={prefersReducedMotion()}
+        />
+      </Suspense>
 
       <section className="assistant-capsule liquid-panel" data-testid="assistant-capsule">
         <span className="assistant-shimmer" aria-hidden="true" />
@@ -295,7 +252,7 @@ function WalletExpanded({
 
   return (
     <div
-      className={`money-view money-phase-${phase}`}
+      className={`money-view money-phase-${phase} money-view-3d`}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
@@ -315,6 +272,7 @@ function WalletExpanded({
       </header>
 
       <div className="expanded-scene">
+        {/* Spatial continuity: fan silhouette mirrors 3D layers for layout/e2e while canvas fans above */}
         <div className="expanded-fan" aria-hidden="true" data-testid="expanded-fan">
           <i className="fan-comfort" data-amount={formatMoney(comfort, currency)} />
           <i className="fan-obligations" data-amount={formatMoney(obligations, currency)} />

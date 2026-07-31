@@ -2,6 +2,9 @@ import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { VitePWA } from 'vite-plugin-pwa';
 export default defineConfig({
+  resolve: {
+    dedupe: ['three', 'react', 'react-dom'],
+  },
   plugins: [
     react(),
     VitePWA({
