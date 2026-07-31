@@ -86,7 +86,8 @@ function assistantApiPlugin(): Plugin {
             context?: string;
             history?: Array<{ role: string; content: string }>;
           };
-          const { runAssistant } = await import('../../api/assistant');
+          // Core module only — no @vercel/node (keeps `tsc -b` green on Vercel).
+          const { runAssistant } = await import('../../api/assistant-core');
           const result = await runAssistant(body, key);
           if ('reply' in result) {
             res.statusCode = 200;
