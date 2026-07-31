@@ -1,13 +1,6 @@
-import { Briefcase, Coffee, Heart, ShoppingBag, Wallet } from 'lucide-react';
+import { ShoppingBag, Utensils, Wallet } from 'lucide-react';
 import { useApp } from '../../app/AppContext';
 import { formatMoney } from '../../domain/money';
-
-const buckets = [
-  { label: 'Shopping', Icon: ShoppingBag, ratio: 0.18 },
-  { label: 'Food & Drink', Icon: Coffee, ratio: 0.12 },
-  { label: 'Work', Icon: Briefcase, ratio: 0.45 },
-  { label: 'Health', Icon: Heart, ratio: 0.08 },
-] as const;
 
 export function Plan() {
   const { data, settings, patch } = useApp();
@@ -19,32 +12,34 @@ export function Plan() {
 
   return (
     <div>
-      <div className="mint-wallet-hero">
-        <div className="mint-brand-mark" style={{ margin: '0 auto 12px' }} aria-hidden>
-          <Wallet size={20} color="#fff" />
+      <div className="mb-4 flex flex-col items-center pt-4 text-center">
+        <div className="fs-icon-btn mb-3 size-12">
+          <Wallet className="size-5 text-cyan-500" />
         </div>
-        <small>Wallet balance</small>
-        <h1>{formatMoney(available, currency)}</h1>
+        <small className="text-xs font-semibold text-slate-500">Wallet balance</small>
+        <h1 className="m-0 mt-1 text-4xl font-semibold tracking-tight text-slate-950 tabular-nums">
+          {formatMoney(available, currency)}
+        </h1>
       </div>
 
-      <section className="mint-card">
-        <h2 className="mint-section-title">Comfort buffer</h2>
-        <p className="mint-section-sub">Untouchable comfort for daily life</p>
-        <p className="mint-available" style={{ fontSize: 28, marginTop: 10 }}>
+      <section className="fs-card p-5">
+        <h2 className="m-0 text-base font-semibold text-slate-950">Comfort buffer</h2>
+        <p className="m-0 mt-1 text-xs text-slate-500">Untouchable comfort for daily life</p>
+        <p className="m-0 mt-3 text-3xl font-semibold tracking-tight text-slate-950 tabular-nums">
           {formatMoney(comfort, currency)}
         </p>
-        <div className="mint-diff-seg" style={{ marginTop: 14 }}>
+        <div className="fs-seg mt-4 flex gap-1 p-1">
           {(
             [
-              [300000, '3 000'],
-              [500000, '5 000'],
-              [800000, '8 000'],
+              [300000, '3k'],
+              [500000, '5k'],
+              [800000, '8k'],
             ] as const
           ).map(([v, label]) => (
             <button
               key={v}
               type="button"
-              className={comfort === v ? 'active' : undefined}
+              className={`fs-seg-btn flex-1 ${comfort === v ? 'active' : ''}`}
               onClick={() => void patch({ comfortBudget: v })}
             >
               {label}
@@ -53,35 +48,35 @@ export function Plan() {
         </div>
       </section>
 
-      <section className="mint-card" style={{ marginTop: 12 }}>
-        <h2 className="mint-section-title">Money categories</h2>
-        <p className="mint-section-sub">Where your budget goes</p>
-        <div className="mint-cat-grid">
-          {buckets.map(({ label, Icon, ratio }) => (
-            <div key={label} className="mint-cat">
-              <div className="mint-cat-top">
-                <span className="mint-cat-ic">
-                  <Icon size={16} />
-                </span>
-              </div>
-              <b>{label}</b>
-              <strong>{formatMoney(Math.round(available * ratio), currency)}</strong>
+      <section className="fs-card mt-4 rounded-[28px] p-5">
+        <h2 className="m-0 text-base font-semibold text-slate-950">Money categories</h2>
+        <p className="m-0 mt-1 text-xs text-slate-500">Where your budget goes</p>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <div className="fs-cat rounded-2xl p-4">
+            <div className="flex size-10 items-center justify-center rounded-2xl bg-cyan-500/12 text-cyan-600">
+              <ShoppingBag className="size-4" />
             </div>
-          ))}
+            <div className="mt-3 text-xs text-slate-500">Shopping</div>
+            <div className="mt-1 text-lg font-semibold text-slate-950 tabular-nums">
+              {formatMoney(Math.round(available * 0.15), currency)}
+            </div>
+          </div>
+          <div className="fs-cat rounded-2xl p-4">
+            <div className="flex size-10 items-center justify-center rounded-2xl bg-cyan-500/12 text-cyan-600">
+              <Utensils className="size-4" />
+            </div>
+            <div className="mt-3 text-xs text-slate-500">Food & Drink</div>
+            <div className="mt-1 text-lg font-semibold text-slate-950 tabular-nums">
+              {formatMoney(Math.round(available * 0.08), currency)}
+            </div>
+          </div>
         </div>
       </section>
 
-      <section className="mint-card" style={{ marginTop: 12 }}>
-        <h2 className="mint-section-title">Plan state</h2>
-        <p className="mint-section-sub">
-          {data.plan.action?.title || 'Keep your pace steady'}
-        </p>
-        <p style={{ margin: '10px 0 0', fontSize: 14, color: 'var(--mint-muted)', lineHeight: 1.45 }}>
-          State: {data.plan.state}
-          {data.plan.action?.amount
-            ? ` · ${formatMoney(data.plan.action.amount, currency)}`
-            : ''}
-        </p>
+      <section className="fs-card mt-4 p-5">
+        <h2 className="m-0 text-base font-semibold text-slate-950">Plan state</h2>
+        <p className="m-0 mt-1 text-sm text-slate-600">{data.plan.action?.title || 'Keep your pace'}</p>
+        <p className="m-0 mt-2 text-xs text-slate-500">State: {data.plan.state}</p>
       </section>
     </div>
   );

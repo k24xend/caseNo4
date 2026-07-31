@@ -29,24 +29,24 @@ export function Transactions() {
 
   return (
     <div>
-      <h1 className="mint-page-title">History</h1>
-      <p className="mint-page-sub">All transactions and trends</p>
+      <h1 className="fs-page-title">History</h1>
+      <p className="fs-page-sub">All transactions and trends</p>
 
-      <div className="mint-stats">
-        <div className="mint-stat">
+      <div className="fs-stats">
+        <div className="fs-stat">
           <small>Total Income</small>
           <strong className="income">+{formatMoney(income, currency)}</strong>
           <em>This week</em>
         </div>
-        <div className="mint-stat">
+        <div className="fs-stat">
           <small>Total Spent</small>
           <strong className="expense">−{formatMoney(spent, currency)}</strong>
           <em>This week</em>
         </div>
       </div>
 
-      <label className="mint-search">
-        <Search size={18} color="var(--mint-muted)" aria-hidden />
+      <label className="fs-search">
+        <Search size={18} className="text-slate-500" aria-hidden />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
@@ -55,14 +55,14 @@ export function Transactions() {
         />
       </label>
 
-      <section className="mint-card">
-        <ul className="mint-tx-list">
+      <section className="fs-card p-4">
+        <ul className="fs-tx-list">
           {list.length ? (
             list.map((tx) => {
               const incomeTx = tx.kind === 'income';
               return (
                 <li key={tx.id}>
-                  <span className={`mint-tx-ic ${incomeTx ? 'income' : 'expense'}`}>
+                  <span className={`fs-tx-ic ${incomeTx ? 'income' : 'expense'}`}>
                     {incomeTx ? '↑' : '↓'}
                   </span>
                   <div>

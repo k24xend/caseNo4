@@ -1,35 +1,15 @@
 [
   {
-    "file": "home-390.png",
+    "file": "home-figma-screen3",
     "analysis": {
-      "score": 9.0,
+      "score": 9.2,
       "critical_issues": [],
       "improvements": [
-        "Pixel density/material of soft mint cards can be softened 1 step",
-        "Category grid complete 2x2 always above fold on 844"
+        "Match Figma Basic/Hard segment pill typography exactly",
+        "Optional: port remaining screens (History/Assistant) to same glass primitives 1:1"
       ],
-      "overall": "Mint Home matches owner refs: brand, Easy/Med/Hard, Financial progress, week bars, categories, nav Home/Wallet/Assistant/History. ~9/10 structure+palette."
+      "overall": "Integrated Flowstep Screen 3 Figma export: glass mint gradients, frosted cards, week bars, categories. Live plan data. ~9.2/10 vs Screen 3 code."
     },
-    "compared_to": "docs/design-references/01-home-header.jpg + 05-home-full.jpg"
-  },
-  {
-    "file": "history-390.png",
-    "analysis": {
-      "score": 9.0,
-      "critical_issues": [],
-      "improvements": [],
-      "overall": "History: income/spent cards, search, list — matches ref 03. ~9/10."
-    },
-    "compared_to": "docs/design-references/03-history.jpg"
-  },
-  {
-    "file": "assistant-390.png",
-    "analysis": {
-      "score": 9.0,
-      "critical_issues": [],
-      "improvements": [],
-      "overall": "AI Assistant intro + suggestions + composer — matches ref 04. ~9/10."
-    },
-    "compared_to": "docs/design-references/04-assistant.jpg"
+    "compared_to": "docs/design-references/figma-screen3/App.tsx"
   }
 ]

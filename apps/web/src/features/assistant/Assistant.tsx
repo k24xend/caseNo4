@@ -1,4 +1,4 @@
-import { MessageCircle, Send, Sparkles } from 'lucide-react';
+import { MessageCircle, Send, Snowflake } from 'lucide-react';
 import { useState } from 'react';
 import { useApp } from '../../app/AppContext';
 import { formatMoney } from '../../domain/money';
@@ -13,7 +13,6 @@ const suggestions = [
 export function Assistant() {
   const { data, settings } = useApp();
   const [message, setMessage] = useState('');
-  const [reply, setReply] = useState('');
   const [history, setHistory] = useState<Array<{ role: 'user' | 'ai'; text: string }>>([]);
 
   const answer = (q: string) => {
@@ -24,29 +23,28 @@ export function Assistant() {
       .reduce((s, t) => s + t.amount, 0);
     const text =
       settings.language === 'ru'
-        ? `Сейчас доступно ${formatMoney(available, currency)}. Расходы в выборке: ${formatMoney(spent, currency)}. Я помогу разобрать «${q}» по уже посчитанному плану — без лишних обещаний.`
-        : `You can spend ${formatMoney(available, currency)} now. Tracked expenses in this set: ${formatMoney(spent, currency)}. I can walk through “${q}” using your calculated plan — no guesswork.`;
+        ? `Сейчас доступно ${formatMoney(available, currency)}. Расходы: ${formatMoney(spent, currency)}. Разберём «${q}» по уже посчитанному плану.`
+        : `You can spend ${formatMoney(available, currency)} now. Tracked expenses: ${formatMoney(spent, currency)}. Let’s walk through “${q}” using your calculated plan.`;
     setHistory((h) => [...h, { role: 'user', text: q }, { role: 'ai', text }]);
-    setReply(text);
     setMessage('');
   };
 
   return (
-    <div className="mint-assistant">
-      <header className="mint-assistant-head">
-        <div className="mint-ai-ic">
-          <Sparkles size={22} />
+    <div className="fs-assistant">
+      <header className="flex items-center gap-3">
+        <div className="fs-icon-btn size-11">
+          <Snowflake className="size-5 text-cyan-500" />
         </div>
         <div>
-          <h1>AI Assistant</h1>
-          <p>
-            <span className="mint-dot" aria-hidden />
+          <h1 className="m-0 text-[22px] font-semibold tracking-tight text-slate-950">AI Assistant</h1>
+          <p className="m-0 text-xs text-slate-500">
+            <span className="mr-1.5 inline-block size-2 rounded-full bg-cyan-500 shadow-[0_0_0_3px_rgba(6,182,212,0.2)]" />
             Ready to help you improve
           </p>
         </div>
       </header>
 
-      <div className="mint-bubble">
+      <div className="fs-bubble">
         Hi! I’m your Vyhod AI assistant. I can help you understand your finances, track spending
         patterns, and improve your savings. What would you like to know?
       </div>
@@ -54,10 +52,10 @@ export function Assistant() {
       {history.map((item, i) => (
         <div
           key={`${item.role}-${i}`}
-          className="mint-bubble"
+          className="fs-bubble"
           style={
             item.role === 'user'
-              ? { marginLeft: 24, background: 'var(--mint-teal-pale)' }
+              ? { marginLeft: 20, background: 'rgba(6, 182, 212, 0.12)' }
               : undefined
           }
         >
@@ -65,10 +63,10 @@ export function Assistant() {
         </div>
       ))}
 
-      {!reply && (
+      {!history.length && (
         <>
-          <div className="mint-suggest-label">Suggested questions</div>
-          <div className="mint-suggest">
+          <div className="text-xs font-semibold text-slate-500">Suggested questions</div>
+          <div className="fs-suggest">
             {suggestions.map((s) => (
               <button key={s} type="button" onClick={() => answer(s)}>
                 {s}
@@ -79,13 +77,13 @@ export function Assistant() {
       )}
 
       <form
-        className="mint-composer"
+        className="fs-composer"
         onSubmit={(e) => {
           e.preventDefault();
           if (message.trim()) answer(message.trim());
         }}
       >
-        <MessageCircle size={18} color="var(--mint-muted)" aria-hidden />
+        <MessageCircle size={18} className="text-slate-500" aria-hidden />
         <input
           value={message}
           onChange={(e) => setMessage(e.target.value)}

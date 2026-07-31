@@ -14,3 +14,8 @@ Palette: soft mint/teal background, white cards, teal accents, dark slate text.
 Nav: Home · Wallet · Assistant · History.
 
 Recreate with HTML/CSS — do not embed these photos in the product UI.
+
+## Figma / Flowstep Screen 3
+
+- `figma-screen3/App.tsx` — original export (glass mint Home)
+- Implemented in `apps/web` as Home (`Today.tsx`) + `mint.css` shell
