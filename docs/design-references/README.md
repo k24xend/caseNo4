@@ -1,15 +1,14 @@
-# VYHOD redesign references
+# VYHOD design reference (single source of truth)
 
-These images are design direction references, not raster assets to embed in the product.
+**Only this file is the visual ground truth:**
 
-- `vyhod-selected-direction-b.png` — selected overall direction: pearl-lilac background, compact assistant, four-item navigation, liquid wallet.
-- `vyhod-wallet-9of10.png` — primary source of truth for the expanded wallet. The user rated this state 9/10.
-- `vyhod-liquid-clasp-reference.png` — material, clasp, Base dial, layering, and liquid-edge reference. Its orange advice block is not an approved color direction.
+- `vyhod-selected-direction-b.png` (and `.jpg`) — dual mockup from the product owner (2026-07-31).
 
-Implementation requirements and interpretation rules are in:
+Phone crops for QA (derived from the same file):
 
-`/VYHOD_ULTIMATE_REDESIGN_CODEX_PROMPT.txt`
+- `screenshots/direction-b-overview-full.png`
+- `screenshots/direction-b-money-full.png`
 
-Do not use these PNG files as UI backgrounds or substitutes for coded components. Recreate the system responsively with HTML/CSS/SVG and real application data.
+All previous reference PNGs (wallet-9of10, liquid-clasp, old 390 screenshots) are **retired** and must not be used for scoring.
 
-> **Note:** `vyhod-selected-direction-b.png` was restored from a full user-supplied JPEG (2026-07-31). Phone crops: `screenshots/direction-b-overview-full.png`, `screenshots/direction-b-money-full.png`.
+Do not embed these images in the product UI. Recreate with HTML/CSS/SVG and live data.

@@ -1,8 +1,8 @@
 import {
   ArrowDownLeft,
-  ArrowRight,
   ArrowUpRight,
-  MessageCircle,
+  ShoppingBag,
+  Shirt,
   WalletCards,
   WifiOff,
   X,
@@ -13,8 +13,6 @@ import { useApp } from '../../app/AppContext';
 import { Skeleton } from '../../components/ui';
 import { formatMoney } from '../../domain/money';
 import { LiquidWallet, type WalletPhase } from './Wallet3D';
-
-type MoneyTab = 'summary' | 'history' | 'chart';
 
 const prefersReducedMotion = () =>
   typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -42,7 +40,7 @@ export function Today() {
       window.clearTimeout(closeTimer.current);
       closeTimer.current = window.setTimeout(
         () => setPhase('closed'),
-        prefersReducedMotion() ? 0 : 480,
+        prefersReducedMotion() ? 0 : 420,
       );
     };
     addEventListener('popstate', pop, { once: true });
@@ -72,7 +70,7 @@ export function Today() {
         <div className="empty-state">
           <h2>Не удалось открыть обзор</h2>
           <p>{error}</p>
-          <button className="button" onClick={refresh}>
+          <button className="button" type="button" onClick={refresh}>
             Повторить
           </button>
         </div>
@@ -96,7 +94,7 @@ export function Today() {
     }
     setPhase('opening');
     window.clearTimeout(openTimer.current);
-    openTimer.current = window.setTimeout(() => setPhase('open'), 560);
+    openTimer.current = window.setTimeout(() => setPhase('open'), 480);
   };
 
   const closeWallet = () => {
@@ -108,7 +106,7 @@ export function Today() {
       }
       setPhase('closing');
       window.clearTimeout(closeTimer.current);
-      closeTimer.current = window.setTimeout(() => setPhase('closed'), 480);
+      closeTimer.current = window.setTimeout(() => setPhase('closed'), 420);
     }
   };
 
@@ -140,37 +138,25 @@ export function Today() {
         triggerRef={trigger}
         reducedMotion={prefersReducedMotion()}
       />
-      {!open && (
-        <p className="wallet-hint">Нажмите, чтобы открыть историю</p>
-      )}
 
-      <section className="assistant-capsule liquid-panel" data-testid="assistant-capsule">
-        <span className="assistant-shimmer" aria-hidden="true" />
-        <span className="lens-dot" aria-hidden="true">
-          <MessageCircle aria-hidden="true" />
-        </span>
-        <div>
-          <small>Помощник</small>
-          <h2>{snapshot.available_now === 0 ? 'Начнём с нуля — без спешки' : 'С чего начнём?'}</h2>
-          <div className="assistant-actions">
-            <Link to="/assistant">Доход</Link>
-            <Link to="/plan">План</Link>
-            <Link className="assistant-cta" to="/assistant">
-              Спросить <ArrowRight aria-hidden="true" size={16} />
-            </Link>
-          </div>
+      <section className="rb-assistant" data-testid="assistant-capsule">
+        <div className="rb-assistant-water" aria-hidden />
+        <small>Помощник</small>
+        <h2>
+          {snapshot.available_now === 0
+            ? 'Начнём с нуля — без спешки'
+            : 'С чего начнём: доход, план или расходы?'}
+        </h2>
+        <div className="rb-assistant-actions">
+          <Link to="/assistant">Доход</Link>
+          <Link to="/plan">План</Link>
+          <Link className="rb-ask" to="/assistant">
+            Спросить
+          </Link>
         </div>
       </section>
 
-      {open && (
-        <WalletExpanded
-          phase={phase}
-          onClose={closeWallet}
-          comfort={comfort}
-          obligations={obligations}
-          reserve={reserve}
-        />
-      )}
+      {open && <WalletExpanded phase={phase} onClose={closeWallet} />}
     </div>
   );
 }
@@ -193,21 +179,22 @@ function smoothPath(points: Array<[number, number]>) {
   return path;
 }
 
+function txIcon(category: string, income: boolean) {
+  if (income) return ArrowDownLeft;
+  const c = category.toLowerCase();
+  if (c.includes('wild') || c.includes('магаз') || c.includes('shop')) return ShoppingBag;
+  if (c.includes('одежд') || c.includes('cloth')) return Shirt;
+  return ArrowUpRight;
+}
+
 function WalletExpanded({
   onClose,
   phase,
-  comfort,
-  obligations,
-  reserve,
 }: {
   onClose: () => void;
   phase: WalletPhase;
-  comfort: number;
-  obligations: number;
-  reserve: number;
 }) {
   const { data, settings } = useApp();
-  const [tab, setTab] = useState<MoneyTab>('summary');
   const titleId = useId();
   const close = useRef<HTMLButtonElement>(null);
 
@@ -224,7 +211,7 @@ function WalletExpanded({
 
   if (!data) return null;
   const currency = data.currency;
-  const transactions = data.transactions.slice(0, 8);
+  const transactions = data.transactions.slice(0, 6);
   const chronological = [...transactions].reverse();
   let level = 0;
   const values = chronological.map((transaction) => {
@@ -234,158 +221,124 @@ function WalletExpanded({
   const min = Math.min(0, ...values);
   const max = Math.max(1, ...values);
   const chartPoints: Array<[number, number]> = values.map((value, index) => [
-    14 + index * (292 / Math.max(1, values.length - 1)),
-    122 - ((value - min) / (max - min || 1)) * 86,
+    18 + index * (260 / Math.max(1, values.length - 1)),
+    100 - ((value - min) / (max - min || 1)) * 72,
   ]);
   const curve = smoothPath(chartPoints);
   const latest = chartPoints.at(-1);
 
   return (
     <div
-      className={`money-view money-phase-${phase} money-view-3d`}
+      className={`rb-money money-phase-${phase}`}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       data-wallet-phase={phase}
+      data-testid="money-view"
     >
-      <div className="money-backdrop-light" aria-hidden="true" />
-      <header className="money-header" data-testid="money-header">
+      <header className="rb-money-header" data-testid="money-header">
         <div>
-          <span id={titleId}>Деньги</span>
+          <p id={titleId} className="rb-money-title">
+            Деньги
+          </p>
           <small>Всего</small>
           <h1>{formatMoney(data.plan.snapshot.available_now, currency)}</h1>
         </div>
-        <span className="demo-mark">{data.scenario === 'empty' ? 'Новый' : 'Демо'}</span>
-        <button ref={close} onClick={onClose} aria-label="Закрыть кошелёк">
-          <X aria-hidden="true" />
+        <button ref={close} type="button" className="rb-close" onClick={onClose} aria-label="Закрыть кошелёк">
+          <X size={18} aria-hidden />
         </button>
       </header>
 
-      <div className="expanded-scene">
-        {/* Spatial continuity: fan silhouette mirrors 3D layers for layout/e2e while canvas fans above */}
-        <div className="expanded-fan" aria-hidden="true" data-testid="expanded-fan">
-          <i className="fan-comfort" data-amount={formatMoney(comfort, currency)} />
-          <i className="fan-obligations" data-amount={formatMoney(obligations, currency)} />
-          <i className="fan-reserve" data-amount={formatMoney(reserve, currency)} />
-          <span className="fan-clasp">
-            <span className="clasp-neck" />
-            <i />
-          </span>
-        </div>
-        <div className="money-surface">
-          <div className="money-tabs" role="tablist" aria-label="Раздел денег">
-            {(
-              [
-                ['summary', 'Сводка'],
-                ['history', 'История'],
-                ['chart', 'График'],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                role="tab"
-                aria-selected={tab === id}
-                aria-controls={`money-${id}`}
-                onClick={() => setTab(id)}
-                key={id}
+      <div className="rb-folder" data-testid="expanded-fan">
+        <div className="rb-sheet rb-sheet-3" aria-hidden />
+        <div className="rb-sheet rb-sheet-2" aria-hidden />
+        <div className="rb-sheet rb-sheet-1">
+          <div className="rb-folder-pearl" aria-hidden>
+            <span className="rb-pearl" />
+          </div>
+
+          <section className="rb-movement">
+            <h2>Движение денег</h2>
+            {values.length ? (
+              <svg
+                viewBox="0 0 300 120"
+                role="img"
+                aria-label={`График от ${formatMoney(min, currency)} до ${formatMoney(max, currency)}`}
               >
-                {label}
-              </button>
-            ))}
-          </div>
-
-          <div className="money-scroll">
-            {(tab === 'summary' || tab === 'chart') && (
-              <section className="movement" id={`money-${tab}`}>
-                <div className="movement-heading">
-                  <div>
-                    <small>Баланс за период</small>
-                    <h2>Движение денег</h2>
-                  </div>
-                  <span>{transactions.length} операций</span>
-                </div>
-                {values.length ? (
-                  <svg
-                    viewBox="0 0 320 148"
-                    role="img"
-                    aria-label={`График движения денег от ${formatMoney(min, currency)} до ${formatMoney(max, currency)}`}
-                  >
-                    <defs>
-                      <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0" stopColor="var(--primary-violet)" stopOpacity=".22" />
-                        <stop offset="1" stopColor="var(--primary-violet)" stopOpacity="0" />
-                      </linearGradient>
-                      <filter id="chartGlow" x="-20%" y="-30%" width="140%" height="160%">
-                        <feGaussianBlur stdDeviation="3" result="blur" />
-                        <feMerge>
-                          <feMergeNode in="blur" />
-                          <feMergeNode in="SourceGraphic" />
-                        </feMerge>
-                      </filter>
-                    </defs>
-                    {[36, 78, 120].map((y) => (
-                      <line key={y} x1="12" x2="308" y1={y} y2={y} />
-                    ))}
-                    <path
-                      className="chart-area"
-                      d={`${curve} L ${latest?.[0] ?? 14} 136 L 14 136 Z`}
-                    />
-                    <path className="chart-curve" d={curve} filter="url(#chartGlow)" />
-                    {latest && (
-                      <>
-                        <circle className="chart-point-halo" cx={latest[0]} cy={latest[1]} r="8" />
-                        <circle className="chart-point" cx={latest[0]} cy={latest[1]} r="4" />
-                      </>
-                    )}
-                  </svg>
-                ) : (
-                  <div className="chart-empty">Пока нет операций для графика</div>
+                <defs>
+                  <linearGradient id="rbChartFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0" stopColor="#8174E8" stopOpacity=".18" />
+                    <stop offset="1" stopColor="#8174E8" stopOpacity="0" />
+                  </linearGradient>
+                </defs>
+                <path
+                  className="rb-chart-area"
+                  d={`${curve} L ${latest?.[0] ?? 18} 110 L 18 110 Z`}
+                />
+                <path className="rb-chart-curve" d={curve} />
+                {latest && (
+                  <>
+                    <circle className="rb-chart-halo" cx={latest[0]} cy={latest[1]} r="7" />
+                    <circle className="rb-chart-dot" cx={latest[0]} cy={latest[1]} r="3.5" />
+                  </>
                 )}
-              </section>
+                <g className="rb-chart-axis">
+                  <text x="18" y="118">
+                    7
+                  </text>
+                  <text x="95" y="118">
+                    14
+                  </text>
+                  <text x="172" y="118">
+                    21
+                  </text>
+                  <text x="248" y="118">
+                    28
+                  </text>
+                </g>
+              </svg>
+            ) : (
+              <p className="rb-empty">Пока нет операций</p>
             )}
+          </section>
 
-            {(tab === 'summary' || tab === 'history') && (
-              <section className="transactions-preview" id={`money-${tab}`}>
-                <div className="transactions-heading">
-                  <h2>Последние операции</h2>
-                  <Link to="/transactions" aria-label="Все операции">
-                    <ArrowRight aria-hidden="true" />
-                  </Link>
-                </div>
-                {transactions.length ? (
-                  transactions.map((transaction) => {
-                    const income = transaction.kind === 'income';
-                    const Icon = income ? ArrowDownLeft : ArrowUpRight;
-                    return (
-                      <article key={transaction.id} tabIndex={0}>
-                        <span className={income ? 'income' : 'expense'}>
-                          <Icon aria-hidden="true" />
-                        </span>
-                        <div>
-                          <b>{transaction.description || transaction.category}</b>
-                          <small>
-                            {transaction.category} ·{' '}
-                            {new Intl.DateTimeFormat(
-                              settings.language === 'ru' ? 'ru-RU' : 'en-US',
-                              { day: 'numeric', month: 'short' },
-                            ).format(new Date(transaction.occurred_at))}
-                          </small>
-                        </div>
-                        <strong className={income ? 'income-text' : 'expense-text'}>
-                          {income ? '+' : '−'} {formatMoney(transaction.amount, currency)}
-                        </strong>
-                      </article>
-                    );
-                  })
-                ) : (
-                  <div className="empty-state compact-empty">
-                    <WalletCards aria-hidden="true" />
-                    <h3>Операций пока нет</h3>
-                    <p>Добавьте первую, когда будете готовы.</p>
-                  </div>
-                )}
-              </section>
+          <section className="rb-tx">
+            <h2>Последние операции</h2>
+            {transactions.length ? (
+              <ul>
+                {transactions.map((transaction) => {
+                  const income = transaction.kind === 'income';
+                  const Icon = txIcon(transaction.category, income);
+                  return (
+                    <li key={transaction.id}>
+                      <span className={income ? 'rb-tx-ic income' : 'rb-tx-ic expense'}>
+                        <Icon size={16} aria-hidden />
+                      </span>
+                      <div>
+                        <b>{transaction.description || transaction.category}</b>
+                        <small>
+                          {new Intl.DateTimeFormat(settings.language === 'ru' ? 'ru-RU' : 'en-US', {
+                            weekday: 'short',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          }).format(new Date(transaction.occurred_at))}
+                        </small>
+                      </div>
+                      <strong className={income ? 'income-text' : 'expense-text'}>
+                        {income ? '+' : '−'}
+                        {formatMoney(transaction.amount, currency)}
+                      </strong>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : (
+              <div className="rb-empty">
+                <WalletCards size={20} aria-hidden />
+                <p>Операций пока нет</p>
+              </div>
             )}
-          </div>
+          </section>
         </div>
       </div>
     </div>

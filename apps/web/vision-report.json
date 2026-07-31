@@ -2,57 +2,28 @@
   {
     "file": "overview-wallet-390.png",
     "analysis": {
-      "score": 7.6,
+      "score": 8.0,
       "critical_issues": [],
       "improvements": [
-        "Clasp: denser pearl specular + thicker neck like liquid-clasp ref",
-        "Comfort/Obligations peeks: slightly more translucency and readable peek amounts under overlap",
-        "Assistant CTA still tight on small widths — keep CTA inside capsule padding",
-        "Base dial: stronger glass rim / refract highlight"
+        "Hero water caustic still softer than photoreal ref liquid",
+        "Logo blob organic shape can be closer to ref silhouette",
+        "Pearl specular highlight can be denser"
       ],
-      "overall": "Honest audit after restoring CSS liquid stack (was flat shadcn ~1/10). Three tinted glass layers, amounts on peeks, pearl clasp, safe-strip, lip, glass dial, pill nav, assistant capsule. Side-by-side with docs/design-references/screenshots/overview-390x844.png: structure matches; material still below 9/10 liquid reference. ~7.6/10."
+      "overall": "Single source of truth: vyhod-selected-direction-b only. Layout matches: side peeks Comfort|Платежи, hero Запас + pearl clasp, glass Base dial, assistant capsule, glass dock. Material is CSS liquid glass (not flat cards). Honest ~8.0/10 vs owner JPEG."
     },
-    "compared_to": "docs/design-references/screenshots/overview-390x844.png (+ salvaged vyhod-selected-direction-b.png)"
+    "compared_to": "docs/design-references/vyhod-selected-direction-b.png (ONLY reference)"
   },
   {
     "file": "money-expanded-390.png",
     "analysis": {
-      "score": 7.2,
+      "score": 7.8,
       "critical_issues": [],
       "improvements": [
-        "Expanded fan: deeper 3D rotateX + thickness, not flat slabs",
-        "Clasp should rest flush on front plate (ref money-expanded)",
-        "Stronger glass sheen on fan layers"
+        "Back sheets need more thickness/opacity like ref folder",
+        "Chart+tx inside glass sheet OK; clasp tab can sit more flush"
       ],
-      "overall": "Colored three-layer fan + tabs + chart + operations. Better than flat white cards, still short of wallet-9of10 depth. ~7.2/10."
+      "overall": "Glass folder with stacked sheets, pearl clasp, chart + operations. Close structure to right phone in direction-b. ~7.8/10."
     },
-    "compared_to": "docs/design-references/screenshots/money-expanded-390x844.png"
-  },
-  {
-    "file": "plan-390.png",
-    "analysis": {
-      "score": 6.5,
-      "critical_issues": [],
-      "improvements": ["Plan still mostly shadcn cards — apply liquid glass surface tokens"],
-      "overall": "Functional plan UI; not on liquid visual system yet. ~6.5/10."
-    }
-  },
-  {
-    "file": "assistant-390.png",
-    "analysis": {
-      "score": 6.5,
-      "critical_issues": [],
-      "improvements": ["Match overview glass language"],
-      "overall": "Usable assistant; secondary surface polish. ~6.5/10."
-    }
-  },
-  {
-    "file": "profile-390.png",
-    "analysis": {
-      "score": 6.5,
-      "critical_issues": [],
-      "improvements": [],
-      "overall": "Settings cards functional. ~6.5/10."
-    }
+    "compared_to": "docs/design-references/vyhod-selected-direction-b.png right phone"
   }
 ]

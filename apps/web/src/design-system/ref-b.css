@@ -1,0 +1,1076 @@
+/* ============================================================
+   VYHOD ref-b — ONLY source: vyhod-selected-direction-b
+   Clean chrome for Overview + Money expanded.
+   ============================================================ */
+
+:root {
+  --rb-pearl: #eceaf1;
+  --rb-ink: #1a1824;
+  --rb-muted: rgba(26, 24, 36, 0.48);
+  --rb-violet: #8174e8;
+  --rb-comfort: #9a8af4;
+  --rb-obl: #c98272;
+  --rb-reserve: #8b9ad4;
+  --rb-glass: rgba(255, 255, 255, 0.55);
+  --rb-glass-strong: rgba(255, 255, 255, 0.72);
+  --rb-line: rgba(255, 255, 255, 0.78);
+  --rb-shadow: 0 18px 40px rgba(90, 78, 140, 0.12);
+  --rb-spring: cubic-bezier(0.22, 0.86, 0.24, 1.05);
+}
+
+/* —— App shell —— */
+html,
+body,
+#root {
+  background: var(--rb-pearl) !important;
+  color: var(--rb-ink);
+}
+
+.rb-shell.app-shell,
+.app-shell.rb-shell {
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  background:
+    radial-gradient(48% 32% at 86% 4%, rgba(191, 178, 242, 0.28), transparent 70%),
+    radial-gradient(60% 36% at 12% 48%, rgba(180, 198, 240, 0.18), transparent 68%),
+    linear-gradient(165deg, #f4f2f8 0%, var(--rb-pearl) 48%, #e8e6f0 100%);
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px));
+  position: relative;
+  overflow-x: hidden;
+}
+
+.rb-topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: calc(10px + env(safe-area-inset-top, 0px)) 18px 8px;
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  background: transparent;
+}
+
+.rb-logo {
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+}
+
+.rb-logo-blob {
+  width: 36px;
+  height: 28px;
+  border-radius: 58% 42% 55% 45% / 48% 52% 48% 52%;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.95), transparent 42%),
+    linear-gradient(135deg, rgba(255, 200, 190, 0.55), rgba(170, 160, 255, 0.55), rgba(200, 220, 255, 0.5));
+  box-shadow:
+    0 8px 20px rgba(129, 116, 232, 0.18),
+    inset 0 1px 1px rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  filter: saturate(1.1);
+}
+
+.rb-main {
+  padding: 4px 16px 12px;
+}
+
+/* Mode dial — glass sphere */
+.mode-dial {
+  position: relative;
+  width: 54px;
+  height: 54px;
+  margin-left: auto;
+}
+
+.dial-trigger {
+  width: 54px;
+  height: 54px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background:
+    radial-gradient(circle at 32% 24%, #fff 0 12%, transparent 38%),
+    radial-gradient(circle at 70% 75%, rgba(129, 116, 232, 0.28), transparent 48%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.95), rgba(210, 215, 240, 0.7));
+  box-shadow:
+    0 10px 24px rgba(90, 78, 140, 0.14),
+    inset 0 1px 1px #fff,
+    inset 0 -10px 18px rgba(129, 116, 232, 0.1);
+  font-size: 12px;
+  font-weight: 680;
+  color: var(--rb-ink);
+  display: grid;
+  place-items: center;
+  position: relative;
+  z-index: 2;
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.dial-trigger::after {
+  content: '';
+  position: absolute;
+  right: 6px;
+  bottom: 8px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ffe08a, #e8a838);
+  box-shadow: 0 0 8px rgba(232, 168, 56, 0.55);
+}
+
+.dial-refract {
+  position: absolute;
+  inset: 5px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+
+.dial-orbit {
+  position: absolute;
+  inset: -8px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.7);
+  transition: 0.35s var(--rb-spring);
+}
+
+.mode-dial.open .dial-orbit {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+
+.dial-arc {
+  position: absolute;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(14px);
+  border-radius: 16px;
+  padding: 8px 12px;
+  box-shadow: var(--rb-shadow);
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--rb-ink);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 1px;
+  white-space: nowrap;
+}
+
+.dial-arc small {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--rb-muted);
+}
+
+.dial-arc.base {
+  top: -6px;
+  right: 58px;
+}
+.dial-arc.hard {
+  top: 42px;
+  right: 48px;
+}
+.dial-arc.active {
+  border-color: rgba(129, 116, 232, 0.45);
+  box-shadow: 0 8px 20px rgba(129, 116, 232, 0.18);
+}
+
+.dial-risk {
+  position: absolute;
+  top: 60px;
+  right: 0;
+  width: 150px;
+  padding: 8px;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.9);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow: var(--rb-shadow);
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  z-index: 5;
+}
+
+.dial-risk button {
+  border: 0;
+  background: transparent;
+  text-align: left;
+  padding: 8px 10px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 560;
+}
+
+.dial-risk button.active {
+  background: rgba(129, 116, 232, 0.12);
+  color: var(--rb-violet);
+}
+
+/* —— Wallet closed —— */
+.overview {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.rb-wallet {
+  width: 100%;
+  position: relative;
+}
+
+.rb-wallet-btn {
+  display: block;
+  width: 100%;
+  border: 0;
+  background: transparent;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  position: relative;
+}
+
+.rb-wallet-btn:disabled {
+  cursor: default;
+}
+.rb-wallet-btn:focus-visible {
+  outline: none;
+}
+.rb-wallet-btn:focus-visible .rb-hero {
+  box-shadow:
+    var(--rb-shadow),
+    0 0 0 3px rgba(129, 116, 232, 0.35);
+}
+
+.rb-peeks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  padding: 0 6px;
+  position: relative;
+  z-index: 1;
+}
+
+.rb-peek {
+  border-radius: 20px;
+  padding: 12px 14px 14px;
+  border: 1px solid var(--rb-line);
+  background: var(--rb-glass-strong);
+  backdrop-filter: blur(18px) saturate(1.25);
+  -webkit-backdrop-filter: blur(18px) saturate(1.25);
+  box-shadow:
+    0 10px 24px rgba(90, 78, 140, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  min-height: 72px;
+}
+
+.rb-peek-comfort {
+  background:
+    linear-gradient(155deg, rgba(154, 138, 244, 0.18), rgba(255, 255, 255, 0.7));
+}
+
+.rb-peek-obl {
+  background:
+    linear-gradient(155deg, rgba(201, 130, 114, 0.16), rgba(255, 255, 255, 0.7));
+}
+
+.rb-peek-head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--rb-muted);
+}
+
+.rb-peek-comfort .rb-peek-head {
+  color: color-mix(in srgb, var(--rb-comfort) 70%, var(--rb-ink));
+}
+.rb-peek-obl .rb-peek-head {
+  color: color-mix(in srgb, var(--rb-obl) 75%, var(--rb-ink));
+}
+
+.rb-peek-amt {
+  display: block;
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 720;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-ink);
+}
+
+/* Hero reserve card */
+.rb-hero {
+  position: relative;
+  z-index: 2;
+  margin-top: -10px;
+  border-radius: 28px;
+  padding: 18px 18px 16px;
+  min-height: 210px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background:
+    linear-gradient(
+      145deg,
+      rgba(255, 255, 255, 0.78) 0%,
+      rgba(220, 226, 245, 0.62) 42%,
+      rgba(190, 200, 235, 0.55) 100%
+    );
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  box-shadow:
+    0 22px 48px rgba(90, 78, 140, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -20px 40px rgba(139, 154, 212, 0.12);
+  overflow: hidden;
+  transition: transform 0.28s var(--rb-spring);
+}
+
+.rb-wallet.is-pressed .rb-hero {
+  transform: scale(0.988);
+}
+
+.rb-hero-water {
+  position: absolute;
+  inset: -20% -10% auto auto;
+  width: 70%;
+  height: 90%;
+  background:
+    radial-gradient(ellipse at 60% 40%, rgba(255, 255, 255, 0.7), transparent 55%),
+    radial-gradient(ellipse at 30% 70%, rgba(170, 185, 240, 0.45), transparent 50%),
+    radial-gradient(ellipse at 80% 20%, rgba(200, 190, 255, 0.35), transparent 45%);
+  filter: blur(6px);
+  opacity: 0.85;
+  pointer-events: none;
+  transform: rotate(-8deg);
+}
+
+.rb-hero-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    120deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    transparent 38%,
+    rgba(255, 255, 255, 0.12) 62%,
+    transparent 100%
+  );
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+}
+
+/* Pearl clasp — right edge pocket + pearl */
+.rb-pearl-clasp {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-52%);
+  width: 44px;
+  height: 88px;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.rb-clasp-body {
+  position: absolute;
+  inset: 0;
+  border-radius: 18px 22px 22px 18px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.55), rgba(200, 210, 235, 0.35));
+  box-shadow:
+    0 10px 22px rgba(90, 78, 140, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(10px);
+}
+
+.rb-pearl {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 22px;
+  height: 22px;
+  margin: -11px 0 0 -11px;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 32% 28%, #fff 0 18%, transparent 42%),
+    radial-gradient(circle at 65% 70%, rgba(180, 175, 210, 0.55), transparent 55%),
+    linear-gradient(145deg, #f7f5fc, #d8d4e8 55%, #c4bfd8);
+  box-shadow:
+    0 4px 10px rgba(90, 78, 140, 0.25),
+    inset 0 1px 1px #fff,
+    inset -2px -3px 6px rgba(120, 110, 160, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.rb-hero-head {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-muted);
+  padding-right: 48px;
+}
+
+.rb-hero-amt {
+  position: relative;
+  z-index: 2;
+  margin: 10px 0 0;
+  font-size: 40px;
+  font-weight: 720;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  color: var(--rb-ink);
+  padding-right: 48px;
+}
+
+.rb-safe {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-size: 12.5px;
+  font-weight: 560;
+  color: color-mix(in srgb, var(--rb-ink) 72%, var(--rb-violet));
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.38));
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(10px);
+}
+
+.rb-safe i {
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--rb-violet) 55%, transparent);
+}
+
+.rb-safe strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-lip {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 18px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.rb-lip span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rb-lip em {
+  font-style: normal;
+  font-size: 11px;
+  color: var(--rb-muted);
+}
+
+.rb-lip b {
+  font-size: 14px;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-lip-div {
+  width: 1px !important;
+  align-self: stretch;
+  background: rgba(26, 24, 36, 0.08);
+  display: block !important;
+}
+
+/* Assistant capsule */
+.rb-assistant {
+  position: relative;
+  border-radius: 26px;
+  padding: 16px 16px 14px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.78), rgba(235, 230, 250, 0.55));
+  box-shadow: var(--rb-shadow), inset 0 1px 0 #fff;
+  backdrop-filter: blur(18px) saturate(1.2);
+  -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  overflow: hidden;
+}
+
+.rb-assistant-water {
+  position: absolute;
+  right: -10%;
+  bottom: -30%;
+  width: 60%;
+  height: 90%;
+  background:
+    radial-gradient(ellipse at 40% 40%, rgba(200, 190, 255, 0.35), transparent 60%),
+    radial-gradient(ellipse at 70% 60%, rgba(255, 255, 255, 0.5), transparent 50%);
+  filter: blur(8px);
+  pointer-events: none;
+}
+
+.rb-assistant small {
+  position: relative;
+  display: block;
+  font-size: 12px;
+  font-weight: 650;
+  color: var(--rb-violet);
+  margin-bottom: 4px;
+}
+
+.rb-assistant h2 {
+  position: relative;
+  margin: 0;
+  font-size: 16px;
+  font-weight: 680;
+  letter-spacing: -0.02em;
+  line-height: 1.3;
+  max-width: 92%;
+}
+
+.rb-assistant-actions {
+  position: relative;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  align-items: center;
+}
+
+.rb-assistant-actions a {
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--rb-ink);
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+}
+
+.rb-assistant-actions a.rb-ask {
+  margin-left: auto;
+  background: linear-gradient(145deg, #9a8ef0, var(--rb-violet));
+  color: #fff;
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(129, 116, 232, 0.3);
+}
+
+/* Bottom nav glass dock */
+.rb-nav {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(400px, calc(100% - 28px));
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding: 8px 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.68);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 16px 36px rgba(90, 78, 140, 0.14);
+  backdrop-filter: blur(22px) saturate(1.3);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+}
+
+.rb-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  color: var(--rb-muted);
+  padding: 6px 4px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.rb-nav a b {
+  font-weight: 600;
+}
+
+.rb-nav a.active {
+  color: var(--rb-violet);
+  background: rgba(154, 138, 244, 0.14);
+}
+
+.rb-nav-blob {
+  display: block;
+  width: 22px;
+  height: 16px;
+  border-radius: 60% 40% 55% 45% / 50% 50% 50% 50%;
+  background: linear-gradient(135deg, #c4b8ff, #8174e8);
+  box-shadow: 0 2px 8px rgba(129, 116, 232, 0.35);
+}
+
+.rb-nav a.active .rb-nav-blob {
+  background: linear-gradient(135deg, #d4ccff, #9a8af4);
+}
+
+/* Hide old bottom-nav / liquid leftovers if present */
+.bottom-nav {
+  display: none !important;
+}
+.liquid-topbar {
+  display: none !important;
+}
+
+/* —— Money expanded (glass folder) —— */
+.rb-money {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  max-width: 430px;
+  margin: 0 auto;
+  background:
+    radial-gradient(50% 28% at 50% 0%, rgba(180, 170, 240, 0.22), transparent 70%),
+    var(--rb-pearl);
+  display: flex;
+  flex-direction: column;
+  animation: rb-open 0.42s var(--rb-spring);
+  overflow: hidden;
+}
+
+@keyframes rb-open {
+  from {
+    opacity: 0;
+    transform: translateY(12px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.rb-money-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: calc(16px + env(safe-area-inset-top, 0px)) 20px 8px;
+}
+
+.rb-money-title {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.rb-money-header small {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--rb-muted);
+}
+
+.rb-money-header h1 {
+  margin: 2px 0 0;
+  font-size: 34px;
+  font-weight: 720;
+  letter-spacing: -0.04em;
+  font-variant-numeric: tabular-nums;
+}
+
+.rb-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(255, 255, 255, 0.7);
+  display: grid;
+  place-items: center;
+  box-shadow: 0 6px 16px rgba(90, 78, 140, 0.1);
+  color: var(--rb-ink);
+}
+
+.rb-folder {
+  position: relative;
+  flex: 1;
+  margin: 8px 14px 0;
+  perspective: 1000px;
+  overflow: auto;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+.rb-sheet {
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.72), rgba(230, 228, 245, 0.55));
+  box-shadow: 0 16px 36px rgba(90, 78, 140, 0.12);
+  backdrop-filter: blur(16px);
+}
+
+.rb-sheet-3,
+.rb-sheet-2 {
+  position: absolute;
+  left: 6%;
+  right: 6%;
+  height: 48px;
+  pointer-events: none;
+}
+
+.rb-sheet-3 {
+  top: 0;
+  transform: rotate(-3deg) translateY(0);
+  opacity: 0.55;
+  background: linear-gradient(160deg, rgba(200, 190, 255, 0.35), rgba(255, 255, 255, 0.4));
+}
+
+.rb-sheet-2 {
+  top: 14px;
+  transform: rotate(1.5deg);
+  opacity: 0.7;
+  background: linear-gradient(160deg, rgba(180, 200, 240, 0.35), rgba(255, 255, 255, 0.45));
+}
+
+.rb-sheet-1 {
+  position: relative;
+  margin-top: 36px;
+  padding: 18px 16px 20px;
+  min-height: 70%;
+}
+
+.rb-folder-pearl {
+  position: absolute;
+  right: -6px;
+  top: 28%;
+  width: 40px;
+  height: 72px;
+  border-radius: 16px 20px 20px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background: linear-gradient(160deg, rgba(255, 255, 255, 0.5), rgba(200, 210, 235, 0.3));
+  box-shadow: 0 10px 22px rgba(90, 78, 140, 0.12);
+  z-index: 3;
+}
+
+.rb-folder-pearl .rb-pearl {
+  top: 50%;
+  left: 50%;
+}
+
+.rb-movement h2,
+.rb-tx h2 {
+  margin: 0 0 10px;
+  font-size: 15px;
+  font-weight: 680;
+}
+
+.rb-movement {
+  margin-bottom: 18px;
+  padding-right: 28px;
+}
+
+.rb-movement svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.rb-chart-curve {
+  fill: none;
+  stroke: var(--rb-violet);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.rb-chart-area {
+  fill: url(#rbChartFill);
+}
+
+.rb-chart-dot {
+  fill: #fff;
+  stroke: var(--rb-violet);
+  stroke-width: 2;
+}
+
+.rb-chart-halo {
+  fill: rgba(129, 116, 232, 0.2);
+}
+
+.rb-chart-axis text {
+  fill: var(--rb-muted);
+  font-size: 10px;
+}
+
+.rb-tx ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.rb-tx li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-top: 1px solid rgba(26, 24, 36, 0.06);
+}
+
+.rb-tx li:first-of-type {
+  border-top: 0;
+}
+
+.rb-tx-ic {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+.rb-tx-ic.expense {
+  background: rgba(201, 130, 114, 0.14);
+  color: var(--rb-obl);
+}
+
+.rb-tx-ic.income {
+  background: rgba(126, 159, 146, 0.18);
+  color: #5f8a78;
+}
+
+.rb-tx li div {
+  flex: 1;
+  min-width: 0;
+}
+
+.rb-tx li b {
+  display: block;
+  font-size: 14px;
+  font-weight: 650;
+}
+
+.rb-tx li small {
+  font-size: 11px;
+  color: var(--rb-muted);
+}
+
+.rb-tx li strong {
+  font-size: 13px;
+  font-variant-numeric: tabular-nums;
+  font-weight: 680;
+}
+
+.expense-text {
+  color: var(--rb-obl);
+}
+.income-text {
+  color: #5f8a78;
+}
+
+.rb-empty {
+  text-align: center;
+  color: var(--rb-muted);
+  font-size: 13px;
+  padding: 16px 0;
+}
+
+/* Hide demo mark / old assistant when using ref-b */
+.demo-mark {
+  display: none;
+}
+
+.status-banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  color: var(--rb-muted);
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .rb-money,
+  .rb-hero,
+  .dial-orbit {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+/* Mobile compact */
+@media (max-width: 380px) {
+  .rb-hero-amt {
+    font-size: 34px;
+  }
+  .rb-peek-amt {
+    font-size: 16px;
+  }
+}
+
+/* ============================================================
+   Pass 2 vs direction-b — denser liquid material, organic blob
+   ============================================================ */
+
+.rb-logo-blob {
+  width: 40px !important;
+  height: 32px !important;
+  border-radius: 62% 38% 58% 42% / 44% 56% 44% 56% !important;
+  background:
+    radial-gradient(circle at 28% 28%, rgba(255,255,255,0.98) 0 12%, transparent 40%),
+    radial-gradient(circle at 72% 62%, rgba(255,180,160,0.45), transparent 50%),
+    radial-gradient(circle at 48% 70%, rgba(160,150,255,0.5), transparent 48%),
+    linear-gradient(125deg, rgba(255,210,200,0.65), rgba(180,170,255,0.55), rgba(190,210,255,0.55)) !important;
+  box-shadow:
+    0 10px 22px rgba(129,116,232,0.22),
+    inset 0 1px 2px rgba(255,255,255,0.95),
+    inset -2px -4px 10px rgba(140,130,220,0.2) !important;
+  transform: rotate(-12deg);
+}
+
+.rb-hero {
+  background:
+    radial-gradient(ellipse 80% 70% at 78% 35%, rgba(255,255,255,0.75) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 20% 80%, rgba(170,185,240,0.4) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 80%, rgba(190,180,255,0.28) 0%, transparent 50%),
+    linear-gradient(
+      150deg,
+      rgba(255,255,255,0.82) 0%,
+      rgba(225,230,248,0.58) 40%,
+      rgba(185,195,232,0.52) 100%
+    ) !important;
+}
+
+.rb-hero-water {
+  inset: -30% -15% -10% 20% !important;
+  width: auto !important;
+  height: auto !important;
+  background:
+    radial-gradient(ellipse at 55% 35%, rgba(255,255,255,0.85) 0%, transparent 42%),
+    radial-gradient(ellipse at 70% 55%, rgba(200,210,250,0.55) 0%, transparent 48%),
+    radial-gradient(ellipse at 40% 60%, rgba(170,160,240,0.35) 0%, transparent 45%),
+    radial-gradient(ellipse at 85% 25%, rgba(255,255,255,0.5) 0%, transparent 40%) !important;
+  filter: blur(10px) contrast(1.05) !important;
+  opacity: 1 !important;
+  mix-blend-mode: soft-light;
+  animation: rb-water 8s ease-in-out infinite alternate;
+}
+
+@keyframes rb-water {
+  from { transform: rotate(-8deg) scale(1); }
+  to { transform: rotate(-4deg) scale(1.06) translate(-2%, 2%); }
+}
+
+/* Pearl clasp — organic glass tab + pearl */
+.rb-pearl-clasp {
+  right: 8px !important;
+  width: 48px !important;
+  height: 96px !important;
+}
+
+.rb-clasp-body {
+  border-radius: 22px 26px 26px 20px !important;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.7), transparent 50%),
+    linear-gradient(165deg, rgba(255,255,255,0.65), rgba(190,200,230,0.35)) !important;
+  box-shadow:
+    0 12px 28px rgba(90,78,140,0.16),
+    inset 0 1px 1px #fff,
+    inset -4px -6px 14px rgba(130,140,190,0.18) !important;
+}
+
+.rb-pearl {
+  width: 24px !important;
+  height: 24px !important;
+  margin: -12px 0 0 -12px !important;
+  background:
+    radial-gradient(circle at 30% 25%, #fff 0 20%, transparent 45%),
+    radial-gradient(circle at 68% 72%, rgba(160,155,200,0.5), transparent 52%),
+    radial-gradient(circle at 50% 50%, #f4f1fa, #cfc9e2 70%, #b8b2d0) !important;
+  box-shadow:
+    0 5px 12px rgba(90,78,140,0.28),
+    inset 0 1px 2px #fff,
+    inset -3px -4px 8px rgba(110,100,160,0.28) !important;
+}
+
+.rb-peek {
+  backdrop-filter: blur(20px) saturate(1.35) !important;
+  -webkit-backdrop-filter: blur(20px) saturate(1.35) !important;
+}
+
+.rb-assistant {
+  background:
+    radial-gradient(ellipse at 85% 80%, rgba(200,190,255,0.28), transparent 50%),
+    linear-gradient(160deg, rgba(255,255,255,0.82), rgba(235,230,250,0.55)) !important;
+}
+
+.rb-assistant-water {
+  opacity: 0.95 !important;
+  filter: blur(10px) !important;
+}
+
+/* Folder sheets more glass */
+.rb-sheet-3 {
+  left: 8% !important;
+  right: 8% !important;
+  height: 56px !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(160deg, rgba(210,200,255,0.45), rgba(255,255,255,0.35)) !important;
+  box-shadow: 0 12px 28px rgba(90,78,140,0.1) !important;
+  backdrop-filter: blur(12px);
+}
+
+.rb-sheet-2 {
+  left: 4% !important;
+  right: 4% !important;
+  height: 56px !important;
+  top: 18px !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(160deg, rgba(180,200,245,0.42), rgba(255,255,255,0.4)) !important;
+  box-shadow: 0 12px 28px rgba(90,78,140,0.1) !important;
+}
+
+.rb-sheet-1 {
+  margin-top: 42px !important;
+  background:
+    radial-gradient(ellipse at 90% 20%, rgba(255,255,255,0.7), transparent 45%),
+    linear-gradient(160deg, rgba(255,255,255,0.78), rgba(228,226,245,0.58)) !important;
+  border: 1px solid rgba(255,255,255,0.82) !important;
+}
+
+.rb-folder-pearl {
+  right: -4px !important;
+  width: 44px !important;
+  height: 80px !important;
+  background:
+    radial-gradient(circle at 30% 25%, rgba(255,255,255,0.65), transparent 50%),
+    linear-gradient(165deg, rgba(255,255,255,0.55), rgba(190,200,230,0.32)) !important;
+}
+
+.dial-trigger {
+  box-shadow:
+    0 12px 28px rgba(90,78,140,0.16),
+    inset 0 1px 2px #fff,
+    inset 0 -12px 20px rgba(129,116,232,0.12) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rb-hero-water { animation: none !important; }
+}

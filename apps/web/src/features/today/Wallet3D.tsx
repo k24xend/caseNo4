@@ -1,15 +1,9 @@
 /**
- * Liquid Glass Wallet — CSS 3D primary (reference structure 1:1).
- *
- * Three independent volumetric cards:
- *   Comfort (violet, back) → Obligations (terracotta, mid) → Reserve (blue-violet, front)
- * Reserve: large amount, safe-strip, lip, clasp.
- *
- * Why CSS 3D: R3F + canvas textures produced clipped/stretched text and
- * a fused single panel on mobile. CSS delivers readable type + true layered glass.
+ * Liquid wallet — structure from vyhod-selected-direction-b only.
+ * Closed: side-by-side Comfort | Платежи peeks + hero Запас + pearl clasp.
  */
 import { useEffect, useState, type RefObject } from 'react';
-import { Coffee, ReceiptText, Shield, Sparkles } from 'lucide-react';
+import { Coffee, MapPin, ReceiptText } from 'lucide-react';
 import { formatMoney } from '../../domain/money';
 import type { Currency } from '../../domain/models';
 
@@ -43,32 +37,24 @@ export function LiquidWallet({ phase, amounts, onOpen, triggerRef, reducedMotion
     reducedMotion ??
     (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
 
-  // reset press if dialog opens
   useEffect(() => {
     if (open) setPressed(false);
   }, [open]);
 
   return (
     <section
-      className={[
-        'lq-wallet',
-        open ? 'is-open' : '',
-        pressed ? 'is-pressed' : '',
-        rm ? 'is-reduced' : '',
-      ]
+      className={['rb-wallet', open ? 'is-open' : '', pressed ? 'is-pressed' : '', rm ? 'is-reduced' : '']
         .filter(Boolean)
         .join(' ')}
       aria-label="Кошелёк"
       data-testid="wallet-stage"
       data-wallet-layers="3"
-      data-wallet-engine="css-3d"
+      data-wallet-engine="ref-b"
     >
-      <div className="lq-aura" aria-hidden />
-
       <button
         ref={triggerRef}
         type="button"
-        className="lq-stack wallet-stack"
+        className="rb-wallet-btn"
         data-testid="wallet-stack"
         onClick={onOpen}
         onPointerDown={() => !open && setPressed(true)}
@@ -81,53 +67,53 @@ export function LiquidWallet({ phase, amounts, onOpen, triggerRef, reducedMotion
         disabled={open}
         tabIndex={open ? -1 : 0}
       >
-        {/* —— Layer 1: Comfort (back) —— */}
-        <div className="lq-layer lq-comfort" data-layer="comfort">
-          <div className="lq-sheen" aria-hidden />
-          <div className="lq-head">
-            <Coffee size={15} strokeWidth={1.75} aria-hidden />
-            <span>Комфорт</span>
+        {/* Side peeks — Comfort | Платежи */}
+        <div className="rb-peeks" aria-hidden={open}>
+          <div className="rb-peek rb-peek-comfort" data-layer="comfort">
+            <div className="rb-peek-head">
+              <Coffee size={15} strokeWidth={1.8} aria-hidden />
+              <span>Комфорт</span>
+            </div>
+            <strong className="rb-peek-amt">{formatMoney(amounts.comfort, amounts.currency)}</strong>
           </div>
-          <div className="lq-amt">{formatMoney(amounts.comfort, amounts.currency)}</div>
+          <div className="rb-peek rb-peek-obl" data-layer="obligations">
+            <div className="rb-peek-head">
+              <ReceiptText size={15} strokeWidth={1.8} aria-hidden />
+              <span>Платежи</span>
+            </div>
+            <strong className="rb-peek-amt">{formatMoney(amounts.obligations, amounts.currency)}</strong>
+          </div>
         </div>
 
-        {/* —— Layer 2: Obligations (mid) —— */}
-        <div className="lq-layer lq-obligations" data-layer="obligations">
-          <div className="lq-sheen" aria-hidden />
-          <div className="lq-head">
-            <ReceiptText size={15} strokeWidth={1.75} aria-hidden />
-            <span>Платежи</span>
-          </div>
-          <div className="lq-amt">{formatMoney(amounts.obligations, amounts.currency)}</div>
-        </div>
+        {/* Hero reserve */}
+        <div className="rb-hero" data-layer="reserve">
+          <div className="rb-hero-water" aria-hidden />
+          <div className="rb-hero-sheen" aria-hidden />
 
-        {/* —— Layer 3: Reserve (front) —— */}
-        <div className="lq-layer lq-reserve" data-layer="reserve">
-          <div className="lq-sheen lq-sheen-strong" aria-hidden />
-          <div className="lq-caustic" aria-hidden />
-
-          <div className="clasp lq-clasp" aria-hidden>
-            <span className="clasp-neck" />
-            <i />
+          <div className="rb-pearl-clasp" aria-hidden>
+            <span className="rb-clasp-body" />
+            <span className="rb-pearl" />
           </div>
 
-          <div className="lq-head">
-            <Shield size={15} strokeWidth={1.75} aria-hidden />
+          <div className="rb-hero-head">
+            <MapPin size={14} strokeWidth={1.9} aria-hidden />
             <span>Запас</span>
           </div>
-          <div className="lq-amt lq-amt-xl">{formatMoney(amounts.reserve, amounts.currency)}</div>
 
-          <div className="lq-safe safe-strip">
-            <Sparkles size={13} strokeWidth={1.75} aria-hidden />
+          <p className="rb-hero-amt">{formatMoney(amounts.reserve, amounts.currency)}</p>
+
+          <div className="rb-safe">
             <span>Безопасно сегодня</span>
+            <i aria-hidden />
             <strong>{formatMoney(amounts.safeDaily, amounts.currency)}</strong>
           </div>
 
-          <div className="lq-lip">
+          <div className="rb-lip">
             <span>
               <em>Всего</em>
               <b>{formatMoney(amounts.total, amounts.currency)}</b>
             </span>
+            <span className="rb-lip-div" aria-hidden />
             <span>
               <em>Платежи</em>
               <b>{formatMoney(amounts.obligations, amounts.currency)}</b>
