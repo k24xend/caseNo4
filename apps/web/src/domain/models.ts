@@ -154,10 +154,24 @@ export interface QueuedMutation {
   createdAt: number;
   error?: string;
 }
+export type AppLanguage = 'ru' | 'en' | 'zh';
+export type ColorSchemeId =
+  | 'mint'
+  | 'sky'
+  | 'sage'
+  | 'lavender'
+  | 'sand'
+  | 'ocean'
+  | 'rose'
+  | 'slate'
+  | 'aurora'
+  | 'graphite';
+
 export interface AppSettings {
   version?: number;
   theme: 'system' | 'light' | 'dark';
-  language: 'ru' | 'en';
+  colorScheme: ColorSchemeId;
+  language: AppLanguage;
   demoOffline: boolean;
   demoError: boolean;
   scenario: Scenario;

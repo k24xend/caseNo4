@@ -1,10 +1,13 @@
 import { Search } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useApp } from '../../app/AppContext';
+import { HeaderChrome } from '../../components/HeaderChrome';
 import { formatMoney } from '../../domain/money';
+import { formatDate, t } from '../../i18n';
 
 export function Transactions() {
   const { data, settings } = useApp();
+  const s = t(settings.language);
   const [q, setQ] = useState('');
 
   const { income, spent, list } = useMemo(() => {
@@ -29,29 +32,30 @@ export function Transactions() {
 
   return (
     <div>
-      <h1 className="fs-page-title">History</h1>
-      <p className="fs-page-sub">All transactions and trends</p>
+      <HeaderChrome compact />
+      <h1 className="fs-page-title mt-4">{s.historyTitle}</h1>
+      <p className="fs-page-sub">{s.historySub}</p>
 
       <div className="fs-stats">
         <div className="fs-stat">
-          <small>Total Income</small>
+          <small>{s.totalIncome}</small>
           <strong className="income">+{formatMoney(income, currency)}</strong>
-          <em>This week</em>
+          <em>{s.thisWeek}</em>
         </div>
         <div className="fs-stat">
-          <small>Total Spent</small>
+          <small>{s.totalSpent}</small>
           <strong className="expense">−{formatMoney(spent, currency)}</strong>
-          <em>This week</em>
+          <em>{s.thisWeek}</em>
         </div>
       </div>
 
       <label className="fs-search">
-        <Search size={18} className="text-slate-500" aria-hidden />
+        <Search size={18} aria-hidden />
         <input
           value={q}
           onChange={(e) => setQ(e.target.value)}
-          placeholder="Search transactions…"
-          aria-label="Search transactions"
+          placeholder={s.searchTx}
+          aria-label={s.searchTx}
         />
       </label>
 
@@ -68,13 +72,7 @@ export function Transactions() {
                   <div>
                     <b>{tx.description || tx.category}</b>
                     <small>
-                      {tx.category} ·{' '}
-                      {new Intl.DateTimeFormat(settings.language === 'ru' ? 'ru-RU' : 'en-US', {
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                      }).format(new Date(tx.occurred_at))}
+                      {tx.category} · {formatDate(tx.occurred_at, settings.language)}
                     </small>
                   </div>
                   <strong className={incomeTx ? 'income' : 'expense'}>
@@ -87,8 +85,8 @@ export function Transactions() {
           ) : (
             <li>
               <div>
-                <b>No transactions</b>
-                <small>Try another search</small>
+                <b>{s.noTx}</b>
+                <small>{s.trySearch}</small>
               </div>
             </li>
           )}

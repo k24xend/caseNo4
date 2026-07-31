@@ -25,8 +25,9 @@ export const setDemo = (v: DemoData) => setRecord('demo', v);
 export const getDraft = () => getRecord<OnboardingDraft>('onboarding');
 export const setDraft = (v: OnboardingDraft) => setRecord('onboarding', v);
 export const defaultSettings: AppSettings = {
-  version: 3,
+  version: 4,
   theme: 'system',
+  colorScheme: 'mint',
   language: 'ru',
   demoOffline: false,
   demoError: false,
@@ -70,7 +71,8 @@ export function normalizeSettings(raw?: Partial<AppSettings>): AppSettings {
   return {
     ...defaultSettings,
     ...raw,
-    version: 3,
+    version: 4,
+    colorScheme: raw?.colorScheme ?? defaultSettings.colorScheme,
     resources,
     advice: raw?.advice ?? defaultSettings.advice,
   } as AppSettings;

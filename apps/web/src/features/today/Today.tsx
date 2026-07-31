@@ -1,35 +1,21 @@
-/**
- * Home — adapted from Figma/Flowstep Screen 3 export.
- * Visual: glass mint cyan; data from app plan.
- */
-import {
-  BarChart3,
-  CircleUser,
-  Globe,
-  Palette,
-  ShoppingBag,
-  Snowflake,
-  Star,
-  SunMoon,
-  Utensils,
-  WifiOff,
-} from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { BarChart3, ShoppingBag, Star, Utensils, WifiOff } from 'lucide-react';
 import { useMemo, useState, type ReactNode } from 'react';
 import { useApp } from '../../app/AppContext';
+import { HeaderChrome } from '../../components/HeaderChrome';
 import { Skeleton } from '../../components/ui';
 import { formatMoney } from '../../domain/money';
+import { t } from '../../i18n';
 import { cn } from '../../lib/utils';
 
-const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
-const barHeights = [80, 64, 72, 48, 68, 76, 52];
+const barHeights = [78, 62, 70, 46, 72, 80, 54];
 
 export function Today() {
   const { data, loading, error, settings, refresh, patch } = useApp();
+  const s = t(settings.language);
   const [pace, setPace] = useState<'basic' | 'hard'>(
     settings.guidanceMode === 'hard' ? 'hard' : 'basic',
   );
-  const [starred, setStarred] = useState({ shopping: true, food: false });
+  const [starred, setStarred] = useState({ shopping: true, food: true });
 
   const categories = useMemo(() => {
     if (!data) return { shopping: 31280, food: 9840 };
@@ -44,19 +30,15 @@ export function Today() {
         shopping += tx.amount;
       }
     }
-    return {
-      shopping: shopping || 31280,
-      food: food || 9840,
-    };
+    return { shopping: shopping || 31280, food: food || 9840 };
   }, [data]);
 
   if (loading) return <Skeleton />;
   if (error)
     return (
       <div className="fs-card p-4">
-        <p className="font-semibold text-slate-950">Couldn’t load overview</p>
-        <p className="mt-1 text-xs text-slate-500">{error}</p>
-        <button type="button" className="mt-3 text-sm font-semibold text-cyan-600" onClick={refresh}>
+        <p className="font-semibold">{error}</p>
+        <button type="button" className="mt-3 text-sm font-semibold text-accent" onClick={refresh}>
           Retry
         </button>
       </div>
@@ -75,151 +57,116 @@ export function Today() {
   };
 
   return (
-    <div className="fs-home">
+    <div className="flex flex-col gap-4">
       {settings.demoOffline && (
-        <div className="mb-3 flex items-center gap-2 rounded-2xl border border-white/70 bg-white/55 px-3 py-2 text-xs text-slate-600 backdrop-blur-xl">
-          <WifiOff size={14} /> Offline demo
+        <div className="fs-card flex items-center gap-2 px-3 py-2 text-xs text-muted">
+          <WifiOff size={14} /> {s.offlineDemo}
         </div>
       )}
 
-      {/* Header — Screen 3 */}
-      <header className="flex items-center justify-between pt-1">
-        <div className="flex items-center gap-3">
-          <div className="fs-icon-btn size-10">
-            <Snowflake className="size-5 text-cyan-500" />
-          </div>
-          <div className="flex flex-col">
-            <span className="text-[22px] font-semibold tracking-tight text-slate-950">Vyhod</span>
-            <span className="max-w-[150px] text-[11px] font-medium leading-4 text-slate-600">
-              Track money, improve balance
+      <HeaderChrome />
+
+      <section className="fs-card p-4">
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.28em] text-muted">
+              {s.difficulty}
             </span>
+            <span className="text-sm font-semibold text-ink">{s.choosePace}</span>
+          </div>
+          <div className="fs-seg flex items-center gap-1 p-1">
+            <button
+              type="button"
+              className={cn('fs-seg-btn', pace === 'basic' && 'active')}
+              onClick={() => choosePace('basic')}
+            >
+              {s.basic}
+            </button>
+            <button
+              type="button"
+              className={cn('fs-seg-btn', pace === 'hard' && 'active')}
+              onClick={() => choosePace('hard')}
+            >
+              {s.hard}
+            </button>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <button type="button" className="fs-icon-btn size-10" aria-label="Theme">
-            <Palette className="size-4 text-slate-700" />
-          </button>
-          <button type="button" className="fs-icon-btn size-10" aria-label="Language">
-            <Globe className="size-4 text-slate-700" />
-          </button>
-          <button type="button" className="fs-icon-btn size-10" aria-label="Appearance">
-            <SunMoon className="size-4 text-slate-700" />
-          </button>
-          <Link to="/profile" className="fs-icon-btn size-10" aria-label="Profile">
-            <CircleUser className="size-4 text-slate-700" />
-          </Link>
+      </section>
+
+      <section className="fs-progress p-5">
+        <div className="flex items-start justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex size-12 items-center justify-center rounded-2xl bg-accent-soft">
+              <BarChart3 className="size-5" style={{ color: 'var(--accent)' }} />
+            </div>
+            <div>
+              <div className="text-sm font-semibold text-ink">{s.financialProgress}</div>
+              <div className="text-xs text-muted">{s.balanceImproving}</div>
+            </div>
+          </div>
+          <div
+            className="rounded-full px-3 py-1 text-xs font-semibold"
+            style={{ background: 'color-mix(in srgb, var(--positive) 14%, transparent)', color: 'var(--positive)' }}
+          >
+            +12.4%
+          </div>
         </div>
-      </header>
 
-      <div className="mt-4 flex flex-col gap-4">
-        {/* Difficulty */}
-        <section className="fs-card p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex flex-col gap-1">
-              <span className="text-xs font-medium uppercase tracking-[0.32em] text-slate-500">
-                Difficulty
-              </span>
-              <span className="text-sm font-semibold leading-5 text-slate-950">Choose your pace</span>
-            </div>
-            <div className="fs-seg flex items-center gap-1 p-1">
-              <button
-                type="button"
-                className={cn('fs-seg-btn', pace === 'basic' && 'active')}
-                onClick={() => choosePace('basic')}
-              >
-                Basic
-              </button>
-              <button
-                type="button"
-                className={cn('fs-seg-btn', pace === 'hard' && 'active')}
-                onClick={() => choosePace('hard')}
-              >
-                Hard
-              </button>
-            </div>
-          </div>
-        </section>
-
-        {/* Financial progress */}
-        <section className="fs-progress p-5">
-          <div className="flex items-start justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="fs-icon-btn size-12">
-                <BarChart3 className="size-5 text-cyan-500" />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-sm font-semibold leading-5 text-slate-950">
-                  Financial progress
-                </span>
-                <span className="text-xs leading-4 text-slate-500">Your balance is improving</span>
+        <div className="fs-inner mt-5 p-4">
+          <div className="flex items-end justify-between gap-2">
+            <div>
+              <div className="text-xs text-muted">{s.availableToSpend}</div>
+              <div className="mt-1 text-3xl font-semibold tracking-tight text-ink tabular-nums">
+                {formatMoney(available, currency)}
               </div>
             </div>
-            <div className="rounded-full bg-emerald-500/12 px-3 py-1 text-xs font-semibold leading-4 text-emerald-700 shadow-[0_8px_18px_rgba(61,158,168,0.08)]">
-              +12.4%
+            <div className="rounded-2xl px-3 py-2 text-right" style={{ background: 'var(--accent-soft)' }}>
+              <div className="text-[11px] font-medium text-muted">{s.thisMonth}</div>
+              <div className="text-sm font-semibold text-ink">{s.stable}</div>
             </div>
           </div>
 
-          <div className="fs-inner mt-5 p-4">
-            <div className="flex items-end justify-between gap-2">
-              <div className="flex flex-col gap-1">
-                <span className="text-xs leading-4 text-slate-500">Available to spend</span>
-                <span className="text-3xl font-semibold leading-9 tracking-tight text-slate-950 tabular-nums">
-                  {formatMoney(available, currency)}
-                </span>
-              </div>
-              <div className="rounded-2xl bg-cyan-500/12 px-3 py-2 text-right shadow-[0_10px_20px_rgba(6,182,212,0.12)]">
-                <div className="text-[11px] font-medium text-slate-500">This month</div>
-                <div className="text-sm font-semibold leading-5 text-slate-950">Stable</div>
-              </div>
-            </div>
-
-            <div className="mt-4 grid grid-cols-7 gap-2">
-              {barHeights.map((h, i) => (
-                <div
-                  key={weekDays[i]}
-                  className="fs-bar rounded-2xl bg-cyan-400/30"
-                  style={{ height: h, marginTop: Math.max(0, 80 - h) }}
-                />
-              ))}
-            </div>
-            <div className="mt-3 flex items-center justify-between text-[11px] text-slate-500">
-              {weekDays.map((d) => (
-                <span key={d}>{d}</span>
-              ))}
-            </div>
+          <div className="mt-4 grid grid-cols-7 gap-2">
+            {barHeights.map((h, i) => (
+              <div
+                key={s.weekDays[i]}
+                className="fs-bar"
+                style={{ height: h, marginTop: Math.max(0, 84 - h) }}
+              />
+            ))}
           </div>
-        </section>
-
-        {/* Money categories */}
-        <section className="fs-card rounded-[28px] p-5">
-          <div className="flex items-center justify-between">
-            <div className="flex flex-col gap-1">
-              <span className="text-base font-semibold leading-6 text-slate-950">Money categories</span>
-              <span className="text-xs leading-4 text-slate-500">Where your budget goes</span>
-            </div>
-            <Link to="/plan" className="text-xs font-semibold leading-4 text-cyan-600">
-              Edit
-            </Link>
+          <div className="mt-3 flex justify-between text-[11px] text-muted">
+            {s.weekDays.map((d) => (
+              <span key={d}>{d}</span>
+            ))}
           </div>
+        </div>
+      </section>
 
-          <div className="mt-4 grid grid-cols-2 gap-3">
-            <CategoryCard
-              label="Shopping"
-              amount={formatMoney(categories.shopping, currency)}
-              icon={<ShoppingBag className="size-4" />}
-              starred={starred.shopping}
-              onStar={() => setStarred((s) => ({ ...s, shopping: !s.shopping }))}
-            />
-            <CategoryCard
-              label="Food & Drink"
-              amount={formatMoney(categories.food, currency)}
-              icon={<Utensils className="size-4" />}
-              starred={starred.food}
-              onStar={() => setStarred((s) => ({ ...s, food: !s.food }))}
-            />
+      <section className="fs-card p-5" style={{ borderRadius: 'var(--radius-lg)' }}>
+        <div className="flex items-start justify-between gap-2">
+          <div>
+            <div className="text-base font-semibold text-ink">{s.moneyCategories}</div>
+            <div className="mt-0.5 text-xs text-muted">{s.whereBudgetGoes}</div>
           </div>
-        </section>
-      </div>
+        </div>
+        <div className="mt-4 grid grid-cols-2 gap-3">
+          <CategoryCard
+            label={s.shopping}
+            amount={formatMoney(categories.shopping, currency)}
+            icon={<ShoppingBag className="size-4" />}
+            starred={starred.shopping}
+            onStar={() => setStarred((v) => ({ ...v, shopping: !v.shopping }))}
+          />
+          <CategoryCard
+            label={s.foodDrink}
+            amount={formatMoney(categories.food, currency)}
+            icon={<Utensils className="size-4" />}
+            starred={starred.food}
+            onStar={() => setStarred((v) => ({ ...v, food: !v.food }))}
+          />
+        </div>
+      </section>
     </div>
   );
 }
@@ -240,17 +187,18 @@ function CategoryCard({
   return (
     <div className="fs-cat rounded-2xl p-4">
       <div className="flex items-center justify-between">
-        <div className="flex size-10 items-center justify-center rounded-2xl bg-cyan-500/12 text-cyan-600 shadow-[inset_0_1px_0_rgba(255,255,255,0.55)]">
+        <div className="flex size-10 items-center justify-center rounded-2xl bg-accent-soft text-accent">
           {icon}
         </div>
-        <button type="button" onClick={onStar} aria-label={`Favorite ${label}`}>
+        <button type="button" onClick={onStar} aria-label={label}>
           <Star
-            className={cn('size-4', starred ? 'fill-cyan-500 text-cyan-500' : 'text-slate-400')}
+            className={cn('size-4', starred ? 'fill-current text-accent' : 'text-muted')}
+            style={starred ? { color: 'var(--accent)' } : undefined}
           />
         </button>
       </div>
-      <div className="mt-3 text-xs leading-4 text-slate-500">{label}</div>
-      <div className="mt-1 text-lg font-semibold leading-7 text-slate-950 tabular-nums">{amount}</div>
+      <div className="mt-3 text-xs text-muted">{label}</div>
+      <div className="mt-1 text-lg font-semibold text-ink tabular-nums">{amount}</div>
     </div>
   );
 }

@@ -23,8 +23,9 @@ type Context = {
 };
 const AppContext = createContext<Context | null>(null);
 const fallbackSettings: AppSettings = {
-  version: 3,
+  version: 4,
   theme: 'system',
+  colorScheme: 'mint',
   language: 'ru',
   demoOffline: false,
   demoError: false,
@@ -91,9 +92,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       settings.theme === 'dark' ||
       (settings.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.documentElement.dataset.scheme = settings.colorScheme ?? 'mint';
     document.documentElement.classList.toggle('dark', dark);
     document.documentElement.lang = settings.language;
-  }, [settings.theme, settings.language]);
+  }, [settings.theme, settings.language, settings.colorScheme]);
   useEffect(() => {
     if (dataMode === 'demo' && settingsState) void refresh();
   }, [settings.demoError]);
