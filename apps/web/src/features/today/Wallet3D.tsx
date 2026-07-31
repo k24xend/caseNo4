@@ -51,10 +51,12 @@ const COL = {
 } as const;
 
 /**
- * Card proportions: shorter than old plates so stacked offsets reveal
- * full title+amount of Comfort & Obligations (reference peek).
+ * Card proportions for iPhone 390–430.
+ * Label plane uses LABEL_PLANE; canvas texture MUST match this aspect.
  */
-const PLATE = { w: 2.85, h: 1.22, d: 0.155, r: 0.2 } as const;
+const PLATE = { w: 2.72, h: 1.28, d: 0.16, r: 0.2 } as const;
+const LABEL_PLANE = { w: PLATE.w * 0.86, h: PLATE.h * 0.78 } as const;
+const LABEL_ASPECT = LABEL_PLANE.w / LABEL_PLANE.h;
 
 function prefersReducedMotion() {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -113,8 +115,9 @@ function buildLabelTexture(
   extra?: { safeLine?: string; total?: string; payments?: string },
 ): THREE.CanvasTexture | null {
   if (typeof document === 'undefined') return null;
+  // Exact aspect match to LABEL_PLANE — prevents horizontal stretch seen in QA
   const W = 1024;
-  const H = kind === 'reserve' ? 640 : 480;
+  const H = Math.round(W / LABEL_ASPECT);
   const canvas = document.createElement('canvas');
   canvas.width = W;
   canvas.height = H;
@@ -122,33 +125,36 @@ function buildLabelTexture(
   if (!ctx) return null;
   ctx.clearRect(0, 0, W, H);
 
+  // Safe inset so rounded glass corners never clip glyphs
+  const padX = Math.round(W * 0.1);
+  const padY = Math.round(H * 0.12);
+  const contentW = W - padX * 2;
+
   // top specular
-  const g = ctx.createLinearGradient(0, 0, 0, H * 0.5);
-  g.addColorStop(0, 'rgba(255,255,255,0.28)');
-  g.addColorStop(0.45, 'rgba(255,255,255,0.06)');
+  const g = ctx.createLinearGradient(0, 0, 0, H * 0.45);
+  g.addColorStop(0, 'rgba(255,255,255,0.26)');
+  g.addColorStop(0.5, 'rgba(255,255,255,0.05)');
   g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g;
-  ctx.fillRect(40, 28, W - 80, H * 0.42);
+  ctx.fillRect(padX, padY * 0.4, contentW, H * 0.35);
 
-  ctx.fillStyle = 'rgba(26,24,48,0.58)';
-  ctx.font = '600 44px system-ui,-apple-system,BlinkMacSystemFont,sans-serif';
-  ctx.fillText(title, 84, 96);
+  ctx.fillStyle = 'rgba(26,24,48,0.62)';
+  ctx.font = `600 ${Math.round(H * 0.09)}px system-ui,-apple-system,BlinkMacSystemFont,sans-serif`;
+  ctx.fillText(title, padX, padY + H * 0.1);
 
   const big = kind === 'reserve';
   ctx.fillStyle = COL.ink;
-  ctx.font = big
-    ? '600 118px system-ui,-apple-system,BlinkMacSystemFont,sans-serif'
-    : '600 72px system-ui,-apple-system,BlinkMacSystemFont,sans-serif';
+  ctx.font = `600 ${Math.round(H * (big ? 0.2 : 0.145))}px system-ui,-apple-system,BlinkMacSystemFont,sans-serif`;
   let amt = amount;
-  while (ctx.measureText(amt).width > W - 170 && amt.length > 3) amt = `${amt.slice(0, -2)}…`;
-  ctx.fillText(amt, 84, big ? 240 : 200);
+  while (ctx.measureText(amt).width > contentW && amt.length > 3) amt = `${amt.slice(0, -2)}…`;
+  ctx.fillText(amt, padX, padY + H * (big ? 0.38 : 0.34));
 
   if (kind === 'reserve' && extra) {
-    const sy = 300;
-    const sh = 68;
-    const sx = 84;
-    const sw = Math.min(680, W - 180);
-    roundRect(ctx, sx, sy, sw, sh, 34);
+    const sy = padY + H * 0.48;
+    const sh = H * 0.12;
+    const sx = padX;
+    const sw = Math.min(contentW * 0.92, contentW);
+    roundRect(ctx, sx, sy, sw, sh, sh / 2);
     const sg = ctx.createLinearGradient(sx, sy, sx + sw, sy);
     sg.addColorStop(0, 'rgba(129,116,232,0.32)');
     sg.addColorStop(1, 'rgba(113,134,200,0.36)');
@@ -157,24 +163,25 @@ function buildLabelTexture(
     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.fillStyle = 'rgba(35,32,64,0.85)';
-    ctx.font = '600 32px system-ui,-apple-system,sans-serif';
-    ctx.fillText(extra.safeLine ?? '', sx + 26, sy + 44);
+    ctx.fillStyle = 'rgba(35,32,64,0.88)';
+    ctx.font = `600 ${Math.round(H * 0.055)}px system-ui,-apple-system,sans-serif`;
+    ctx.fillText(extra.safeLine ?? '', sx + 20, sy + sh * 0.65);
 
-    ctx.strokeStyle = 'rgba(255,255,255,0.38)';
+    const lipY = H - padY;
+    ctx.strokeStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath();
-    ctx.moveTo(70, H - 130);
-    ctx.lineTo(W - 70, H - 130);
+    ctx.moveTo(padX, lipY - H * 0.18);
+    ctx.lineTo(W - padX, lipY - H * 0.18);
     ctx.stroke();
     ctx.fillStyle = 'rgba(40,36,70,0.55)';
-    ctx.font = '500 28px system-ui,-apple-system,sans-serif';
-    ctx.fillText('Всего', 84, H - 84);
-    ctx.fillText('Платежи', W - 300, H - 84);
+    ctx.font = `500 ${Math.round(H * 0.05)}px system-ui,-apple-system,sans-serif`;
+    ctx.fillText('Всего', padX, lipY - H * 0.1);
+    ctx.fillText('Платежи', W - padX - 200, lipY - H * 0.1);
     ctx.fillStyle = COL.ink;
-    ctx.font = '700 36px system-ui,-apple-system,sans-serif';
-    ctx.fillText(extra.total ?? '', 84, H - 38);
+    ctx.font = `700 ${Math.round(H * 0.065)}px system-ui,-apple-system,sans-serif`;
+    ctx.fillText(extra.total ?? '', padX, lipY - H * 0.02);
     const pay = extra.payments ?? '';
-    ctx.fillText(pay, W - 84 - ctx.measureText(pay).width, H - 38);
+    ctx.fillText(pay, W - padX - ctx.measureText(pay).width, lipY - H * 0.02);
   }
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -249,8 +256,8 @@ function GlassCard({
         />
       </RoundedBox>
       {labelTexture && (
-        <mesh position={[0, 0.02, PLATE.d / 2 + 0.014]} renderOrder={2}>
-          <planeGeometry args={[PLATE.w * 0.88, PLATE.h * 0.82]} />
+        <mesh position={[0, 0.01, PLATE.d / 2 + 0.014]} renderOrder={2}>
+          <planeGeometry args={[LABEL_PLANE.w, LABEL_PLANE.h]} />
           <meshBasicMaterial
             map={labelTexture}
             transparent
@@ -418,31 +425,29 @@ function WalletScene({
   const o = spring.o;
 
   /**
-   * CLOSED stack — three visible card tops (reference):
-   *   Comfort peeks at top, Obligations mid band, Reserve full front.
-   * Spacing ~0.40–0.42 so title+amount of upper cards read clearly.
-   * OPEN fan: extra Y/Z, rotateX max ~9°, rotateZ = 0 always.
+   * CLOSED: three distinct cards with clear top bands (reference stack).
+   * OPEN: gentle fan, rotateX ≤ 9°, rotateZ = 0.
    */
   const layer1 = {
-    y: o.to((v) => 0.48 + v * 0.18),
-    z: o.to((v) => -0.28 - v * 0.2),
-    rx: o.to((v) => THREE.MathUtils.degToRad(-2.5 - v * 6.5)),
+    y: o.to((v) => 0.58 + v * 0.16),
+    z: o.to((v) => -0.32 - v * 0.18),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-2 - v * 6)),
   };
   const layer2 = {
-    y: o.to((v) => 0.08 + v * 0.07),
-    z: o.to((v) => -0.12 - v * 0.1),
-    rx: o.to((v) => THREE.MathUtils.degToRad(-1.2 - v * 4)),
+    y: o.to((v) => 0.12 + v * 0.06),
+    z: o.to((v) => -0.14 - v * 0.09),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-1 - v * 3.5)),
   };
   const layer3 = {
-    y: o.to((v) => -0.32 - v * 0.02),
-    z: o.to((v) => 0.06 + v * 0.04),
-    rx: o.to((v) => THREE.MathUtils.degToRad(-v * 1.0)),
+    y: o.to((v) => -0.36 - v * 0.02),
+    z: o.to((v) => 0.08 + v * 0.04),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-v * 0.8)),
   };
 
-  // lower transmission on rear plates = readable edges of three cards
-  const tComfort = soft ? 0.62 : 0.7;
-  const tObl = soft ? 0.68 : 0.76;
-  const tRes = soft ? 0.78 : 0.88;
+  // rear denser so three silhouettes don't melt
+  const tComfort = soft ? 0.55 : 0.62;
+  const tObl = soft ? 0.62 : 0.72;
+  const tRes = soft ? 0.75 : 0.86;
 
   return (
     <>
