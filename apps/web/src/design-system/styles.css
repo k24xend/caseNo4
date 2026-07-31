@@ -5779,42 +5779,39 @@ html:not([data-theme='dark']) body {
   }
 }
 
+
 /* ==========================================================================
-   Wallet3D liquid glass — isolated namespace (no legacy .wallet-layer bleed)
+   Wallet3D — three distinct liquid glass plates (reference structure)
+   Namespace .w3d-* only. Legacy .wallet-layer must NOT style the canvas path.
    ========================================================================== */
 .w3d-root {
   position: relative;
   width: min(100%, 400px);
-  height: clamp(300px, 44dvh, 372px);
-  min-height: 300px;
+  height: clamp(310px, 46dvh, 388px);
+  min-height: 310px;
   margin: 0 auto;
   isolation: isolate;
-  /* Kill parent perspective bleed into WebGL compositing */
   perspective: none !important;
-  transform: none;
-  transform-style: flat;
-}
-.w3d-root * {
-  /* Do not inherit legacy wallet transforms onto 3D chrome */
+  transform: none !important;
+  transform-style: flat !important;
 }
 .w3d-aura {
   position: absolute;
-  inset: 12% -6% 0;
+  inset: 10% -8% 0;
   z-index: 0;
-  border-radius: 50%;
   pointer-events: none;
+  border-radius: 50%;
   background:
-    radial-gradient(ellipse at 50% 55%, color-mix(in srgb, var(--reserve-blue-violet) 26%, transparent), transparent 68%),
-    radial-gradient(ellipse at 72% 35%, color-mix(in srgb, var(--comfort-violet) 14%, transparent), transparent 52%);
-  filter: blur(30px);
-  opacity: 0.8;
+    radial-gradient(ellipse at 50% 58%, color-mix(in srgb, var(--reserve-blue-violet) 26%, transparent), transparent 68%),
+    radial-gradient(ellipse at 70% 30%, color-mix(in srgb, var(--comfort-violet) 16%, transparent), transparent 55%);
+  filter: blur(28px);
+  opacity: 0.85;
 }
 .w3d-stage {
   position: relative;
   z-index: 1;
   width: 100%;
   height: 100%;
-  /* reset any .wallet-stack legacy rules */
   perspective: none !important;
   transform: none !important;
   background: none !important;
@@ -5822,58 +5819,111 @@ html:not([data-theme='dark']) body {
   padding: 0 !important;
   overflow: visible;
 }
-.w3d-stage.wallet-stack {
-  /* neutralize depth stacking rules from old CSS when class is shared for e2e */
-  min-height: 0;
-}
 .w3d-canvas {
   display: block;
   width: 100% !important;
   height: 100% !important;
-  border-radius: 32px;
-  /* prevent CSS 3d on canvas parent */
-  transform: translateZ(0);
+  border-radius: 28px;
 }
 .w3d-hit {
   position: absolute;
-  inset: 10% 5% 8%;
+  inset: 6% 4% 4%;
   z-index: 6;
   border: 0;
-  padding: 0;
   margin: 0;
+  padding: 0;
   background: transparent;
   cursor: pointer;
   border-radius: 28px;
 }
-.w3d-hit:disabled {
-  pointer-events: none;
-}
+.w3d-hit:disabled { pointer-events: none; }
 .w3d-hit:focus-visible {
   outline: 3px solid color-mix(in srgb, var(--primary-violet) 48%, transparent);
   outline-offset: 3px;
 }
-
-/* DOM face labels — flat, stable, over front plate only */
-.w3d-dom-face {
+.w3d-sr-only {
   position: absolute;
-  z-index: 5;
-  left: 10%;
-  right: 12%;
-  top: 38%;
-  bottom: 12%;
-  pointer-events: none;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-end;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
-.w3d-dom-face-inner {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
+
+/* —— Premium 3-layer DOM fallback (same structure as reference) —— */
+.w3d-fallback {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  border: 0;
+  padding: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  /* local 3d stack only for fallback */
+  perspective: 1000px;
+  transform-style: preserve-3d;
+}
+.w3d-fb-layer {
+  position: absolute;
+  left: 4%;
+  width: 92%;
+  height: 52%;
+  border-radius: 32px;
+  border: 1px solid color-mix(in srgb, white 80%, transparent);
+  padding: 16px 20px;
   color: var(--ink, #171621);
-  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow:
+    0 20px 44px color-mix(in srgb, var(--ink) 13%, transparent),
+    inset 0 1px color-mix(in srgb, white 92%, transparent),
+    inset 0 -10px 24px color-mix(in srgb, var(--primary-violet) 8%, transparent);
+  backdrop-filter: blur(18px) saturate(1.3);
+  -webkit-backdrop-filter: blur(18px) saturate(1.3);
+  transform-style: preserve-3d;
+  overflow: hidden;
 }
-.w3d-dom-head {
+.w3d-fb-layer.comfort {
+  top: 2%;
+  z-index: 1;
+  transform: translate3d(0, 0, -40px) scale(0.955);
+  background:
+    radial-gradient(circle at 80% 18%, rgba(255,255,255,0.55), transparent 36%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--comfort-violet) 48%, white),
+      color-mix(in srgb, var(--comfort-violet) 28%, transparent) 60%,
+      color-mix(in srgb, white 40%, transparent));
+}
+.w3d-fb-layer.obligations {
+  top: 20%;
+  z-index: 2;
+  transform: translate3d(0, 0, -18px) scale(0.978);
+  background:
+    radial-gradient(circle at 18% 22%, rgba(255,255,255,0.5), transparent 34%),
+    linear-gradient(145deg,
+      color-mix(in srgb, var(--obligation-terracotta) 46%, white),
+      color-mix(in srgb, var(--obligation-terracotta) 26%, transparent) 58%,
+      color-mix(in srgb, white 36%, transparent));
+}
+.w3d-fb-layer.reserve {
+  top: 38%;
+  z-index: 3;
+  height: 58%;
+  padding-top: 20px;
+  transform: translate3d(0, 0, 0);
+  overflow: visible;
+  background:
+    radial-gradient(ellipse at 16% 0%, rgba(255,255,255,0.75), transparent 40%),
+    radial-gradient(ellipse at 90% 70%, color-mix(in srgb, var(--reserve-blue-violet) 28%, transparent), transparent 48%),
+    linear-gradient(150deg,
+      color-mix(in srgb, var(--reserve-blue-violet) 26%, white),
+      color-mix(in srgb, var(--reserve-blue-violet) 50%, white) 52%,
+      color-mix(in srgb, var(--comfort-violet) 18%, var(--reserve-blue-violet)));
+}
+.w3d-fb-row {
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -5881,160 +5931,21 @@ html:not([data-theme='dark']) body {
   font-weight: 620;
   opacity: 0.78;
 }
-.w3d-dom-amount {
-  font-size: clamp(32px, 10vw, 44px);
-  font-weight: 600;
-  letter-spacing: -0.05em;
-  line-height: 1.02;
-  font-variant-numeric: tabular-nums;
-  max-width: 100%;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.w3d-dom-safe {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  align-self: flex-start;
-  min-height: 30px;
-  padding: 6px 11px;
-  border-radius: 999px;
-  font-size: 11px;
-  color: color-mix(in srgb, var(--ink) 78%, var(--primary-violet));
-  background: linear-gradient(
-    105deg,
-    color-mix(in srgb, var(--primary-violet) 20%, transparent),
-    color-mix(in srgb, var(--reserve-blue-violet) 24%, transparent)
-  );
-  border: 1px solid color-mix(in srgb, white 45%, transparent);
-  box-shadow: inset 0 1px rgba(255, 255, 255, 0.5);
-}
-.w3d-dom-safe strong {
-  font-weight: 720;
-  font-variant-numeric: tabular-nums;
-}
-.w3d-dom-lip {
-  display: flex;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 4px;
-  font-size: 10px;
-  opacity: 0.78;
-}
-.w3d-dom-lip b {
-  display: block;
-  margin-top: 2px;
-  font-size: 12px;
-  font-weight: 680;
-  opacity: 1;
-  font-variant-numeric: tabular-nums;
-}
-.w3d-dom-chip {
-  position: absolute;
-  left: 0;
-  right: 18%;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  padding: 4px 2px;
-  font-size: 11px;
-  font-weight: 600;
-  color: color-mix(in srgb, var(--ink) 72%, transparent);
-  opacity: 0.72;
-  pointer-events: none;
-}
-.w3d-dom-chip em {
-  margin-left: auto;
-  font-style: normal;
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.w3d-chip-comfort {
-  top: -46%;
-}
-.w3d-chip-obl {
-  top: -22%;
-}
-
-/* Premium DOM fallback (no WebGL) — glass stack, not a stub */
-.w3d-fallback {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  min-height: 280px;
-  border: 0;
-  padding: 0;
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  perspective: 900px;
-}
-.w3d-fb-layer {
-  position: absolute;
-  left: 3%;
-  width: 94%;
-  height: 58%;
-  border-radius: 30px;
-  border: 1px solid color-mix(in srgb, white 78%, transparent);
-  padding: 16px 18px;
-  color: var(--ink, #171621);
-  box-shadow:
-    0 18px 40px color-mix(in srgb, var(--ink) 12%, transparent),
-    inset 0 1px color-mix(in srgb, white 90%, transparent);
-  backdrop-filter: blur(16px) saturate(1.25);
-  -webkit-backdrop-filter: blur(16px) saturate(1.25);
-  transform-origin: 50% 100%;
-}
-.w3d-fb-layer.comfort {
-  top: 4%;
-  transform: translateZ(-36px) scale(0.96);
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--comfort-violet) 42%, white),
-    color-mix(in srgb, var(--comfort-violet) 22%, transparent)
-  );
-}
-.w3d-fb-layer.obligations {
-  top: 18%;
-  transform: translateZ(-18px) scale(0.98);
-  background: linear-gradient(
-    145deg,
-    color-mix(in srgb, var(--obligation-terracotta) 40%, white),
-    color-mix(in srgb, var(--obligation-terracotta) 20%, transparent)
-  );
-}
-.w3d-fb-layer.reserve {
-  top: 32%;
-  height: 62%;
-  padding-top: 22px;
-  transform: translateZ(0);
-  background: linear-gradient(
-    150deg,
-    color-mix(in srgb, var(--reserve-blue-violet) 28%, white),
-    color-mix(in srgb, var(--reserve-blue-violet) 48%, white) 55%,
-    color-mix(in srgb, var(--comfort-violet) 16%, var(--reserve-blue-violet))
-  );
-  overflow: visible;
-}
-.w3d-fb-layer > span:first-child,
-.w3d-fb-head {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  opacity: 0.75;
-}
+.w3d-fb-row small { font-size: 12px; }
 .w3d-fb-layer > b {
   display: block;
-  margin-top: 4px;
-  font-size: 17px;
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 640;
+  letter-spacing: -0.03em;
   font-variant-numeric: tabular-nums;
 }
 .w3d-fb-amount {
-  font-size: clamp(32px, 10vw, 46px) !important;
-  letter-spacing: -0.05em;
+  font-size: clamp(34px, 10.5vw, 48px) !important;
+  font-weight: 600 !important;
+  letter-spacing: -0.05em !important;
   margin-top: 8px !important;
+  line-height: 1.05;
 }
 .w3d-fb-lip {
   position: absolute;
@@ -6043,10 +5954,10 @@ html:not([data-theme='dark']) body {
   bottom: 0;
   display: flex;
   justify-content: space-between;
-  padding: 12px 18px 14px;
-  border-top: 1px solid color-mix(in srgb, white 40%, transparent);
-  background: linear-gradient(transparent, color-mix(in srgb, white 22%, transparent));
-  border-radius: 0 0 28px 28px;
+  padding: 12px 20px 14px;
+  border-top: 1px solid color-mix(in srgb, white 42%, transparent);
+  background: linear-gradient(transparent, color-mix(in srgb, white 24%, transparent));
+  border-radius: 0 0 30px 30px;
 }
 .w3d-fb-lip em {
   font-style: normal;
@@ -6055,53 +5966,42 @@ html:not([data-theme='dark']) body {
 }
 .w3d-fb-lip b {
   display: block;
-  font-size: 12px;
   margin-top: 2px;
-}
-.w3d-fallback:active .w3d-fb-layer {
-  transform: scale(0.99);
-}
-.w3d-fallback:active .w3d-fb-layer.comfort {
-  transform: translateZ(-36px) scale(0.95);
-}
-.w3d-fallback:active .w3d-fb-layer.obligations {
-  transform: translateZ(-18px) scale(0.97);
+  font-size: 12px;
+  font-weight: 700;
 }
 .w3d-fallback .clasp {
-  right: 12px;
-  top: 58px;
+  position: absolute;
+  right: 14px;
+  top: 56px;
+  width: 64px;
+  height: 48px;
+  z-index: 5;
+  border-radius: 28px 12px 12px 28px;
+  border: 1px solid color-mix(in srgb, white 88%, transparent);
+  background:
+    radial-gradient(circle at 28% 22%, white, transparent 40%),
+    linear-gradient(110deg, color-mix(in srgb, white 70%, var(--reserve-blue-violet)), color-mix(in srgb, var(--reserve-blue-violet) 40%, transparent));
+  box-shadow: 0 10px 22px color-mix(in srgb, var(--reserve-blue-violet) 22%, transparent);
+  display: grid;
+  place-items: center;
 }
+.w3d-fallback .clasp i {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 32% 28%, white, color-mix(in srgb, var(--reserve-blue-violet) 35%, transparent));
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+}
+.w3d-fallback:active .w3d-fb-layer.comfort { transform: translate3d(0, 2px, -40px) scale(0.948); }
+.w3d-fallback:active .w3d-fb-layer.obligations { transform: translate3d(0, 2px, -18px) scale(0.97); }
+.w3d-fallback:active .w3d-fb-layer.reserve { transform: translate3d(0, 2px, 0) scale(0.99); }
 
-/* When R3D is active, kill legacy wallet-layer transforms that could affect fallback-only classes */
-.w3d-root .wallet-layer,
-.w3d-stage .wallet-layer {
-  /* no-op: 3D path does not mount these */
-}
-
-.wallet-is-open .w3d-root {
-  /* keep layout height while dialog covers UI */
-  opacity: 1;
-}
-.wallet-is-open .w3d-dom-face {
-  opacity: 0;
-  transition: opacity 0.2s ease;
-}
+/* neutralize legacy wallet rules near 3d root */
+.w3d-root .wallet-layer { display: contents; }
+.wallet-is-open .w3d-root { opacity: 1; }
 
 @media (max-width: 359px) {
-  .w3d-root {
-    width: 100%;
-    height: 288px;
-    min-height: 276px;
-  }
-  .w3d-dom-amount {
-    font-size: 30px;
-  }
-  .w3d-chip-comfort {
-    top: -42%;
-  }
-}
-@media (prefers-reduced-motion: reduce) {
-  .w3d-root.is-reduced .w3d-canvas {
-    /* canvas path still renders, springs clamped in JS */
-  }
+  .w3d-root { width: 100%; height: 292px; min-height: 280px; }
+  .w3d-fb-amount { font-size: 32px !important; }
 }

@@ -1,11 +1,9 @@
 /**
- * Liquid Glass Wallet — R3F primary path.
+ * Liquid Glass Wallet — three distinct volumetric plates (reference 1:1 structure).
  *
- * Design rules (product + mobile):
- * - One volumetric glass object (3 equal plates + clasp), not floating cards
- * - meshPhysicalMaterial only (no MeshTransmissionMaterial on mobile path)
- * - Text is DOM overlay on the front (Reserve) face — never drei Html in 3D space
- * - Closed: tight stack. Open: small fan (≤12° rotateX, ~0 rotateZ)
+ * Comfort (back) → Obligations (mid) → Reserve (front + clasp + safe + lip)
+ * Text: canvas textures on each plate (stable, no drei Html drift).
+ * Material: meshPhysicalMaterial liquid glass only (no MTM).
  */
 import { ContactShadows, Environment, RoundedBox } from '@react-three/drei';
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
@@ -43,15 +41,16 @@ type Wallet3DProps = {
   reducedMotion?: boolean;
 };
 
-const C = {
+const COL = {
   comfort: '#9A8AF4',
   obligations: '#C98272',
   reserve: '#7186C8',
-  ink: '#171621',
+  ink: '#1a1830',
+  muted: '#4a4660',
 } as const;
 
-/** Equal plate size — tuned for 390–430px stage */
-const PLATE = { w: 2.72, h: 1.62, d: 0.11, r: 0.2 } as const;
+/** Equal size plates — clearly three cards when stacked with Y offsets */
+const PLATE = { w: 2.78, h: 1.55, d: 0.12, r: 0.19 } as const;
 
 function prefersReducedMotion() {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -83,90 +82,199 @@ function isNarrow() {
   return typeof window !== 'undefined' && window.innerWidth < 480;
 }
 
-/** Thick liquid glass plate — physical only, no multi-pass transmission */
+/** Bake layer UI into a transparent canvas texture — never drifts like drei Html */
+function useLayerTexture(
+  kind: 'comfort' | 'obligations' | 'reserve',
+  title: string,
+  amount: string,
+  extra?: { safe?: string; total?: string; payments?: string },
+) {
+  return useMemo(() => {
+    if (typeof document === 'undefined') return null;
+    const W = 1024;
+    const H = 576;
+    const canvas = document.createElement('canvas');
+    canvas.width = W;
+    canvas.height = H;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+
+    ctx.clearRect(0, 0, W, H);
+    ctx.textBaseline = 'alphabetic';
+
+    // soft top specular band
+    const gloss = ctx.createLinearGradient(0, 0, 0, H * 0.45);
+    gloss.addColorStop(0, 'rgba(255,255,255,0.22)');
+    gloss.addColorStop(0.55, 'rgba(255,255,255,0.04)');
+    gloss.addColorStop(1, 'rgba(255,255,255,0)');
+    ctx.fillStyle = gloss;
+    ctx.fillRect(48, 36, W - 96, H * 0.38);
+
+    // title row
+    ctx.fillStyle = 'rgba(26,24,48,0.62)';
+    ctx.font = '600 42px system-ui, -apple-system, sans-serif';
+    ctx.fillText(title, 88, 110);
+
+    // amount
+    const big = kind === 'reserve';
+    ctx.fillStyle = COL.ink;
+    ctx.font = big
+      ? '600 120px system-ui, -apple-system, sans-serif'
+      : '600 64px system-ui, -apple-system, sans-serif';
+    // ellipsis if needed
+    let amt = amount;
+    while (ctx.measureText(amt).width > W - 160 && amt.length > 4) {
+      amt = `${amt.slice(0, -2)}…`;
+    }
+    ctx.fillText(amt, 88, big ? 250 : 200);
+
+    if (kind === 'reserve' && extra) {
+      // safe strip
+      const stripY = 300;
+      const stripH = 64;
+      const stripX = 88;
+      const stripW = Math.min(620, W - 176);
+      ctx.beginPath();
+      roundRect(ctx, stripX, stripY, stripW, stripH, 32);
+      const sg = ctx.createLinearGradient(stripX, stripY, stripX + stripW, stripY);
+      sg.addColorStop(0, 'rgba(129,116,232,0.28)');
+      sg.addColorStop(1, 'rgba(113,134,200,0.32)');
+      ctx.fillStyle = sg;
+      ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,0.45)';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(40,36,70,0.82)';
+      ctx.font = '600 30px system-ui, -apple-system, sans-serif';
+      ctx.fillText(`✦  ${extra.safe ?? ''}`, stripX + 28, stripY + 42);
+
+      // lip
+      ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+      ctx.beginPath();
+      ctx.moveTo(72, H - 120);
+      ctx.lineTo(W - 72, H - 120);
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(40,36,70,0.55)';
+      ctx.font = '500 28px system-ui, -apple-system, sans-serif';
+      ctx.fillText('Всего', 88, H - 78);
+      ctx.fillText('Платежи', W - 320, H - 78);
+      ctx.fillStyle = COL.ink;
+      ctx.font = '700 34px system-ui, -apple-system, sans-serif';
+      ctx.fillText(extra.total ?? '', 88, H - 36);
+      const pay = extra.payments ?? '';
+      const pw = ctx.measureText(pay).width;
+      ctx.fillText(pay, W - 88 - pw, H - 36);
+    }
+
+    const tex = new THREE.CanvasTexture(canvas);
+    tex.colorSpace = THREE.SRGBColorSpace;
+    tex.anisotropy = 4;
+    tex.needsUpdate = true;
+    return tex;
+  }, [kind, title, amount, extra?.safe, extra?.total, extra?.payments]);
+}
+
+function roundRect(
+  ctx: CanvasRenderingContext2D,
+  x: number,
+  y: number,
+  w: number,
+  h: number,
+  r: number,
+) {
+  const rr = Math.min(r, w / 2, h / 2);
+  ctx.moveTo(x + rr, y);
+  ctx.arcTo(x + w, y, x + w, y + h, rr);
+  ctx.arcTo(x + w, y + h, x, y + h, rr);
+  ctx.arcTo(x, y + h, x, y, rr);
+  ctx.arcTo(x, y, x + w, y, rr);
+  ctx.closePath();
+}
+
 function GlassPlate({
   color,
   thickness,
   soft,
+  labelTexture,
   children,
 }: {
   color: string;
   thickness: number;
   soft?: boolean;
+  labelTexture: THREE.CanvasTexture | null;
   children?: React.ReactNode;
 }) {
   return (
     <group>
+      {/* body */}
       <RoundedBox args={[PLATE.w, PLATE.h, PLATE.d]} radius={PLATE.r} smoothness={5}>
         <meshPhysicalMaterial
           color={color}
           metalness={0.02}
-          roughness={soft ? 0.14 : 0.07}
-          transmission={soft ? 0.78 : 0.9}
+          roughness={soft ? 0.13 : 0.065}
+          transmission={soft ? 0.8 : 0.9}
           thickness={thickness}
           ior={1.42}
           transparent
-          opacity={0.96}
+          opacity={0.97}
           attenuationColor={color}
-          attenuationDistance={soft ? 0.95 : 1.25}
-          clearcoat={0.95}
-          clearcoatRoughness={soft ? 0.12 : 0.06}
-          envMapIntensity={soft ? 0.85 : 1.15}
-          reflectivity={0.55}
-          specularIntensity={1}
+          attenuationDistance={soft ? 0.9 : 1.2}
+          clearcoat={0.98}
+          clearcoatRoughness={soft ? 0.1 : 0.05}
+          envMapIntensity={soft ? 0.9 : 1.2}
+          reflectivity={0.58}
           side={THREE.FrontSide}
-          depthWrite
         />
       </RoundedBox>
-      {/* rim / edge highlight — slightly larger thin shell */}
+      {/* rim shell */}
       <RoundedBox
-        args={[PLATE.w * 1.015, PLATE.h * 1.015, PLATE.d * 0.45]}
+        args={[PLATE.w * 1.012, PLATE.h * 1.012, PLATE.d * 0.42]}
         radius={PLATE.r * 1.02}
         smoothness={4}
       >
-        <meshBasicMaterial
-          color="#ffffff"
-          transparent
-          opacity={0.11}
-          side={THREE.BackSide}
-          depthWrite={false}
-        />
+        <meshBasicMaterial color="#ffffff" transparent opacity={0.12} side={THREE.BackSide} depthWrite={false} />
       </RoundedBox>
-      {/* soft inner liquid tint */}
+      {/* inner liquid tint */}
       <RoundedBox
-        args={[PLATE.w * 0.9, PLATE.h * 0.86, PLATE.d * 0.28]}
-        radius={PLATE.r * 0.85}
+        args={[PLATE.w * 0.9, PLATE.h * 0.86, PLATE.d * 0.3]}
+        radius={PLATE.r * 0.82}
         smoothness={3}
-        position={[0, -0.02, 0.01]}
+        position={[0, 0, 0.01]}
       >
-        <meshBasicMaterial color={color} transparent opacity={0.16} depthWrite={false} />
+        <meshBasicMaterial color={color} transparent opacity={0.18} depthWrite={false} />
       </RoundedBox>
+      {/* stable UI plane (slightly above face) */}
+      {labelTexture && (
+        <mesh position={[0, 0, PLATE.d / 2 + 0.012]}>
+          <planeGeometry args={[PLATE.w * 0.9, PLATE.h * 0.86]} />
+          <meshBasicMaterial map={labelTexture} transparent depthWrite={false} toneMapped={false} />
+        </mesh>
+      )}
       {children}
     </group>
   );
 }
 
-function CausticShimmer({ enabled }: { enabled: boolean }) {
-  const ref = useRef<THREE.Mesh>(null);
+function Caustic({ on }: { on: boolean }) {
+  const mesh = useRef<THREE.Mesh>(null);
   const mat = useRef<THREE.MeshBasicMaterial>(null);
   useFrame(({ clock, invalidate }) => {
-    if (!enabled || !ref.current || !mat.current) return;
+    if (!on || !mesh.current || !mat.current) return;
     const t = clock.elapsedTime;
-    mat.current.opacity = 0.05 + Math.sin(t * 1.25) * 0.02;
-    ref.current.position.x = 0.25 + Math.sin(t * 0.55) * 0.06;
-    ref.current.position.y = 0.08 + Math.cos(t * 0.4) * 0.04;
-    ref.current.rotation.z = Math.sin(t * 0.3) * 0.12;
+    mat.current.opacity = 0.045 + Math.sin(t * 1.3) * 0.018;
+    mesh.current.position.x = 0.35 + Math.sin(t * 0.5) * 0.05;
+    mesh.current.position.y = 0.1 + Math.cos(t * 0.35) * 0.04;
     invalidate();
   });
-  if (!enabled) return null;
+  if (!on) return null;
   return (
-    <mesh ref={ref} position={[0.3, 0.05, 0.058]} scale={[1.15, 0.7, 1]}>
-      <circleGeometry args={[0.55, 24]} />
+    <mesh ref={mesh} position={[0.4, 0.1, PLATE.d / 2 + 0.02]}>
+      <circleGeometry args={[0.5, 24]} />
       <meshBasicMaterial
         ref={mat}
         color="#ffffff"
         transparent
-        opacity={0.06}
+        opacity={0.05}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -190,47 +298,53 @@ function Clasp({
   return (
     <a.group position-x={x as never} position-y={y as never} position-z={z as never} rotation-z={rz as never}>
       <mesh>
-        <capsuleGeometry args={[0.09, 0.2, 6, 14]} />
+        <capsuleGeometry args={[0.095, 0.22, 6, 14]} />
         <meshPhysicalMaterial
-          color="#F4F6FC"
-          metalness={0.12}
-          roughness={0.08}
-          transmission={soft ? 0.35 : 0.55}
-          thickness={0.28}
+          color="#F3F5FC"
+          metalness={0.14}
+          roughness={0.07}
+          transmission={soft ? 0.35 : 0.58}
+          thickness={0.3}
           ior={1.4}
           clearcoat={1}
-          clearcoatRoughness={0.05}
+          clearcoatRoughness={0.04}
           transparent
-          opacity={0.97}
-          envMapIntensity={1.05}
+          opacity={0.98}
         />
       </mesh>
-      <mesh position={[0.02, 0, 0.065]}>
-        <sphereGeometry args={[0.072, 18, 18]} />
+      <mesh position={[0.02, 0, 0.07]}>
+        <sphereGeometry args={[0.078, 18, 18]} />
         <meshPhysicalMaterial
           color="#FFFFFF"
-          metalness={0.18}
-          roughness={0.05}
-          transmission={soft ? 0.2 : 0.4}
-          thickness={0.2}
+          metalness={0.2}
+          roughness={0.04}
+          transmission={soft ? 0.2 : 0.42}
+          thickness={0.22}
           clearcoat={1}
           clearcoatRoughness={0.03}
         />
+      </mesh>
+      {/* DOM hit target for e2e .clasp */}
+      <mesh position={[0, 0, 0.12]} visible={false}>
+        <boxGeometry args={[0.28, 0.28, 0.05]} />
       </mesh>
     </a.group>
   );
 }
 
 /**
- * Closed poses: dense stack, tiny Y/Z offsets.
- * Open poses: controlled fan — small Y/Z, rotateX ≤ ~11°, rotateZ ≈ 0.
+ * Poses — three clearly separated cards.
+ * Closed: stacked with visible top strips of each layer (reference stack).
+ * Open: gentle fan, rotateX ≤ 10°, rotateZ ≈ 0.
  */
 function WalletScene({
   phase,
+  amounts,
   onOpen,
   reducedMotion,
 }: {
   phase: WalletPhase;
+  amounts: WalletAmounts;
   onOpen: () => void;
   reducedMotion: boolean;
 }) {
@@ -240,33 +354,55 @@ function WalletScene({
   const root = useRef<THREE.Group>(null);
   const [pressed, setPressed] = useState(false);
 
+  const comfortTex = useLayerTexture(
+    'comfort',
+    'Комфорт',
+    formatMoney(amounts.comfort, amounts.currency),
+  );
+  const oblTex = useLayerTexture(
+    'obligations',
+    'Платежи',
+    formatMoney(amounts.obligations, amounts.currency),
+  );
+  const resTex = useLayerTexture('reserve', 'Запас', formatMoney(amounts.reserve, amounts.currency), {
+    safe: `Безопасно сегодня  ${formatMoney(amounts.safeDaily, amounts.currency)}`,
+    total: formatMoney(amounts.total, amounts.currency),
+    payments: formatMoney(amounts.obligations, amounts.currency),
+  });
+
+  useEffect(
+    () => () => {
+      comfortTex?.dispose();
+      oblTex?.dispose();
+      resTex?.dispose();
+    },
+    [comfortTex, oblTex, resTex],
+  );
+
   const spring = useSpring({
     o: target,
     config: soft
       ? { tension: 280, friction: 40, clamp: true }
-      : { tension: 140, friction: 20, mass: 1.05 },
+      : { tension: 135, friction: 20, mass: 1.05 },
     onChange: () => invalidate(),
   });
-
   const press = useSpring({
-    s: pressed ? 0.988 : 1,
-    config: { tension: 380, friction: 24 },
+    s: pressed ? 0.987 : 1,
+    config: { tension: 400, friction: 24 },
     onChange: () => invalidate(),
   });
 
   useEffect(() => {
     invalidate();
-    const ids = [30, 100, 260, 520, 800].map((ms) => window.setTimeout(() => invalidate(), ms));
+    const ids = [40, 160, 360, 640, 960].map((ms) => window.setTimeout(() => invalidate(), ms));
     return () => ids.forEach(clearTimeout);
   }, [phase, invalidate]);
 
   useFrame(({ clock }) => {
-    if (soft || target > 0.4 || !root.current) return;
+    if (soft || target > 0.35 || !root.current) return;
     const t = clock.elapsedTime;
-    // idle liquid: ~1–1.2° micro motion
-    root.current.position.y = Math.sin(t * 0.85) * 0.014;
-    root.current.rotation.z = Math.sin(t * 0.5) * THREE.MathUtils.degToRad(1.1);
-    root.current.rotation.x = Math.cos(t * 0.4) * THREE.MathUtils.degToRad(0.6);
+    root.current.position.y = Math.sin(t * 0.8) * 0.012;
+    root.current.rotation.z = Math.sin(t * 0.45) * THREE.MathUtils.degToRad(1.0);
     invalidate();
   });
 
@@ -280,25 +416,31 @@ function WalletScene({
   );
 
   const o = spring.o;
-  // Comfort (back)
-  const cY = o.to((v) => 0.1 + v * 0.22);
-  const cZ = o.to((v) => -0.14 - v * 0.28);
-  const cRx = o.to((v) => THREE.MathUtils.degToRad(-2 - v * 9)); // max ~11°
-  // Obligations (mid)
-  const mY = o.to((v) => 0.0 + v * 0.08);
-  const mZ = o.to((v) => -0.06 - v * 0.12);
-  const mRx = o.to((v) => THREE.MathUtils.degToRad(-1 - v * 5));
-  // Reserve (front)
-  const fY = o.to((v) => -0.1 - v * 0.02);
-  const fZ = o.to((v) => 0.04 + v * 0.06);
-  const fRx = o.to((v) => THREE.MathUtils.degToRad(v * -1.5));
+
+  // CLOSED offsets deliberately large enough to SHOW three layers
+  // comfort top, obligations middle strip, reserve body
+  const comfort = {
+    y: o.to((v) => 0.36 + v * 0.2),
+    z: o.to((v) => -0.2 - v * 0.22),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-3 - v * 7)), // max ~10°
+  };
+  const mid = {
+    y: o.to((v) => 0.08 + v * 0.08),
+    z: o.to((v) => -0.09 - v * 0.1),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-1.5 - v * 4)),
+  };
+  const front = {
+    y: o.to((v) => -0.22 - v * 0.02),
+    z: o.to((v) => 0.05 + v * 0.05),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-v * 1.2)),
+  };
 
   return (
     <>
-      <ambientLight intensity={0.48} />
-      <directionalLight position={[2.6, 3.8, 2.2]} intensity={0.95} color="#fffafc" />
-      <directionalLight position={[-2.2, 1.2, -1.4]} intensity={0.28} color="#c9d2ff" />
-      <Environment preset="apartment" environmentIntensity={soft ? 0.32 : 0.58} />
+      <ambientLight intensity={0.5} />
+      <directionalLight position={[2.8, 4, 2.4]} intensity={1.0} color="#fffafc" />
+      <directionalLight position={[-2.4, 1.4, -1.2]} intensity={0.3} color="#c8d4ff" />
+      <Environment preset="apartment" environmentIntensity={soft ? 0.35 : 0.62} />
 
       <a.group
         ref={root}
@@ -311,85 +453,45 @@ function WalletScene({
         onPointerUp={() => setPressed(false)}
         onPointerLeave={() => setPressed(false)}
       >
-        {/* Comfort — furthest */}
-        <a.group position-y={cY as never} position-z={cZ as never} rotation-x={cRx as never}>
-          <GlassPlate color={C.comfort} thickness={0.48} soft={soft} />
+        {/* 1. Comfort — top / back */}
+        <a.group position-y={comfort.y as never} position-z={comfort.z as never} rotation-x={comfort.rx as never}>
+          <GlassPlate color={COL.comfort} thickness={0.5} soft={soft} labelTexture={comfortTex} />
         </a.group>
 
-        {/* Obligations */}
-        <a.group position-y={mY as never} position-z={mZ as never} rotation-x={mRx as never}>
-          <GlassPlate color={C.obligations} thickness={0.52} soft={soft} />
+        {/* 2. Obligations — middle */}
+        <a.group position-y={mid.y as never} position-z={mid.z as never} rotation-x={mid.rx as never}>
+          <GlassPlate color={COL.obligations} thickness={0.55} soft={soft} labelTexture={oblTex} />
         </a.group>
 
-        {/* Reserve — front */}
-        <a.group position-y={fY as never} position-z={fZ as never} rotation-x={fRx as never}>
-          <GlassPlate color={C.reserve} thickness={0.65} soft={soft}>
-            <CausticShimmer enabled={!soft} />
+        {/* 3. Reserve — front */}
+        <a.group position-y={front.y as never} position-z={front.z as never} rotation-x={front.rx as never}>
+          <GlassPlate color={COL.reserve} thickness={0.68} soft={soft} labelTexture={resTex}>
+            <Caustic on={!soft} />
             <Clasp
               soft={soft}
-              x={o.to((v) => 1.22 + v * 0.06)}
-              y={o.to((v) => 0.04 + v * 0.08)}
-              z={o.to((v) => 0.1 + v * 0.05)}
-              rz={o.to((v) => v * 0.18)}
+              x={o.to((v) => 1.24 + v * 0.05)}
+              y={o.to((v) => 0.02 + v * 0.06)}
+              z={o.to((v) => 0.12 + v * 0.04)}
+              rz={o.to((v) => v * 0.15)}
             />
           </GlassPlate>
         </a.group>
       </a.group>
 
       <ContactShadows
-        position={[0, -1.18, 0]}
-        opacity={0.34}
-        scale={5.8}
+        position={[0, -1.25, 0]}
+        opacity={0.36}
+        scale={6}
         blur={2.5}
-        far={3.2}
+        far={3.3}
         resolution={256}
-        color="#3c3758"
+        color="#3a3555"
       />
     </>
   );
 }
 
-/** Stable 2D labels — only front face content (Variant A) */
-function ReserveDomOverlay({ amounts }: { amounts: WalletAmounts }) {
-  return (
-    <div className="w3d-dom-face" aria-hidden={false}>
-      <div className="w3d-dom-face-inner">
-        <div className="w3d-dom-head">
-          <Shield size={15} aria-hidden />
-          <span>Запас</span>
-        </div>
-        <div className="w3d-dom-amount">{formatMoney(amounts.reserve, amounts.currency)}</div>
-        <div className="w3d-dom-safe">
-          <Sparkles size={12} aria-hidden />
-          <span>Безопасно сегодня</span>
-          <strong>{formatMoney(amounts.safeDaily, amounts.currency)}</strong>
-        </div>
-        <div className="w3d-dom-lip">
-          <span>
-            Всего
-            <b>{formatMoney(amounts.total, amounts.currency)}</b>
-          </span>
-          <span>
-            Платежи
-            <b>{formatMoney(amounts.obligations, amounts.currency)}</b>
-          </span>
-        </div>
-      </div>
-      {/* back-layer chips — minimal, non-3D */}
-      <div className="w3d-dom-chip w3d-chip-comfort">
-        <Coffee size={12} aria-hidden />
-        <span>Комфорт</span>
-        <em>{formatMoney(amounts.comfort, amounts.currency)}</em>
-      </div>
-      <div className="w3d-dom-chip w3d-chip-obl">
-        <ReceiptText size={12} aria-hidden />
-        <span>Платежи</span>
-        <em>{formatMoney(amounts.obligations, amounts.currency)}</em>
-      </div>
-    </div>
-  );
-}
-
+/** Premium 3-layer DOM fallback — same structure as reference */
 function WalletDomFallback({
   amounts,
   onOpen,
@@ -414,25 +516,28 @@ function WalletDomFallback({
       tabIndex={open ? -1 : 0}
       data-testid="wallet-stack"
     >
-      <span className="w3d-fb-layer comfort">
-        <span>
-          <Coffee size={14} aria-hidden /> Комфорт
+      <span className="w3d-fb-layer comfort" data-layer="comfort">
+        <span className="w3d-fb-row">
+          <Coffee size={14} aria-hidden />
+          <small>Комфорт</small>
         </span>
         <b>{formatMoney(amounts.comfort, amounts.currency)}</b>
       </span>
-      <span className="w3d-fb-layer obligations">
-        <span>
-          <ReceiptText size={14} aria-hidden /> Платежи
+      <span className="w3d-fb-layer obligations" data-layer="obligations">
+        <span className="w3d-fb-row">
+          <ReceiptText size={14} aria-hidden />
+          <small>Платежи</small>
         </span>
         <b>{formatMoney(amounts.obligations, amounts.currency)}</b>
       </span>
-      <span className="w3d-fb-layer reserve">
+      <span className="w3d-fb-layer reserve" data-layer="reserve">
         <span className="clasp" aria-hidden>
           <span className="clasp-neck" />
           <i />
         </span>
-        <span className="w3d-fb-head">
-          <Shield size={14} aria-hidden /> Запас
+        <span className="w3d-fb-row">
+          <Shield size={14} aria-hidden />
+          <small>Запас</small>
         </span>
         <b className="w3d-fb-amount">{formatMoney(amounts.reserve, amounts.currency)}</b>
         <span className="safe-strip">
@@ -508,23 +613,26 @@ export function LiquidWallet({ phase, amounts, onOpen, triggerRef, reducedMotion
             stencil: false,
             depth: true,
           }}
-          camera={{ position: [0, 0.02, 4.0], fov: 30, near: 0.1, far: 24 }}
+          camera={{ position: [0, 0.05, 4.35], fov: 28, near: 0.1, far: 24 }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.07;
+            gl.toneMappingExposure = 1.06;
             gl.outputColorSpace = THREE.SRGBColorSpace;
           }}
           style={{ width: '100%', height: '100%', touchAction: 'manipulation' }}
         >
           <Suspense fallback={null}>
-            <WalletScene phase={phase} onOpen={onOpen} reducedMotion={rm} />
+            <WalletScene phase={phase} amounts={amounts} onOpen={onOpen} reducedMotion={rm} />
           </Suspense>
         </Canvas>
-
-        {/* Variant A: stable DOM labels over front plate only */}
-        {!open && <ReserveDomOverlay amounts={amounts} />}
-
+        {/* sr-only amounts for a11y / tests that query text */}
+        <div className="w3d-sr-only">
+          <span>Комфорт {formatMoney(amounts.comfort, amounts.currency)}</span>
+          <span>Платежи {formatMoney(amounts.obligations, amounts.currency)}</span>
+          <span>Запас {formatMoney(amounts.reserve, amounts.currency)}</span>
+          <span>Безопасно сегодня {formatMoney(amounts.safeDaily, amounts.currency)}</span>
+        </div>
         <button
           ref={triggerRef}
           type="button"
