@@ -1,10 +1,13 @@
-import {
-  ContactShadows,
-  Environment,
-  Html,
-  MeshTransmissionMaterial,
-  RoundedBox,
-} from '@react-three/drei';
+/**
+ * Liquid Glass Wallet — R3F primary path.
+ *
+ * Design rules (product + mobile):
+ * - One volumetric glass object (3 equal plates + clasp), not floating cards
+ * - meshPhysicalMaterial only (no MeshTransmissionMaterial on mobile path)
+ * - Text is DOM overlay on the front (Reserve) face — never drei Html in 3D space
+ * - Closed: tight stack. Open: small fan (≤12° rotateX, ~0 rotateZ)
+ */
+import { ContactShadows, Environment, RoundedBox } from '@react-three/drei';
 import { Canvas, useFrame, useThree, type ThreeEvent } from '@react-three/fiber';
 import { a, useSpring } from '@react-spring/three';
 import {
@@ -14,8 +17,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
-  type ReactNode,
   type RefObject,
 } from 'react';
 import * as THREE from 'three';
@@ -42,15 +43,15 @@ type Wallet3DProps = {
   reducedMotion?: boolean;
 };
 
-const TOKENS = {
+const C = {
   comfort: '#9A8AF4',
   obligations: '#C98272',
   reserve: '#7186C8',
-  pearl: '#ECEAF1',
   ink: '#171621',
 } as const;
 
-const LAYER = { w: 2.62, h: 1.58, d: 0.09, r: 0.17 } as const;
+/** Equal plate size — tuned for 390–430px stage */
+const PLATE = { w: 2.72, h: 1.62, d: 0.11, r: 0.2 } as const;
 
 function prefersReducedMotion() {
   return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -60,11 +61,11 @@ function supportsWebGL() {
   if (typeof document === 'undefined') return false;
   if (import.meta.env.MODE === 'test') return false;
   try {
-    const c = document.createElement('canvas');
-    const gl =
-      c.getContext('webgl2', { failIfMajorPerformanceCaveat: false }) ||
-      c.getContext('webgl', { failIfMajorPerformanceCaveat: false });
-    return !!gl;
+    const el = document.createElement('canvas');
+    return !!(
+      el.getContext('webgl2', { failIfMajorPerformanceCaveat: false }) ||
+      el.getContext('webgl', { failIfMajorPerformanceCaveat: false })
+    );
   } catch {
     return false;
   }
@@ -75,35 +76,97 @@ function isOpenPhase(phase: WalletPhase) {
 }
 
 function openTarget(phase: WalletPhase) {
-  if (phase === 'open' || phase === 'opening') return 1;
-  return 0;
+  return phase === 'open' || phase === 'opening' ? 1 : 0;
 }
 
-function isMobileViewport() {
+function isNarrow() {
   return typeof window !== 'undefined' && window.innerWidth < 480;
 }
 
-/** Soft caustic shimmer inside the active (reserve) layer */
-function CausticFilm({ active }: { active: boolean }) {
+/** Thick liquid glass plate — physical only, no multi-pass transmission */
+function GlassPlate({
+  color,
+  thickness,
+  soft,
+  children,
+}: {
+  color: string;
+  thickness: number;
+  soft?: boolean;
+  children?: React.ReactNode;
+}) {
+  return (
+    <group>
+      <RoundedBox args={[PLATE.w, PLATE.h, PLATE.d]} radius={PLATE.r} smoothness={5}>
+        <meshPhysicalMaterial
+          color={color}
+          metalness={0.02}
+          roughness={soft ? 0.14 : 0.07}
+          transmission={soft ? 0.78 : 0.9}
+          thickness={thickness}
+          ior={1.42}
+          transparent
+          opacity={0.96}
+          attenuationColor={color}
+          attenuationDistance={soft ? 0.95 : 1.25}
+          clearcoat={0.95}
+          clearcoatRoughness={soft ? 0.12 : 0.06}
+          envMapIntensity={soft ? 0.85 : 1.15}
+          reflectivity={0.55}
+          specularIntensity={1}
+          side={THREE.FrontSide}
+          depthWrite
+        />
+      </RoundedBox>
+      {/* rim / edge highlight — slightly larger thin shell */}
+      <RoundedBox
+        args={[PLATE.w * 1.015, PLATE.h * 1.015, PLATE.d * 0.45]}
+        radius={PLATE.r * 1.02}
+        smoothness={4}
+      >
+        <meshBasicMaterial
+          color="#ffffff"
+          transparent
+          opacity={0.11}
+          side={THREE.BackSide}
+          depthWrite={false}
+        />
+      </RoundedBox>
+      {/* soft inner liquid tint */}
+      <RoundedBox
+        args={[PLATE.w * 0.9, PLATE.h * 0.86, PLATE.d * 0.28]}
+        radius={PLATE.r * 0.85}
+        smoothness={3}
+        position={[0, -0.02, 0.01]}
+      >
+        <meshBasicMaterial color={color} transparent opacity={0.16} depthWrite={false} />
+      </RoundedBox>
+      {children}
+    </group>
+  );
+}
+
+function CausticShimmer({ enabled }: { enabled: boolean }) {
+  const ref = useRef<THREE.Mesh>(null);
   const mat = useRef<THREE.MeshBasicMaterial>(null);
-  const mesh = useRef<THREE.Mesh>(null);
   useFrame(({ clock, invalidate }) => {
-    if (!active || !mat.current || !mesh.current) return;
+    if (!enabled || !ref.current || !mat.current) return;
     const t = clock.elapsedTime;
-    mat.current.opacity = 0.07 + Math.sin(t * 1.4) * 0.025;
-    mesh.current.rotation.z = Math.sin(t * 0.35) * 0.08;
-    mesh.current.position.x = Math.sin(t * 0.5) * 0.05;
+    mat.current.opacity = 0.05 + Math.sin(t * 1.25) * 0.02;
+    ref.current.position.x = 0.25 + Math.sin(t * 0.55) * 0.06;
+    ref.current.position.y = 0.08 + Math.cos(t * 0.4) * 0.04;
+    ref.current.rotation.z = Math.sin(t * 0.3) * 0.12;
     invalidate();
   });
-  if (!active) return null;
+  if (!enabled) return null;
   return (
-    <mesh ref={mesh} position={[0.35, 0.05, 0.048]} scale={[1.1, 0.75, 1]}>
-      <planeGeometry args={[1.6, 1.1]} />
+    <mesh ref={ref} position={[0.3, 0.05, 0.058]} scale={[1.15, 0.7, 1]}>
+      <circleGeometry args={[0.55, 24]} />
       <meshBasicMaterial
         ref={mat}
         color="#ffffff"
         transparent
-        opacity={0.08}
+        opacity={0.06}
         blending={THREE.AdditiveBlending}
         depthWrite={false}
       />
@@ -111,222 +174,103 @@ function CausticFilm({ active }: { active: boolean }) {
   );
 }
 
-function GlassPlate({
-  color,
-  thickness,
-  light,
-  premium,
-  children,
-  onClick,
-  onPointerDown,
-  onPointerUp,
-  onPointerLeave,
-}: {
-  color: string;
-  thickness: number;
-  light?: boolean;
-  premium?: boolean;
-  children?: ReactNode;
-  onClick?: (e: ThreeEvent<MouseEvent>) => void;
-  onPointerDown?: (e: ThreeEvent<PointerEvent>) => void;
-  onPointerUp?: (e: ThreeEvent<PointerEvent>) => void;
-  onPointerLeave?: (e: ThreeEvent<PointerEvent>) => void;
-}) {
-  const mobile = isMobileViewport();
-  const useMtm = premium && !light && !mobile;
-
-  return (
-    <group
-      onClick={onClick}
-      onPointerDown={onPointerDown}
-      onPointerUp={onPointerUp}
-      onPointerLeave={onPointerLeave}
-    >
-      <RoundedBox args={[LAYER.w, LAYER.h, LAYER.d]} radius={LAYER.r} smoothness={4}>
-        {useMtm ? (
-          <MeshTransmissionMaterial
-            backside
-            samples={4}
-            resolution={180}
-            transmission={0.98}
-            thickness={thickness}
-            chromaticAberration={0.045}
-            anisotropy={0.12}
-            roughness={0.12}
-            ior={1.42}
-            color={color}
-            attenuationDistance={1.1}
-            attenuationColor={color}
-            clearcoat={0.85}
-            clearcoatRoughness={0.12}
-            envMapIntensity={1.25}
-            toneMapped
-          />
-        ) : (
-          <meshPhysicalMaterial
-            color={color}
-            metalness={0.03}
-            roughness={light ? 0.22 : 0.08}
-            transmission={light ? 0.52 : 0.92}
-            thickness={thickness}
-            ior={1.44}
-            transparent
-            opacity={0.95}
-            attenuationColor={color}
-            attenuationDistance={light ? 0.85 : 1.4}
-            clearcoat={0.82}
-            clearcoatRoughness={0.1}
-            envMapIntensity={light ? 0.55 : 1.2}
-            reflectivity={0.62}
-            specularIntensity={0.9}
-            side={THREE.DoubleSide}
-          />
-        )}
-      </RoundedBox>
-      {/* edge tension / rim light */}
-      <RoundedBox
-        args={[LAYER.w * 1.012, LAYER.h * 1.012, LAYER.d * 0.55]}
-        radius={LAYER.r * 1.05}
-        smoothness={3}
-      >
-        <meshBasicMaterial color="#ffffff" transparent opacity={0.1} side={THREE.BackSide} depthWrite={false} />
-      </RoundedBox>
-      {/* inner liquid fill tint */}
-      <RoundedBox
-        args={[LAYER.w * 0.92, LAYER.h * 0.88, LAYER.d * 0.35]}
-        radius={LAYER.r * 0.85}
-        smoothness={2}
-        position={[0, 0, -0.01]}
-      >
-        <meshBasicMaterial color={color} transparent opacity={0.14} depthWrite={false} />
-      </RoundedBox>
-      {children}
-    </group>
-  );
-}
-
-function Clasp3D({
-  ox,
-  oy,
-  oz,
+function Clasp({
+  x,
+  y,
+  z,
   rz,
-  ry,
-  light,
+  soft,
 }: {
-  ox: unknown;
-  oy: unknown;
-  oz: unknown;
+  x: unknown;
+  y: unknown;
+  z: unknown;
   rz: unknown;
-  ry: unknown;
-  light: boolean;
+  soft: boolean;
 }) {
   return (
-    <a.group position-x={ox as never} position-y={oy as never} position-z={oz as never} rotation-z={rz as never} rotation-y={ry as never}>
-      {/* body */}
-      <mesh castShadow={false}>
-        <capsuleGeometry args={[0.095, 0.24, 8, 16]} />
+    <a.group position-x={x as never} position-y={y as never} position-z={z as never} rotation-z={rz as never}>
+      <mesh>
+        <capsuleGeometry args={[0.09, 0.2, 6, 14]} />
         <meshPhysicalMaterial
-          color="#F2F4FC"
-          metalness={0.2}
-          roughness={0.07}
-          transmission={light ? 0.2 : 0.62}
-          thickness={0.35}
-          ior={1.42}
+          color="#F4F6FC"
+          metalness={0.12}
+          roughness={0.08}
+          transmission={soft ? 0.35 : 0.55}
+          thickness={0.28}
+          ior={1.4}
           clearcoat={1}
           clearcoatRoughness={0.05}
           transparent
           opacity={0.97}
-          envMapIntensity={1.1}
+          envMapIntensity={1.05}
         />
       </mesh>
-      {/* neck plate */}
-      <mesh position={[0.07, 0, 0]} rotation={[0, 0, Math.PI / 2]}>
-        <boxGeometry args={[0.16, 0.06, 0.04]} />
-        <meshPhysicalMaterial
-          color="#E4E8F8"
-          metalness={0.15}
-          roughness={0.12}
-          transmission={0.35}
-          thickness={0.2}
-          transparent
-          opacity={0.9}
-        />
-      </mesh>
-      {/* gem / button */}
-      <mesh position={[0.02, 0, 0.07]}>
-        <sphereGeometry args={[0.078, 20, 20]} />
+      <mesh position={[0.02, 0, 0.065]}>
+        <sphereGeometry args={[0.072, 18, 18]} />
         <meshPhysicalMaterial
           color="#FFFFFF"
-          metalness={0.25}
-          roughness={0.04}
-          transmission={light ? 0.15 : 0.48}
-          thickness={0.25}
+          metalness={0.18}
+          roughness={0.05}
+          transmission={soft ? 0.2 : 0.4}
+          thickness={0.2}
           clearcoat={1}
           clearcoatRoughness={0.03}
-          envMapIntensity={1.3}
         />
       </mesh>
-      <Html center className="clasp" style={{ width: 54, height: 44, pointerEvents: 'none' }}>
-        <span className="clasp-neck" aria-hidden />
-        <i aria-hidden />
-      </Html>
     </a.group>
   );
 }
 
+/**
+ * Closed poses: dense stack, tiny Y/Z offsets.
+ * Open poses: controlled fan — small Y/Z, rotateX ≤ ~11°, rotateZ ≈ 0.
+ */
 function WalletScene({
   phase,
-  amounts,
   onOpen,
   reducedMotion,
 }: {
   phase: WalletPhase;
-  amounts: WalletAmounts;
   onOpen: () => void;
   reducedMotion: boolean;
 }) {
   const target = openTarget(phase);
   const { invalidate } = useThree();
-  const light = reducedMotion;
-  const press = useRef(0);
-  const idle = useRef(0);
+  const soft = reducedMotion;
   const root = useRef<THREE.Group>(null);
+  const [pressed, setPressed] = useState(false);
 
   const spring = useSpring({
     o: target,
-    p: 0,
-    config: reducedMotion
-      ? { tension: 300, friction: 42, clamp: true }
-      : { tension: 145, friction: 18, mass: 1.05 },
+    config: soft
+      ? { tension: 280, friction: 40, clamp: true }
+      : { tension: 140, friction: 20, mass: 1.05 },
     onChange: () => invalidate(),
   });
 
-  // sync press into spring via imperative updates is awkward — use local scale on pointer
-  const [pressed, setPressed] = useState(false);
-  const pressSpring = useSpring({
-    s: pressed ? 0.985 : 1,
-    config: { tension: 400, friction: 22 },
+  const press = useSpring({
+    s: pressed ? 0.988 : 1,
+    config: { tension: 380, friction: 24 },
     onChange: () => invalidate(),
   });
 
   useEffect(() => {
     invalidate();
-    const timers = [40, 120, 280, 560, 900].map((ms) => window.setTimeout(() => invalidate(), ms));
-    return () => timers.forEach(clearTimeout);
+    const ids = [30, 100, 260, 520, 800].map((ms) => window.setTimeout(() => invalidate(), ms));
+    return () => ids.forEach(clearTimeout);
   }, [phase, invalidate]);
 
   useFrame(({ clock }) => {
-    if (light || target > 0.5) return;
-    // subtle idle float when closed
-    idle.current = Math.sin(clock.elapsedTime * 0.9) * 0.012;
-    if (root.current) {
-      root.current.position.y = idle.current;
-      root.current.rotation.z = Math.sin(clock.elapsedTime * 0.55) * 0.008;
-      invalidate();
-    }
+    if (soft || target > 0.4 || !root.current) return;
+    const t = clock.elapsedTime;
+    // idle liquid: ~1–1.2° micro motion
+    root.current.position.y = Math.sin(t * 0.85) * 0.014;
+    root.current.rotation.z = Math.sin(t * 0.5) * THREE.MathUtils.degToRad(1.1);
+    root.current.rotation.x = Math.cos(t * 0.4) * THREE.MathUtils.degToRad(0.6);
+    invalidate();
   });
 
-  const handleOpen = useCallback(
+  const open = useCallback(
     (e: ThreeEvent<MouseEvent>) => {
       e.stopPropagation();
       if (isOpenPhase(phase)) return;
@@ -335,179 +279,114 @@ function WalletScene({
     [onOpen, phase],
   );
 
-  const onDown = useCallback((e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation();
-    setPressed(true);
-    press.current = 1;
-  }, []);
-  const onUp = useCallback((e: ThreeEvent<PointerEvent>) => {
-    e.stopPropagation();
-    setPressed(false);
-    press.current = 0;
-  }, []);
-
-  const label: CSSProperties = {
-    color: TOKENS.ink,
-    fontFamily: 'inherit',
-    pointerEvents: 'none',
-    userSelect: 'none',
-    width: 228,
-  };
-
   const o = spring.o;
-  // fan geometry tuned for reference-like stack → fan
-  const comfort = {
-    y: o.to((v) => 0.38 + v * (light ? 0.28 : 0.72)),
-    z: o.to((v) => -0.22 - v * (light ? 0.18 : 0.78)),
-    rx: o.to((v) => -0.12 - v * (light ? 0.1 : 0.52)),
-    rz: o.to((v) => -v * 0.06),
-    sc: o.to((v) => 0.948 - v * 0.035),
-    op: o.to((v) => 1 - v * 0.15),
-  };
-  const obl = {
-    y: o.to((v) => 0.1 + v * (light ? 0.12 : 0.28)),
-    z: o.to((v) => -0.1 - v * (light ? 0.1 : 0.38)),
-    rx: o.to((v) => -0.06 - v * (light ? 0.05 : 0.26)),
-    rz: o.to((v) => v * 0.045),
-    sc: o.to((v) => 0.972 - v * 0.02),
-  };
-  const res = {
-    y: o.to((v) => -0.18 - v * 0.05),
-    z: o.to((v) => 0.06 + v * 0.1),
-    rx: o.to((v) => -v * 0.06),
-    sc: o.to((v) => 1 + v * 0.02),
-  };
+  // Comfort (back)
+  const cY = o.to((v) => 0.1 + v * 0.22);
+  const cZ = o.to((v) => -0.14 - v * 0.28);
+  const cRx = o.to((v) => THREE.MathUtils.degToRad(-2 - v * 9)); // max ~11°
+  // Obligations (mid)
+  const mY = o.to((v) => 0.0 + v * 0.08);
+  const mZ = o.to((v) => -0.06 - v * 0.12);
+  const mRx = o.to((v) => THREE.MathUtils.degToRad(-1 - v * 5));
+  // Reserve (front)
+  const fY = o.to((v) => -0.1 - v * 0.02);
+  const fZ = o.to((v) => 0.04 + v * 0.06);
+  const fRx = o.to((v) => THREE.MathUtils.degToRad(v * -1.5));
 
   return (
     <>
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[3.2, 4.2, 2.4]} intensity={1.05} color="#fff8ff" />
-      <directionalLight position={[-2.5, 1.5, -1.5]} intensity={0.25} color="#c8d0ff" />
-      <Environment preset="apartment" environmentIntensity={light ? 0.3 : 0.72} />
+      <ambientLight intensity={0.48} />
+      <directionalLight position={[2.6, 3.8, 2.2]} intensity={0.95} color="#fffafc" />
+      <directionalLight position={[-2.2, 1.2, -1.4]} intensity={0.28} color="#c9d2ff" />
+      <Environment preset="apartment" environmentIntensity={soft ? 0.32 : 0.58} />
 
-      <a.group ref={root} scale={pressSpring.s}>
-        {/* Comfort */}
-        <a.group
-          position-y={comfort.y}
-          position-z={comfort.z}
-          rotation-x={comfort.rx}
-          rotation-z={comfort.rz}
-          scale={comfort.sc}
-        >
-          <GlassPlate
-            color={TOKENS.comfort}
-            thickness={0.48}
-            light={light}
-            premium
-            onClick={handleOpen}
-            onPointerDown={onDown}
-            onPointerUp={onUp}
-            onPointerLeave={onUp}
-          >
-            <Html position={[-0.92, 0.4, 0.06]} style={label} zIndexRange={[20, 0]} occlude={false}>
-              <div className="w3d-label">
-                <span className="w3d-label-row">
-                  <Coffee size={14} aria-hidden />
-                  <small>Комфорт</small>
-                </span>
-                <b>{formatMoney(amounts.comfort, amounts.currency)}</b>
-              </div>
-            </Html>
-          </GlassPlate>
+      <a.group
+        ref={root}
+        scale={press.s}
+        onClick={open}
+        onPointerDown={(e) => {
+          e.stopPropagation();
+          setPressed(true);
+        }}
+        onPointerUp={() => setPressed(false)}
+        onPointerLeave={() => setPressed(false)}
+      >
+        {/* Comfort — furthest */}
+        <a.group position-y={cY as never} position-z={cZ as never} rotation-x={cRx as never}>
+          <GlassPlate color={C.comfort} thickness={0.48} soft={soft} />
         </a.group>
 
         {/* Obligations */}
-        <a.group
-          position-y={obl.y}
-          position-z={obl.z}
-          rotation-x={obl.rx}
-          rotation-z={obl.rz}
-          scale={obl.sc}
-        >
-          <GlassPlate
-            color={TOKENS.obligations}
-            thickness={0.52}
-            light={light}
-            premium
-            onClick={handleOpen}
-            onPointerDown={onDown}
-            onPointerUp={onUp}
-            onPointerLeave={onUp}
-          >
-            <Html position={[-0.92, 0.4, 0.06]} style={label} zIndexRange={[25, 0]} occlude={false}>
-              <div className="w3d-label">
-                <span className="w3d-label-row">
-                  <ReceiptText size={14} aria-hidden />
-                  <small>Платежи</small>
-                </span>
-                <b>{formatMoney(amounts.obligations, amounts.currency)}</b>
-              </div>
-            </Html>
-          </GlassPlate>
+        <a.group position-y={mY as never} position-z={mZ as never} rotation-x={mRx as never}>
+          <GlassPlate color={C.obligations} thickness={0.52} soft={soft} />
         </a.group>
 
-        {/* Reserve */}
-        <a.group position-y={res.y} position-z={res.z} rotation-x={res.rx} scale={res.sc}>
-          <GlassPlate
-            color={TOKENS.reserve}
-            thickness={0.72}
-            light={light}
-            premium
-            onClick={handleOpen}
-            onPointerDown={onDown}
-            onPointerUp={onUp}
-            onPointerLeave={onUp}
-          >
-            <CausticFilm active={!light} />
-            <Clasp3D
-              light={light}
-              ox={o.to((v) => 1.18 + v * 0.1)}
-              oy={o.to((v) => 0.02 + v * 0.22)}
-              oz={o.to((v) => 0.11 + v * 0.16)}
-              rz={o.to((v) => v * 0.48)}
-              ry={o.to((v) => -0.12 + v * 0.12)}
+        {/* Reserve — front */}
+        <a.group position-y={fY as never} position-z={fZ as never} rotation-x={fRx as never}>
+          <GlassPlate color={C.reserve} thickness={0.65} soft={soft}>
+            <CausticShimmer enabled={!soft} />
+            <Clasp
+              soft={soft}
+              x={o.to((v) => 1.22 + v * 0.06)}
+              y={o.to((v) => 0.04 + v * 0.08)}
+              z={o.to((v) => 0.1 + v * 0.05)}
+              rz={o.to((v) => v * 0.18)}
             />
-            <Html
-              position={[-0.92, 0.44, 0.06]}
-              style={{ ...label, width: 242 }}
-              zIndexRange={[40, 0]}
-              occlude={false}
-            >
-              <div className="w3d-label w3d-label-reserve">
-                <span className="w3d-label-row">
-                  <Shield size={14} aria-hidden />
-                  <small>Запас</small>
-                </span>
-                <b className="w3d-amount">{formatMoney(amounts.reserve, amounts.currency)}</b>
-                <span className="w3d-safe safe-strip">
-                  <Sparkles size={12} aria-hidden />
-                  <span>Безопасно сегодня</span>
-                  <strong>{formatMoney(amounts.safeDaily, amounts.currency)}</strong>
-                </span>
-                <span className="w3d-lip wallet-lip">
-                  <em>
-                    Всего <b>{formatMoney(amounts.total, amounts.currency)}</b>
-                  </em>
-                  <em>
-                    Платежи <b>{formatMoney(amounts.obligations, amounts.currency)}</b>
-                  </em>
-                </span>
-              </div>
-            </Html>
           </GlassPlate>
         </a.group>
       </a.group>
 
       <ContactShadows
-        position={[0, -1.22, 0]}
-        opacity={0.38}
-        scale={6}
-        blur={2.6}
-        far={3.4}
+        position={[0, -1.18, 0]}
+        opacity={0.34}
+        scale={5.8}
+        blur={2.5}
+        far={3.2}
         resolution={256}
-        color="#3d3860"
+        color="#3c3758"
       />
     </>
+  );
+}
+
+/** Stable 2D labels — only front face content (Variant A) */
+function ReserveDomOverlay({ amounts }: { amounts: WalletAmounts }) {
+  return (
+    <div className="w3d-dom-face" aria-hidden={false}>
+      <div className="w3d-dom-face-inner">
+        <div className="w3d-dom-head">
+          <Shield size={15} aria-hidden />
+          <span>Запас</span>
+        </div>
+        <div className="w3d-dom-amount">{formatMoney(amounts.reserve, amounts.currency)}</div>
+        <div className="w3d-dom-safe">
+          <Sparkles size={12} aria-hidden />
+          <span>Безопасно сегодня</span>
+          <strong>{formatMoney(amounts.safeDaily, amounts.currency)}</strong>
+        </div>
+        <div className="w3d-dom-lip">
+          <span>
+            Всего
+            <b>{formatMoney(amounts.total, amounts.currency)}</b>
+          </span>
+          <span>
+            Платежи
+            <b>{formatMoney(amounts.obligations, amounts.currency)}</b>
+          </span>
+        </div>
+      </div>
+      {/* back-layer chips — minimal, non-3D */}
+      <div className="w3d-dom-chip w3d-chip-comfort">
+        <Coffee size={12} aria-hidden />
+        <span>Комфорт</span>
+        <em>{formatMoney(amounts.comfort, amounts.currency)}</em>
+      </div>
+      <div className="w3d-dom-chip w3d-chip-obl">
+        <ReceiptText size={12} aria-hidden />
+        <span>Платежи</span>
+        <em>{formatMoney(amounts.obligations, amounts.currency)}</em>
+      </div>
+    </div>
   );
 }
 
@@ -526,7 +405,7 @@ function WalletDomFallback({
     <button
       ref={triggerRef}
       type="button"
-      className="wallet-stack wallet-stack-fallback"
+      className="w3d-fallback"
       onClick={onOpen}
       aria-haspopup="dialog"
       aria-expanded={open}
@@ -535,36 +414,33 @@ function WalletDomFallback({
       tabIndex={open ? -1 : 0}
       data-testid="wallet-stack"
     >
-      <span className="wallet-layer comfort">
-        <span className="wallet-layer-heading">
-          <Coffee aria-hidden />
-          <small>Комфорт</small>
+      <span className="w3d-fb-layer comfort">
+        <span>
+          <Coffee size={14} aria-hidden /> Комфорт
         </span>
         <b>{formatMoney(amounts.comfort, amounts.currency)}</b>
       </span>
-      <span className="wallet-layer obligations">
-        <span className="wallet-layer-heading">
-          <ReceiptText aria-hidden />
-          <small>Платежи</small>
+      <span className="w3d-fb-layer obligations">
+        <span>
+          <ReceiptText size={14} aria-hidden /> Платежи
         </span>
         <b>{formatMoney(amounts.obligations, amounts.currency)}</b>
       </span>
-      <span className="wallet-layer reserve">
+      <span className="w3d-fb-layer reserve">
         <span className="clasp" aria-hidden>
           <span className="clasp-neck" />
           <i />
         </span>
-        <span className="wallet-layer-heading">
-          <Shield aria-hidden />
-          <small>Запас</small>
+        <span className="w3d-fb-head">
+          <Shield size={14} aria-hidden /> Запас
         </span>
-        <b className="wallet-amount">{formatMoney(amounts.reserve, amounts.currency)}</b>
+        <b className="w3d-fb-amount">{formatMoney(amounts.reserve, amounts.currency)}</b>
         <span className="safe-strip">
-          <Sparkles aria-hidden />
+          <Sparkles size={12} aria-hidden />
           <span>Безопасно сегодня</span>
           <strong>{formatMoney(amounts.safeDaily, amounts.currency)}</strong>
         </span>
-        <span className="wallet-lip">
+        <span className="w3d-fb-lip">
           <em>
             Всего <b>{formatMoney(amounts.total, amounts.currency)}</b>
           </em>
@@ -588,26 +464,26 @@ export function LiquidWallet({ phase, amounts, onOpen, triggerRef, reducedMotion
   }, []);
 
   useEffect(() => {
-    const onVis = () => setPageVisible(document.visibilityState === 'visible');
-    onVis();
-    document.addEventListener('visibilitychange', onVis);
-    return () => document.removeEventListener('visibilitychange', onVis);
+    const fn = () => setPageVisible(document.visibilityState === 'visible');
+    fn();
+    document.addEventListener('visibilitychange', fn);
+    return () => document.removeEventListener('visibilitychange', fn);
   }, []);
 
   const dpr = useMemo<[number, number]>(() => {
     if (rm) return [1, 1];
-    if (isMobileViewport()) return [1, 1.35];
+    if (isNarrow()) return [1, 1.25];
     return [1, 1.5];
   }, [rm]);
 
   if (!webgl) {
     return (
       <section
-        className={`wallet3d-root ${open ? 'is-open' : ''}`}
+        className={`w3d-root w3d-fallback-root ${open ? 'is-open' : ''}`}
         aria-label="Кошелёк"
         data-testid="wallet-stage"
       >
-        <div className="wallet-aura" aria-hidden />
+        <div className="w3d-aura" aria-hidden />
         <WalletDomFallback amounts={amounts} onOpen={onOpen} triggerRef={triggerRef} open={open} />
       </section>
     );
@@ -615,16 +491,16 @@ export function LiquidWallet({ phase, amounts, onOpen, triggerRef, reducedMotion
 
   return (
     <section
-      className={`wallet3d-root ${open ? 'is-open' : ''} ${rm ? 'reduced-motion' : ''}`}
+      className={`w3d-root ${open ? 'is-open' : ''} ${rm ? 'is-reduced' : ''}`}
       aria-label="Кошелёк"
       data-testid="wallet-stage"
     >
-      <div className="wallet-aura" aria-hidden />
-      <div className="wallet-stack wallet3d-canvas-wrap" data-testid="wallet-stack">
+      <div className="w3d-aura" aria-hidden />
+      <div className="w3d-stage wallet-stack" data-testid="wallet-stack">
         <Canvas
-          className="wallet3d-canvas"
+          className="w3d-canvas"
           dpr={dpr}
-          frameloop={pageVisible ? (rm ? 'demand' : 'demand') : 'never'}
+          frameloop={pageVisible ? 'demand' : 'never'}
           gl={{
             alpha: true,
             antialias: true,
@@ -632,23 +508,27 @@ export function LiquidWallet({ phase, amounts, onOpen, triggerRef, reducedMotion
             stencil: false,
             depth: true,
           }}
-          camera={{ position: [0, 0.08, 4.05], fov: 31, near: 0.1, far: 30 }}
+          camera={{ position: [0, 0.02, 4.0], fov: 30, near: 0.1, far: 24 }}
           onCreated={({ gl }) => {
             gl.setClearColor(0x000000, 0);
             gl.toneMapping = THREE.ACESFilmicToneMapping;
-            gl.toneMappingExposure = 1.08;
+            gl.toneMappingExposure = 1.07;
             gl.outputColorSpace = THREE.SRGBColorSpace;
           }}
           style={{ width: '100%', height: '100%', touchAction: 'manipulation' }}
         >
           <Suspense fallback={null}>
-            <WalletScene phase={phase} amounts={amounts} onOpen={onOpen} reducedMotion={rm} />
+            <WalletScene phase={phase} onOpen={onOpen} reducedMotion={rm} />
           </Suspense>
         </Canvas>
+
+        {/* Variant A: stable DOM labels over front plate only */}
+        {!open && <ReserveDomOverlay amounts={amounts} />}
+
         <button
           ref={triggerRef}
           type="button"
-          className="wallet3d-hit"
+          className="w3d-hit"
           onClick={onOpen}
           aria-haspopup="dialog"
           aria-expanded={open}
