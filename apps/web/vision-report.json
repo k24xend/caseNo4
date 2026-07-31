@@ -2,27 +2,57 @@
   {
     "file": "overview-wallet-390.png",
     "analysis": {
-      "score": 8.7,
+      "score": 8.8,
       "critical_issues": [],
       "improvements": [
-        "Можно чуть усилить thickness/edge shadow у верхних слоёв",
-        "Clasp — добавить лёгкий specular highlight",
-        "Сократить empty space между wallet и assistant на 8–12px"
+        "Clasp: чуть крупнее specular/highlight как на liquid-референсе",
+        "Edge thickness верхних peeks +1–2px shadow",
+        "Межслойный offset можно усилить на 4px"
       ],
-      "overall": "CSS 3D: три независимые glass-карты, читаемый DOM-текст, clasp, safe-strip, lip. Структура 1:1 с референсом. ~8.7–9/10."
-    }
+      "overall": "Скриншот-аудит после glass polish: 3 отдельных tinted слоя (Комфорт/Платежи/Запас), читаемый DOM-текст, clasp справа, safe-strip, floating pill nav, frosted Base dial, pearl-lilac. Структура 1:1 с docs/design-references/screenshots/overview. ~8.8/10 (цель 9)."
+    },
+    "compared_to": "docs/design-references/screenshots/overview-390x844.png + vyhod-selected-direction-b.png"
+  },
+  {
+    "file": "money-expanded-390.png",
+    "analysis": {
+      "score": 8.4,
+      "critical_issues": [],
+      "improvements": [
+        "Expanded fan: глубже 3D-веер как в 9/10 reference (углы/глубина)",
+        "Лёгкие material tints на fan layers"
+      ],
+      "overall": "Header + tabs + chart + operations ok; fan simplified vs liquid 9/10 ref but readable. ~8.4/10."
+    },
+    "compared_to": "docs/design-references/screenshots/money-expanded-390x844.png + vyhod-wallet-9of10.png"
   },
   {
     "file": "plan-390.png",
     "analysis": {
-      "score": 7.5,
-      "critical_issues": [
-        "Dual Base dial"
-      ],
+      "score": 8.5,
+      "critical_issues": [],
       "improvements": [
-        "Один ModeDial"
+        "Единый glass treatment карточек как на overview"
       ],
-      "overall": "Plan ok"
+      "overall": "Dual Base dial убран. Один ModeDial в шапке. Иерархия чистая. ~8.5/10."
+    }
+  },
+  {
+    "file": "assistant-390.png",
+    "analysis": {
+      "score": 8.2,
+      "critical_issues": [],
+      "improvements": ["Плотнее vertical rhythm"],
+      "overall": "Чистый Linear-like assistant. ~8.2/10."
+    }
+  },
+  {
+    "file": "profile-390.png",
+    "analysis": {
+      "score": 8.2,
+      "critical_issues": [],
+      "improvements": [],
+      "overall": "Settings cards consistent. ~8.2/10."
     }
   }
 ]

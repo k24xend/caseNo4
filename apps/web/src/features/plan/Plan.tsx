@@ -1,7 +1,6 @@
 import { ArrowRight, Check, ChevronDown, Shield } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
-import { ModeDial } from '../../components/ModeDial';
 import { Page } from '../../components/Page';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
@@ -69,16 +68,16 @@ export function Plan() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex-row items-center justify-between space-y-0">
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Темп сопровождения</p>
-            <CardTitle>
-              {settings.guidanceMode === 'base' ? 'Base · устойчиво' : 'Hard · интенсивно'}
-            </CardTitle>
-            <CardDescription>Режим меняет приоритет и тон советов, но не финансовые факты.</CardDescription>
-          </div>
-          <ModeDial expanded={false} />
+      <Card className="border-white/60 bg-card/80 shadow-glass backdrop-blur">
+        <CardHeader>
+          <p className="text-sm text-muted-foreground">Темп сопровождения</p>
+          <CardTitle>
+            {settings.guidanceMode === 'base' ? 'Base · устойчиво' : 'Hard · интенсивно'}
+          </CardTitle>
+          <CardDescription>
+            Режим меняет приоритет и тон советов, но не финансовые факты. Переключение — в шапке
+            (Base).
+          </CardDescription>
         </CardHeader>
       </Card>
 

@@ -133,9 +133,12 @@ export function Today() {
         reducedMotion={prefersReducedMotion()}
       />
 
-      <Card>
+      <Card
+        className="border-white/60 bg-white/70 shadow-glass backdrop-blur-xl"
+        data-testid="assistant-capsule"
+      >
         <CardHeader className="flex-row items-start gap-4 space-y-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-primary">
+          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-secondary text-primary shadow-sm">
             <MessageCircle className="h-5 w-5" aria-hidden />
           </div>
           <div className="space-y-2">
@@ -146,13 +149,13 @@ export function Today() {
           </div>
         </CardHeader>
         <CardContent className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="rounded-full border-white/60 bg-white/50">
             <Link to="/assistant">Доход</Link>
           </Button>
-          <Button asChild variant="outline" size="sm">
+          <Button asChild variant="outline" size="sm" className="rounded-full border-white/60 bg-white/50">
             <Link to="/plan">План</Link>
           </Button>
-          <Button asChild size="sm" className="ml-auto">
+          <Button asChild size="sm" className="ml-auto rounded-full">
             <Link to="/assistant">
               Спросить <ArrowRight className="h-4 w-4" />
             </Link>
@@ -266,17 +269,24 @@ function WalletExpanded({
       </header>
 
       <div className="expanded-scene flex-1 space-y-4 overflow-auto px-4 py-6">
-        <div className="expanded-fan space-y-2" aria-hidden data-testid="expanded-fan">
-          <div className="fan-comfort rounded-lg border border-border bg-secondary px-4 py-3 text-sm">
-            Комфорт · {formatMoney(comfort, currency)}
+        <div
+          className="expanded-fan relative mx-auto h-36 w-full max-w-sm"
+          aria-hidden
+          data-testid="expanded-fan"
+        >
+          <div className="fan-comfort absolute inset-x-6 top-0 h-20 -rotate-3 rounded-xl border border-white/50 bg-layer-comfort shadow-glass backdrop-blur-xl" />
+          <div className="fan-obligations absolute inset-x-3 top-6 h-20 rotate-1 rounded-xl border border-white/50 bg-layer-obligations shadow-glass backdrop-blur-xl" />
+          <div className="fan-reserve absolute inset-x-0 top-12 flex h-20 items-center justify-between rounded-xl border border-white/70 bg-layer-reserve px-5 shadow-md backdrop-blur-xl">
+            <span className="text-sm font-medium text-muted-foreground">
+              Запас · {formatMoney(reserve, currency)}
+            </span>
+            <span className="fan-clasp clasp flex h-10 w-8 items-center justify-center rounded-lg border border-white/80 bg-gradient-to-b from-white to-secondary shadow-clasp">
+              <i className="block h-4 w-1.5 rounded-full bg-primary/25" />
+            </span>
           </div>
-          <div className="fan-obligations rounded-lg border border-border bg-muted px-4 py-3 text-sm">
-            Платежи · {formatMoney(obligations, currency)}
-          </div>
-          <div className="fan-reserve relative rounded-lg border border-border bg-card px-4 py-3 text-sm shadow-sm">
-            Запас · {formatMoney(reserve, currency)}
-            <span className="fan-clasp absolute right-3 top-1/2 h-6 w-6 -translate-y-1/2 rounded-md bg-primary/20" />
-          </div>
+          <span className="sr-only">
+            Комфорт {formatMoney(comfort, currency)}, Платежи {formatMoney(obligations, currency)}
+          </span>
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as MoneyTab)}>

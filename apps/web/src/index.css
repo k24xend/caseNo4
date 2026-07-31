@@ -4,48 +4,58 @@
 
 @layer base {
   :root {
-    --background: 240 20% 98%;
-    --foreground: 240 10% 10%;
+    /* Pearl-lilac atmosphere — matches design references */
+    --background: 250 35% 96%;
+    --foreground: 250 18% 12%;
     --card: 0 0% 100%;
-    --card-foreground: 240 10% 10%;
+    --card-foreground: 250 18% 12%;
     --popover: 0 0% 100%;
-    --popover-foreground: 240 10% 10%;
-    --primary: 250 55% 55%;
+    --popover-foreground: 250 18% 12%;
+    --primary: 252 58% 58%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 240 12% 95%;
-    --secondary-foreground: 240 10% 20%;
-    --muted: 240 10% 96%;
-    --muted-foreground: 240 5% 42%;
-    --accent: 240 12% 94%;
-    --accent-foreground: 240 10% 16%;
+    --secondary: 250 40% 94%;
+    --secondary-foreground: 250 20% 24%;
+    --muted: 250 28% 93%;
+    --muted-foreground: 250 10% 42%;
+    --accent: 250 36% 92%;
+    --accent-foreground: 250 18% 16%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 10% 90%;
-    --input: 240 10% 90%;
-    --ring: 250 55% 55%;
-    --radius: 0.75rem;
+    --border: 250 22% 88%;
+    --input: 250 22% 88%;
+    --ring: 252 58% 58%;
+    --radius: 1rem;
+    /* Wallet layer tints */
+    --layer-comfort: 255 55% 94%;
+    --layer-obligations: 320 40% 95%;
+    --layer-reserve: 220 50% 96%;
+    --glass: 0 0% 100%;
   }
 
   .dark {
-    --background: 240 12% 8%;
-    --foreground: 240 10% 96%;
-    --card: 240 12% 11%;
-    --card-foreground: 240 10% 96%;
-    --popover: 240 12% 11%;
-    --popover-foreground: 240 10% 96%;
-    --primary: 250 60% 68%;
-    --primary-foreground: 240 12% 8%;
-    --secondary: 240 10% 16%;
-    --secondary-foreground: 240 10% 96%;
-    --muted: 240 10% 16%;
-    --muted-foreground: 240 6% 64%;
-    --accent: 240 10% 18%;
-    --accent-foreground: 240 10% 96%;
+    --background: 250 18% 8%;
+    --foreground: 250 12% 96%;
+    --card: 250 16% 11%;
+    --card-foreground: 250 12% 96%;
+    --popover: 250 16% 11%;
+    --popover-foreground: 250 12% 96%;
+    --primary: 252 62% 70%;
+    --primary-foreground: 250 18% 8%;
+    --secondary: 250 14% 16%;
+    --secondary-foreground: 250 12% 96%;
+    --muted: 250 12% 16%;
+    --muted-foreground: 250 8% 64%;
+    --accent: 250 14% 18%;
+    --accent-foreground: 250 12% 96%;
     --destructive: 0 62% 50%;
     --destructive-foreground: 0 0% 100%;
-    --border: 240 10% 18%;
-    --input: 240 10% 18%;
-    --ring: 250 60% 68%;
+    --border: 250 12% 18%;
+    --input: 250 12% 18%;
+    --ring: 252 62% 70%;
+    --layer-comfort: 255 30% 18%;
+    --layer-obligations: 320 20% 16%;
+    --layer-reserve: 220 25% 16%;
+    --glass: 250 16% 14%;
   }
 
   * {

@@ -40,11 +40,14 @@ export function ModeDial({ expanded = false }: { expanded?: boolean }) {
 
   return (
     <div className="relative" ref={ref}>
-      <Button
+      <button
         type="button"
-        variant="outline"
-        size="sm"
-        className="min-w-16 rounded-full"
+        className={cn(
+          'inline-flex h-10 min-w-16 items-center justify-center rounded-full border border-white/70',
+          'bg-white/70 px-4 text-sm font-medium text-foreground shadow-dial backdrop-blur-xl',
+          'transition-colors hover:bg-white/90',
+          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+        )}
         aria-label={`Режим ${settings.guidanceMode}. Изменить`}
         aria-expanded={open}
         onClick={() => {
@@ -53,10 +56,10 @@ export function ModeDial({ expanded = false }: { expanded?: boolean }) {
         }}
       >
         {settings.guidanceMode === 'base' ? 'Base' : 'Hard'}
-      </Button>
+      </button>
 
       {open && (
-        <Card className="absolute right-0 top-12 z-50 w-56 space-y-2 p-3 shadow-md">
+        <Card className="absolute right-0 top-12 z-50 w-56 space-y-2 border-white/60 bg-white/90 p-3 shadow-md backdrop-blur-xl">
           <div className="grid grid-cols-2 gap-2">
             <Button
               type="button"
@@ -76,14 +79,18 @@ export function ModeDial({ expanded = false }: { expanded?: boolean }) {
             </Button>
           </div>
           {settings.guidanceMode === 'hard' && (
-            <div className="space-y-2 border-t border-border pt-3" role="group" aria-label="Допустимый риск">
+            <div
+              className="space-y-2 border-t border-border pt-3"
+              role="group"
+              aria-label="Допустимый риск"
+            >
               {riskOptions.map(([id, label]) => (
                 <Button
                   key={id}
                   type="button"
                   size="sm"
                   variant={settings.hardRiskLevel === id ? 'secondary' : 'ghost'}
-                  className={cn('w-full justify-start')}
+                  className="w-full justify-start"
                   onClick={() => chooseRisk(id)}
                 >
                   {label}

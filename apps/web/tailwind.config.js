@@ -38,11 +38,21 @@ export default {
           DEFAULT: 'hsl(var(--card))',
           foreground: 'hsl(var(--card-foreground))',
         },
+        glass: 'hsl(var(--glass) / <alpha-value>)',
+        'layer-comfort': 'hsl(var(--layer-comfort) / <alpha-value>)',
+        'layer-obligations': 'hsl(var(--layer-obligations) / <alpha-value>)',
+        'layer-reserve': 'hsl(var(--layer-reserve) / <alpha-value>)',
       },
       borderRadius: {
+        xl: 'calc(var(--radius) + 4px)',
         lg: 'var(--radius)',
         md: 'calc(var(--radius) - 2px)',
         sm: 'calc(var(--radius) - 4px)',
+      },
+      boxShadow: {
+        glass: '0 8px 32px hsl(250 40% 40% / 0.08), 0 2px 8px hsl(250 40% 40% / 0.04)',
+        dial: '0 4px 16px hsl(250 40% 40% / 0.12), inset 0 1px 0 hsl(0 0% 100% / 0.6)',
+        clasp: '0 2px 8px hsl(250 30% 30% / 0.15), inset 0 1px 0 hsl(0 0% 100% / 0.8)',
       },
       fontFamily: {
         sans: [
