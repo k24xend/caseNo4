@@ -11,10 +11,6 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
 import { Skeleton } from '../../components/ui';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '../../components/ui/tabs';
 import { formatMoney } from '../../domain/money';
 import { LiquidWallet, type WalletPhase } from './Wallet3D';
 
@@ -46,7 +42,7 @@ export function Today() {
       window.clearTimeout(closeTimer.current);
       closeTimer.current = window.setTimeout(
         () => setPhase('closed'),
-        prefersReducedMotion() ? 0 : 280,
+        prefersReducedMotion() ? 0 : 480,
       );
     };
     addEventListener('popstate', pop, { once: true });
@@ -64,14 +60,23 @@ export function Today() {
     [],
   );
 
-  if (loading) return <Skeleton />;
+  if (loading)
+    return (
+      <div className="overview">
+        <Skeleton />
+      </div>
+    );
   if (error)
     return (
-      <Card className="space-y-4 p-6">
-        <CardTitle>Не удалось открыть обзор</CardTitle>
-        <CardDescription>{error}</CardDescription>
-        <Button onClick={refresh}>Повторить</Button>
-      </Card>
+      <div className="overview">
+        <div className="empty-state">
+          <h2>Не удалось открыть обзор</h2>
+          <p>{error}</p>
+          <button className="button" onClick={refresh}>
+            Повторить
+          </button>
+        </div>
+      </div>
     );
   if (!data) return null;
 
@@ -91,7 +96,7 @@ export function Today() {
     }
     setPhase('opening');
     window.clearTimeout(openTimer.current);
-    openTimer.current = window.setTimeout(() => setPhase('open'), 200);
+    openTimer.current = window.setTimeout(() => setPhase('open'), 560);
   };
 
   const closeWallet = () => {
@@ -103,7 +108,7 @@ export function Today() {
       }
       setPhase('closing');
       window.clearTimeout(closeTimer.current);
-      closeTimer.current = window.setTimeout(() => setPhase('closed'), 200);
+      closeTimer.current = window.setTimeout(() => setPhase('closed'), 480);
     }
   };
 
@@ -117,10 +122,13 @@ export function Today() {
   };
 
   return (
-    <div className={`space-y-6 ${open ? 'wallet-is-open' : ''}`} data-wallet-phase={phase}>
+    <div
+      className={`overview wallet-phase-${phase} ${open ? 'wallet-is-open' : ''}`}
+      data-wallet-phase={phase}
+    >
       {settings.demoOffline && (
-        <div className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
-          <WifiOff className="h-4 w-4" />
+        <div className="status-banner">
+          <WifiOff />
           Сохранённый план · офлайн
         </div>
       )}
@@ -132,36 +140,27 @@ export function Today() {
         triggerRef={trigger}
         reducedMotion={prefersReducedMotion()}
       />
+      {!open && (
+        <p className="wallet-hint">Нажмите, чтобы открыть историю</p>
+      )}
 
-      <Card
-        className="border-white/60 bg-white/70 shadow-glass backdrop-blur-xl"
-        data-testid="assistant-capsule"
-      >
-        <CardHeader className="flex-row items-start gap-4 space-y-0">
-          <div className="flex h-10 w-10 items-center justify-center rounded-full border border-white/60 bg-secondary text-primary shadow-sm">
-            <MessageCircle className="h-5 w-5" aria-hidden />
-          </div>
-          <div className="space-y-2">
-            <p className="text-sm font-medium text-primary">Помощник</p>
-            <CardTitle className="text-base">
-              {snapshot.available_now === 0 ? 'Начнём с нуля — без спешки' : 'С чего начнём?'}
-            </CardTitle>
-          </div>
-        </CardHeader>
-        <CardContent className="flex flex-wrap gap-2">
-          <Button asChild variant="outline" size="sm" className="rounded-full border-white/60 bg-white/50">
+      <section className="assistant-capsule liquid-panel" data-testid="assistant-capsule">
+        <span className="assistant-shimmer" aria-hidden="true" />
+        <span className="lens-dot" aria-hidden="true">
+          <MessageCircle aria-hidden="true" />
+        </span>
+        <div>
+          <small>Помощник</small>
+          <h2>{snapshot.available_now === 0 ? 'Начнём с нуля — без спешки' : 'С чего начнём?'}</h2>
+          <div className="assistant-actions">
             <Link to="/assistant">Доход</Link>
-          </Button>
-          <Button asChild variant="outline" size="sm" className="rounded-full border-white/60 bg-white/50">
             <Link to="/plan">План</Link>
-          </Button>
-          <Button asChild size="sm" className="ml-auto rounded-full">
-            <Link to="/assistant">
-              Спросить <ArrowRight className="h-4 w-4" />
+            <Link className="assistant-cta" to="/assistant">
+              Спросить <ArrowRight aria-hidden="true" size={16} />
             </Link>
-          </Button>
-        </CardContent>
-      </Card>
+          </div>
+        </div>
+      </section>
 
       {open && (
         <WalletExpanded
@@ -243,235 +242,152 @@ function WalletExpanded({
 
   return (
     <div
-      className="fixed inset-0 z-50 mx-auto flex max-w-lg flex-col bg-background"
+      className={`money-view money-phase-${phase} money-view-3d`}
       role="dialog"
       aria-modal="true"
       aria-labelledby={titleId}
       data-wallet-phase={phase}
     >
-      <header
-        className="money-header flex items-start gap-3 border-b border-border px-4 py-6"
-        data-testid="money-header"
-      >
-        <div className="min-w-0 flex-1 space-y-2">
-          <p id={titleId} className="text-base font-semibold">
-            Деньги
-          </p>
-          <p className="text-sm text-muted-foreground">Всего</p>
-          <h1 className="truncate text-3xl font-semibold tracking-tight tabular-nums">
-            {formatMoney(data.plan.snapshot.available_now, currency)}
-          </h1>
+      <div className="money-backdrop-light" aria-hidden="true" />
+      <header className="money-header" data-testid="money-header">
+        <div>
+          <span id={titleId}>Деньги</span>
+          <small>Всего</small>
+          <h1>{formatMoney(data.plan.snapshot.available_now, currency)}</h1>
         </div>
-        <Badge variant="muted">{data.scenario === 'empty' ? 'Новый' : 'Демо'}</Badge>
-        <Button ref={close} type="button" size="icon" variant="outline" onClick={onClose} aria-label="Закрыть кошелёк">
-          <X className="h-4 w-4" />
-        </Button>
+        <span className="demo-mark">{data.scenario === 'empty' ? 'Новый' : 'Демо'}</span>
+        <button ref={close} onClick={onClose} aria-label="Закрыть кошелёк">
+          <X aria-hidden="true" />
+        </button>
       </header>
 
-      <div className="expanded-scene flex-1 space-y-4 overflow-auto px-4 py-6">
-        <div
-          className="expanded-fan relative mx-auto h-36 w-full max-w-sm"
-          aria-hidden
-          data-testid="expanded-fan"
-        >
-          <div className="fan-comfort absolute inset-x-6 top-0 h-20 -rotate-3 rounded-xl border border-white/50 bg-layer-comfort shadow-glass backdrop-blur-xl" />
-          <div className="fan-obligations absolute inset-x-3 top-6 h-20 rotate-1 rounded-xl border border-white/50 bg-layer-obligations shadow-glass backdrop-blur-xl" />
-          <div className="fan-reserve absolute inset-x-0 top-12 flex h-20 items-center justify-between rounded-xl border border-white/70 bg-layer-reserve px-5 shadow-md backdrop-blur-xl">
-            <span className="text-sm font-medium text-muted-foreground">
-              Запас · {formatMoney(reserve, currency)}
-            </span>
-            <span className="fan-clasp clasp flex h-10 w-8 items-center justify-center rounded-lg border border-white/80 bg-gradient-to-b from-white to-secondary shadow-clasp">
-              <i className="block h-4 w-1.5 rounded-full bg-primary/25" />
-            </span>
-          </div>
-          <span className="sr-only">
-            Комфорт {formatMoney(comfort, currency)}, Платежи {formatMoney(obligations, currency)}
+      <div className="expanded-scene">
+        {/* Spatial continuity: fan silhouette mirrors 3D layers for layout/e2e while canvas fans above */}
+        <div className="expanded-fan" aria-hidden="true" data-testid="expanded-fan">
+          <i className="fan-comfort" data-amount={formatMoney(comfort, currency)} />
+          <i className="fan-obligations" data-amount={formatMoney(obligations, currency)} />
+          <i className="fan-reserve" data-amount={formatMoney(reserve, currency)} />
+          <span className="fan-clasp">
+            <span className="clasp-neck" />
+            <i />
           </span>
         </div>
+        <div className="money-surface">
+          <div className="money-tabs" role="tablist" aria-label="Раздел денег">
+            {(
+              [
+                ['summary', 'Сводка'],
+                ['history', 'История'],
+                ['chart', 'График'],
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                role="tab"
+                aria-selected={tab === id}
+                aria-controls={`money-${id}`}
+                onClick={() => setTab(id)}
+                key={id}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
 
-        <Tabs value={tab} onValueChange={(v) => setTab(v as MoneyTab)}>
-          <TabsList>
-            <TabsTrigger value="summary">Сводка</TabsTrigger>
-            <TabsTrigger value="history">История</TabsTrigger>
-            <TabsTrigger value="chart">График</TabsTrigger>
-          </TabsList>
+          <div className="money-scroll">
+            {(tab === 'summary' || tab === 'chart') && (
+              <section className="movement" id={`money-${tab}`}>
+                <div className="movement-heading">
+                  <div>
+                    <small>Баланс за период</small>
+                    <h2>Движение денег</h2>
+                  </div>
+                  <span>{transactions.length} операций</span>
+                </div>
+                {values.length ? (
+                  <svg
+                    viewBox="0 0 320 148"
+                    role="img"
+                    aria-label={`График движения денег от ${formatMoney(min, currency)} до ${formatMoney(max, currency)}`}
+                  >
+                    <defs>
+                      <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0" stopColor="var(--primary-violet)" stopOpacity=".22" />
+                        <stop offset="1" stopColor="var(--primary-violet)" stopOpacity="0" />
+                      </linearGradient>
+                      <filter id="chartGlow" x="-20%" y="-30%" width="140%" height="160%">
+                        <feGaussianBlur stdDeviation="3" result="blur" />
+                        <feMerge>
+                          <feMergeNode in="blur" />
+                          <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    {[36, 78, 120].map((y) => (
+                      <line key={y} x1="12" x2="308" y1={y} y2={y} />
+                    ))}
+                    <path
+                      className="chart-area"
+                      d={`${curve} L ${latest?.[0] ?? 14} 136 L 14 136 Z`}
+                    />
+                    <path className="chart-curve" d={curve} filter="url(#chartGlow)" />
+                    {latest && (
+                      <>
+                        <circle className="chart-point-halo" cx={latest[0]} cy={latest[1]} r="8" />
+                        <circle className="chart-point" cx={latest[0]} cy={latest[1]} r="4" />
+                      </>
+                    )}
+                  </svg>
+                ) : (
+                  <div className="chart-empty">Пока нет операций для графика</div>
+                )}
+              </section>
+            )}
 
-          <TabsContent value="summary" className="space-y-4">
-            <MovementChart
-              values={values}
-              min={min}
-              max={max}
-              curve={curve}
-              latest={latest}
-              currency={currency}
-              count={transactions.length}
-            />
-            <TxList transactions={transactions} currency={currency} language={settings.language} />
-          </TabsContent>
-          <TabsContent value="history">
-            <TxList transactions={transactions} currency={currency} language={settings.language} />
-          </TabsContent>
-          <TabsContent value="chart">
-            <MovementChart
-              values={values}
-              min={min}
-              max={max}
-              curve={curve}
-              latest={latest}
-              currency={currency}
-              count={transactions.length}
-            />
-          </TabsContent>
-        </Tabs>
+            {(tab === 'summary' || tab === 'history') && (
+              <section className="transactions-preview" id={`money-${tab}`}>
+                <div className="transactions-heading">
+                  <h2>Последние операции</h2>
+                  <Link to="/transactions" aria-label="Все операции">
+                    <ArrowRight aria-hidden="true" />
+                  </Link>
+                </div>
+                {transactions.length ? (
+                  transactions.map((transaction) => {
+                    const income = transaction.kind === 'income';
+                    const Icon = income ? ArrowDownLeft : ArrowUpRight;
+                    return (
+                      <article key={transaction.id} tabIndex={0}>
+                        <span className={income ? 'income' : 'expense'}>
+                          <Icon aria-hidden="true" />
+                        </span>
+                        <div>
+                          <b>{transaction.description || transaction.category}</b>
+                          <small>
+                            {transaction.category} ·{' '}
+                            {new Intl.DateTimeFormat(
+                              settings.language === 'ru' ? 'ru-RU' : 'en-US',
+                              { day: 'numeric', month: 'short' },
+                            ).format(new Date(transaction.occurred_at))}
+                          </small>
+                        </div>
+                        <strong className={income ? 'income-text' : 'expense-text'}>
+                          {income ? '+' : '−'} {formatMoney(transaction.amount, currency)}
+                        </strong>
+                      </article>
+                    );
+                  })
+                ) : (
+                  <div className="empty-state compact-empty">
+                    <WalletCards aria-hidden="true" />
+                    <h3>Операций пока нет</h3>
+                    <p>Добавьте первую, когда будете готовы.</p>
+                  </div>
+                )}
+              </section>
+            )}
+          </div>
+        </div>
       </div>
     </div>
-  );
-}
-
-function MovementChart({
-  values,
-  min,
-  max,
-  curve,
-  latest,
-  currency,
-  count,
-}: {
-  values: number[];
-  min: number;
-  max: number;
-  curve: string;
-  latest?: [number, number];
-  currency: string;
-  count: number;
-}) {
-  return (
-    <Card className="p-6">
-      <div className="mb-4 flex items-start justify-between gap-4">
-        <div className="space-y-2">
-          <p className="text-sm text-muted-foreground">Баланс за период</p>
-          <h2 className="text-base font-semibold">Движение денег</h2>
-        </div>
-        <span className="text-sm text-muted-foreground">{count} операций</span>
-      </div>
-      {values.length ? (
-        <svg
-          viewBox="0 0 320 148"
-          className="h-36 w-full overflow-visible"
-          role="img"
-          aria-label={`График движения денег от ${formatMoney(min, currency as never)} до ${formatMoney(max, currency as never)}`}
-        >
-          <defs>
-            <linearGradient id="chartFill" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" stopColor="hsl(var(--primary))" stopOpacity=".2" />
-              <stop offset="1" stopColor="hsl(var(--primary))" stopOpacity="0" />
-            </linearGradient>
-          </defs>
-          {[36, 78, 120].map((y) => (
-            <line key={y} x1="12" x2="308" y1={y} y2={y} className="stroke-border" strokeWidth="1" />
-          ))}
-          <path className="chart-area fill-[url(#chartFill)]" d={`${curve} L ${latest?.[0] ?? 14} 136 L 14 136 Z`} />
-          <path
-            className="chart-curve fill-none stroke-primary"
-            d={curve}
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-          {latest && (
-            <>
-              <circle className="chart-point-halo fill-primary/20" cx={latest[0]} cy={latest[1]} r="8" />
-              <circle className="chart-point fill-background stroke-primary" cx={latest[0]} cy={latest[1]} r="4" strokeWidth="2" />
-            </>
-          )}
-        </svg>
-      ) : (
-        <div className="flex h-32 items-center justify-center text-sm text-muted-foreground">
-          Пока нет операций для графика
-        </div>
-      )}
-    </Card>
-  );
-}
-
-function TxList({
-  transactions,
-  currency,
-  language,
-}: {
-  transactions: Array<{
-    id: string;
-    kind: string;
-    amount: number;
-    description?: string;
-    category: string;
-    occurred_at: string;
-  }>;
-  currency: string;
-  language: string;
-}) {
-  return (
-    <Card className="p-6">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold">Последние операции</h2>
-        <Button asChild size="icon" variant="ghost">
-          <Link to="/transactions" aria-label="Все операции">
-            <ArrowRight className="h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
-      {transactions.length ? (
-        <ul className="space-y-3">
-          {transactions.map((transaction) => {
-            const income = transaction.kind === 'income';
-            const Icon = income ? ArrowDownLeft : ArrowUpRight;
-            return (
-              <li
-                key={transaction.id}
-                className="flex items-center gap-3 rounded-lg border border-border px-3 py-3"
-                tabIndex={0}
-              >
-                <span
-                  className={
-                    income
-                      ? 'flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-foreground'
-                      : 'flex h-10 w-10 items-center justify-center rounded-lg bg-muted text-muted-foreground'
-                  }
-                >
-                  <Icon className="h-4 w-4" aria-hidden />
-                </span>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium">
-                    {transaction.description || transaction.category}
-                  </p>
-                  <p className="truncate text-sm text-muted-foreground">
-                    {transaction.category} ·{' '}
-                    {new Intl.DateTimeFormat(language === 'ru' ? 'ru-RU' : 'en-US', {
-                      day: 'numeric',
-                      month: 'short',
-                    }).format(new Date(transaction.occurred_at))}
-                  </p>
-                </div>
-                <strong
-                  className={
-                    income
-                      ? 'income-text text-sm font-semibold tabular-nums'
-                      : 'expense-text text-sm font-semibold tabular-nums text-muted-foreground'
-                  }
-                >
-                  {income ? '+' : '−'} {formatMoney(transaction.amount, currency as never)}
-                </strong>
-              </li>
-            );
-          })}
-        </ul>
-      ) : (
-        <div className="space-y-2 py-8 text-center">
-          <WalletCards className="mx-auto h-6 w-6 text-muted-foreground" aria-hidden />
-          <h3 className="text-sm font-semibold">Операций пока нет</h3>
-          <p className="text-sm text-muted-foreground">Добавьте первую, когда будете готовы.</p>
-        </div>
-      )}
-    </Card>
   );
 }

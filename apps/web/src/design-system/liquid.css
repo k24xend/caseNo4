@@ -1,0 +1,6139 @@
+/* VYHOD liquid product — restored for Overview/wallet/nav/dial fidelity */
+/* Tokens + chrome + wallet + money expanded. Imported after index.css */
+
+/* VYHOD liquid product system */
+:root {
+  --bg-pearl: #eceaf1;
+  --bg-elevated: #f7f5fb;
+  --comfort-violet: #9a8af4;
+  --primary-violet: #8174e8;
+  --reserve-blue-violet: #7186c8;
+  --obligation-terracotta: #c98272;
+  --positive-sage: #668b7d;
+  --hard-plum: #8e536e;
+  --ink: #171621;
+  --muted-ink: #625f70;
+  --danger: #b83f4b;
+  --bg: var(--bg-pearl);
+  --surface: var(--bg-elevated);
+  --raised: #f2eff8;
+  --text: var(--ink);
+  --muted: var(--muted-ink);
+  --brand: var(--primary-violet);
+  --brand-soft: #ded9fa;
+  --positive: var(--positive-sage);
+  --line: rgba(75, 67, 103, 0.13);
+  --glass: rgba(255, 255, 255, 0.48);
+  --glass-line: rgba(255, 255, 255, 0.72);
+  --liquid-shadow: 0 24px 60px rgba(71, 62, 104, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.9);
+}
+:root[data-theme='dark'] {
+  --bg-pearl: #15141c;
+  --bg-elevated: #201e2b;
+  --ink: #f5f2fb;
+  --muted-ink: #b5afc3;
+  --glass: rgba(39, 36, 53, 0.7);
+  --glass-line: rgba(255, 255, 255, 0.13);
+  --line: rgba(255, 255, 255, 0.1);
+  --bg: var(--bg-pearl);
+  --surface: var(--bg-elevated);
+  --raised: #282536;
+  --text: var(--ink);
+  --muted: var(--muted-ink);
+  --brand-soft: #393251;
+  --liquid-shadow: 0 24px 60px rgba(0, 0, 0, 0.3), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+}
+body {
+  background:
+    radial-gradient(
+      circle at 12% 5%,
+      color-mix(in srgb, var(--comfort-violet) 13%, transparent),
+      transparent 30%
+    ),
+    var(--bg-pearl);
+}
+.app-shell {
+  max-width: 520px;
+  background: transparent;
+  padding-bottom: calc(92px + var(--safe-bottom));
+}
+.liquid-topbar {
+  height: calc(78px + var(--safe-top));
+  padding: calc(14px + var(--safe-top)) 20px 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 20;
+}
+.watermark {
+  width: 48px;
+  height: 48px;
+  position: relative;
+}
+.watermark i {
+  position: absolute;
+  border: 1.5px solid color-mix(in srgb, var(--primary-violet) 75%, white);
+  border-radius: 52% 48% 60% 40%;
+  inset: 7px;
+  transform: rotate(-20deg);
+}
+.watermark i:nth-child(2) {
+  inset: 13px;
+  transform: rotate(31deg);
+}
+.watermark i:nth-child(3) {
+  inset: 19px;
+  background: var(--primary-violet);
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary-violet) 60%, transparent);
+}
+.demo-mark {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 5px 8px;
+  border-radius: 999px;
+}
+.liquid-topbar > .mode-dial {
+  margin-left: auto;
+}
+.mode-dial {
+  position: relative;
+  width: 70px;
+  height: 58px;
+  z-index: 30;
+}
+.dial-trigger {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-line);
+  background: radial-gradient(
+    circle at 30% 22%,
+    rgba(255, 255, 255, 0.95),
+    rgba(255, 255, 255, 0.35) 32%,
+    color-mix(in srgb, var(--primary-violet) 28%, transparent) 75%
+  );
+  box-shadow:
+    0 10px 28px rgba(85, 70, 150, 0.22),
+    inset 0 0 0 5px rgba(255, 255, 255, 0.17);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  transition: transform 0.45s cubic-bezier(0.2, 0.9, 0.25, 1.25);
+}
+.dial-trigger span {
+  font-size: 11px;
+  font-weight: 800;
+}
+.mode-dial.open .dial-trigger {
+  transform: rotate(95deg) scale(0.93);
+}
+.dial-options {
+  position: absolute;
+  right: -3px;
+  top: 66px;
+  width: 178px;
+  padding: 8px;
+  display: flex;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--liquid-shadow);
+  border-radius: 24px;
+  backdrop-filter: blur(22px);
+  opacity: 0;
+  transform: translateY(-8px) scale(0.9);
+  transform-origin: top right;
+  pointer-events: none;
+  transition: 0.28s ease;
+}
+.mode-dial.open .dial-options {
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+.dial-options button {
+  border: 0;
+  background: transparent;
+  min-height: 52px;
+  flex: 1;
+  border-radius: 17px;
+  font-weight: 800;
+}
+.dial-options button small {
+  display: block;
+  font-size: 9px;
+  color: var(--muted);
+  margin-top: 2px;
+}
+.dial-options button.active {
+  background: color-mix(in srgb, var(--primary-violet) 18%, transparent);
+  color: var(--primary-violet);
+}
+.dial-options button.hard.active {
+  background: color-mix(in srgb, var(--hard-plum) 20%, transparent);
+  color: var(--hard-plum);
+}
+.bottom-nav {
+  grid-template-columns: repeat(4, 1fr);
+  bottom: max(8px, var(--safe-bottom));
+  height: 72px;
+  width: calc(min(100%, 520px) - 24px);
+  border: 1px solid var(--glass-line);
+  border-radius: 26px;
+  padding: 6px 8px;
+  background: color-mix(in srgb, var(--glass) 90%, transparent);
+  box-shadow: 0 16px 40px rgba(45, 39, 67, 0.2);
+  backdrop-filter: blur(24px);
+}
+.bottom-nav a {
+  font-size: 10px;
+  gap: 0;
+  min-width: 0;
+}
+.bottom-nav a b {
+  font-weight: 650;
+}
+.nav-lens {
+  height: 38px;
+  width: 48px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition: 0.32s cubic-bezier(0.2, 0.8, 0.2, 1.25);
+}
+.bottom-nav svg {
+  width: 21px;
+  stroke-width: 1.8;
+}
+.bottom-nav a.active {
+  color: var(--primary-violet);
+  transform: translateY(-3px);
+}
+.bottom-nav a.active .nav-lens {
+  background: radial-gradient(
+    circle at 35% 25%,
+    rgba(255, 255, 255, 0.9),
+    color-mix(in srgb, var(--primary-violet) 25%, transparent)
+  );
+  box-shadow:
+    0 7px 16px rgba(92, 72, 166, 0.2),
+    inset 0 0 0 1px var(--glass-line);
+}
+.page {
+  padding: 8px 18px 34px;
+}
+.page-title {
+  margin: 5px 2px 20px;
+}
+.page-title h1 {
+  font-size: 30px;
+}
+.page-title p {
+  font-size: 14px;
+}
+.overview {
+  padding: 4px 18px 24px;
+  min-height: calc(100dvh - 170px);
+  display: flex;
+  flex-direction: column;
+}
+.wallet-stage {
+  height: 392px;
+  display: flex;
+  align-items: flex-start;
+  padding-top: 30px;
+}
+.wallet-stack {
+  width: 100%;
+  height: 340px;
+  position: relative;
+  border: 0;
+  background: none;
+  padding: 0;
+  perspective: 900px;
+  text-align: left;
+  cursor: pointer;
+}
+.wallet-layer {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 230px;
+  border: 1px solid var(--glass-line);
+  border-radius: 34px 34px 29px 29px;
+  padding: 22px 24px;
+  box-shadow: var(--liquid-shadow);
+  overflow: hidden;
+  transition: transform 0.48s cubic-bezier(0.15, 0.78, 0.23, 1.2);
+  backdrop-filter: blur(16px);
+}
+.wallet-stack:active .wallet-layer {
+  transform: scale(0.987);
+}
+.wallet-layer:before {
+  content: '';
+  position: absolute;
+  inset: -30% 30% 50% -25%;
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.75), transparent 65%);
+  transform: rotate(-9deg);
+  pointer-events: none;
+}
+.wallet-layer small {
+  font-size: 13px;
+  display: block;
+  opacity: 0.75;
+}
+.wallet-layer > b {
+  font-size: 19px;
+  display: block;
+  margin-top: 4px;
+  letter-spacing: -0.03em;
+}
+.wallet-layer.comfort {
+  top: 0;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--comfort-violet) 74%, white),
+    color-mix(in srgb, var(--comfort-violet) 68%, transparent)
+  );
+  color: #211b3e;
+}
+.wallet-layer.obligations {
+  top: 57px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, var(--obligation-terracotta) 76%, white),
+    color-mix(in srgb, var(--obligation-terracotta) 70%, transparent)
+  );
+  color: #351b18;
+}
+.wallet-layer.reserve {
+  top: 114px;
+  height: 226px;
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--reserve-blue-violet) 72%, white),
+    color-mix(in srgb, var(--reserve-blue-violet) 76%, #5b64a0)
+  );
+  color: #11162b;
+  padding-top: 36px;
+  overflow: visible;
+}
+.wallet-amount {
+  font-size: clamp(34px, 12vw, 54px) !important;
+  line-height: 1;
+  max-width: 100%;
+  white-space: nowrap;
+}
+.clasp {
+  position: absolute;
+  right: 25px;
+  top: -20px;
+  width: 68px;
+  height: 45px;
+  border-radius: 28px;
+  background: radial-gradient(
+    circle at 30% 20%,
+    white,
+    rgba(255, 255, 255, 0.4) 32%,
+    rgba(101, 115, 179, 0.4) 75%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  box-shadow:
+    0 10px 22px rgba(45, 55, 110, 0.26),
+    inset 0 -3px 8px rgba(74, 83, 145, 0.25);
+  display: grid;
+  place-items: center;
+}
+.clasp i {
+  width: 27px;
+  height: 13px;
+  border: 1px solid rgba(47, 53, 99, 0.25);
+  border-radius: 50%;
+  box-shadow: inset 0 2px 6px rgba(255, 255, 255, 0.8);
+}
+.safe-strip {
+  display: inline-flex;
+  margin-top: 16px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, rgba(130, 104, 224, 0.34), rgba(101, 139, 207, 0.38));
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  font-size: 12px;
+}
+.wallet-lip {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 57px;
+  padding: 0 22px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0 0 28px 28px;
+  background: linear-gradient(rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.24));
+  border-top: 1px solid rgba(255, 255, 255, 0.18);
+}
+.wallet-lip em {
+  font-size: 11px;
+  font-style: normal;
+  opacity: 0.72;
+}
+.wallet-lip b {
+  display: block;
+  font-size: 13px;
+  opacity: 1;
+}
+.liquid-panel {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  box-shadow: var(--liquid-shadow);
+  backdrop-filter: blur(18px);
+}
+.assistant-capsule {
+  min-height: 118px;
+  border-radius: 31px;
+  padding: 17px;
+  display: flex;
+  gap: 14px;
+}
+.lens-dot {
+  width: 40px;
+  height: 40px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--primary-violet);
+  background: radial-gradient(
+    circle at 30% 20%,
+    white,
+    color-mix(in srgb, var(--primary-violet) 22%, transparent)
+  );
+  box-shadow: inset 0 0 0 1px var(--glass-line);
+}
+.lens-dot svg {
+  width: 18px;
+}
+.assistant-capsule small,
+.assistant-intro small {
+  color: var(--primary-violet);
+  font-weight: 800;
+}
+.assistant-capsule h2 {
+  font-size: 18px;
+  margin: 2px 0 10px;
+}
+.assistant-capsule > div {
+  flex: 1;
+}
+.assistant-capsule > div > div {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.assistant-capsule a,
+.quick-topics button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 7px 11px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 11px;
+  background: rgba(255, 255, 255, 0.22);
+}
+.assistant-capsule a:last-child {
+  margin-left: auto;
+}
+.assistant-capsule svg {
+  width: 12px;
+  vertical-align: middle;
+}
+.overview-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+  margin: 14px 10px 0;
+}
+.money-view {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background:
+    radial-gradient(
+      circle at 50% 0,
+      color-mix(in srgb, var(--reserve-blue-violet) 24%, transparent),
+      transparent 34%
+    ),
+    var(--bg-pearl);
+  max-width: 520px;
+  margin: auto;
+  animation: wallet-open 0.48s cubic-bezier(0.18, 0.85, 0.22, 1);
+  display: flex;
+  flex-direction: column;
+}
+.money-view > header {
+  height: 122px;
+  padding: calc(18px + var(--safe-top)) 20px 10px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.money-view > header button {
+  width: 46px;
+  height: 46px;
+  border: 1px solid var(--glass-line);
+  background: var(--glass);
+  border-radius: 50%;
+}
+.money-view > header div {
+  flex: 1;
+}
+.money-view > header small {
+  color: var(--muted);
+}
+.money-view > header h1 {
+  font-size: 32px;
+  margin: 1px 0;
+}
+.expanded-fan {
+  height: 86px;
+  position: relative;
+  margin: 0 24px;
+  perspective: 600px;
+}
+.expanded-fan i {
+  position: absolute;
+  inset: 5px 7% 20px;
+  border-radius: 28px;
+  background: linear-gradient(130deg, var(--comfort-violet), #b0a7ef);
+  border: 1px solid var(--glass-line);
+  transform: rotateX(57deg) translateY(-22px);
+}
+.expanded-fan i:nth-child(2) {
+  background: linear-gradient(130deg, var(--obligation-terracotta), #d9a095);
+  transform: rotateX(57deg) translateY(0);
+}
+.expanded-fan i:nth-child(3) {
+  background: linear-gradient(130deg, var(--reserve-blue-violet), #92a2d5);
+  transform: rotateX(57deg) translateY(23px);
+}
+.money-tabs {
+  margin: 0 20px 12px;
+  padding: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  background: color-mix(in srgb, var(--glass) 80%, transparent);
+  border: 1px solid var(--glass-line);
+  border-radius: 18px;
+}
+.money-tabs button {
+  min-height: 42px;
+  border: 0;
+  border-radius: 14px;
+  background: none;
+}
+.money-tabs button[aria-selected='true'] {
+  background: var(--surface);
+  box-shadow: 0 5px 16px rgba(48, 43, 67, 0.1);
+  font-weight: 750;
+}
+.money-scroll {
+  overflow: auto;
+  padding: 0 20px calc(28px + var(--safe-bottom));
+  scrollbar-width: none;
+}
+.movement,
+.transactions-preview {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: 28px;
+  padding: 18px;
+  margin-bottom: 14px;
+  box-shadow: var(--liquid-shadow);
+}
+.movement > div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.movement h2,
+.transactions-preview h2 {
+  font-size: 18px;
+  margin: 0 0 12px;
+}
+.movement span {
+  font-size: 11px;
+  color: var(--muted);
+}
+.movement svg {
+  width: 100%;
+  height: 150px;
+  overflow: visible;
+}
+.movement line {
+  stroke: var(--line);
+  stroke-width: 1;
+}
+.movement polyline {
+  fill: none;
+  stroke: var(--primary-violet);
+  stroke-width: 2.5;
+  vector-effect: non-scaling-stroke;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.movement circle {
+  fill: var(--surface);
+  stroke: var(--primary-violet);
+  stroke-width: 1.5;
+  vector-effect: non-scaling-stroke;
+}
+.chart-empty {
+  height: 130px;
+  display: grid;
+  place-items: center;
+  color: var(--muted);
+}
+.transactions-preview article {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 0;
+  border-bottom: 1px solid var(--line);
+}
+.transactions-preview article > span {
+  width: 38px;
+  height: 38px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+}
+.transactions-preview article > div {
+  flex: 1;
+  min-width: 0;
+}
+.transactions-preview article b,
+.transactions-preview article small {
+  display: block;
+}
+.transactions-preview article small {
+  color: var(--muted);
+  font-size: 10px;
+}
+.transactions-preview article > strong {
+  font-size: 13px;
+}
+.transactions-preview .income {
+  background: color-mix(in srgb, var(--positive-sage) 22%, transparent);
+  color: var(--positive-sage);
+}
+.transactions-preview .expense {
+  background: color-mix(in srgb, var(--obligation-terracotta) 20%, transparent);
+  color: var(--obligation-terracotta);
+}
+.income-text {
+  color: var(--positive-sage);
+}
+.expense-text {
+  color: var(--obligation-terracotta);
+}
+@keyframes wallet-open {
+  from {
+    opacity: 0.4;
+    transform: translateY(8%) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.plan-focus,
+.assistant-intro,
+.risk-section,
+.comfort-plan,
+.what-if,
+.secondary-goals,
+.profile-section,
+.demo-settings {
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+  border-radius: 25px;
+  padding: 18px;
+  margin: 13px 0;
+  box-shadow: var(--liquid-shadow);
+}
+.plan-focus h2,
+.assistant-intro h2 {
+  font-size: 26px;
+  margin: 6px 0;
+}
+.plan-focus p,
+.assistant-intro p,
+.profile-section > p {
+  color: var(--muted);
+  font-size: 13px;
+}
+.goal-grid {
+  display: grid;
+  gap: 7px;
+  padding-top: 10px;
+}
+.goal-grid button {
+  min-height: 60px;
+  text-align: left;
+  padding: 10px 13px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: transparent;
+  position: relative;
+}
+.goal-grid b,
+.goal-grid small {
+  display: block;
+}
+.goal-grid small {
+  color: var(--muted);
+}
+.goal-grid button.active {
+  border-color: var(--primary-violet);
+  background: var(--brand-soft);
+}
+.goal-grid svg {
+  position: absolute;
+  right: 12px;
+  top: 20px;
+  width: 17px;
+}
+.mode-plan {
+  display: flex;
+  align-items: center;
+  padding: 18px;
+  border-radius: 25px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  margin: 13px 0;
+}
+.mode-plan > div:first-child {
+  flex: 1;
+}
+.mode-plan h2 {
+  font-size: 19px;
+  margin: 3px 0;
+}
+.mode-plan p {
+  font-size: 11px;
+  color: var(--muted);
+}
+.risk-section > div,
+.plan-numbers {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+}
+.risk-section button {
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 13px;
+  background: transparent;
+  font-size: 11px;
+}
+.risk-section button.active {
+  background: var(--hard-plum);
+  color: white;
+}
+.risk-section small {
+  display: flex;
+  color: var(--hard-plum);
+  margin-top: 9px;
+}
+.risk-section svg {
+  width: 15px;
+}
+.plan-numbers {
+  grid-template-columns: 1fr 1fr;
+}
+.plan-numbers > div {
+  padding: 15px;
+  border-radius: 20px;
+  background: var(--glass);
+  border: 1px solid var(--glass-line);
+}
+.plan-numbers small,
+.plan-numbers strong,
+.comfort-plan > span,
+.comfort-plan > strong {
+  display: block;
+}
+.plan-numbers small {
+  font-size: 10px;
+  color: var(--muted);
+}
+.plan-numbers strong {
+  font-size: 18px;
+  margin-top: 6px;
+}
+.comfort-plan {
+  background: color-mix(in srgb, var(--comfort-violet) 13%, var(--glass));
+}
+.comfort-plan strong {
+  font-size: 29px;
+  margin-top: 4px;
+}
+.comfort-plan a,
+.what-if a {
+  color: var(--primary-violet);
+  font-weight: 700;
+  text-decoration: none;
+}
+.what-if > div {
+  display: grid;
+}
+.what-if a {
+  min-height: 46px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.what-if svg,
+.comfort-plan svg {
+  width: 15px;
+}
+.secondary-goals label {
+  display: block;
+  padding: 8px;
+}
+.secondary-goals input {
+  margin-right: 8px;
+}
+.assistant-intro {
+  display: flex;
+  gap: 14px;
+}
+.quick-topics {
+  display: flex;
+  gap: 7px;
+}
+.quick-topics button {
+  flex: 1;
+  min-height: 42px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--glass);
+}
+.chat-reply {
+  margin: 10px 0;
+  padding: 16px;
+  border-radius: 22px 22px 22px 7px;
+  background: var(--brand-soft);
+}
+.ask-bar {
+  display: flex;
+  padding: 5px 5px 5px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 21px;
+  margin: 12px 0;
+}
+.ask-bar label {
+  flex: 1;
+}
+.ask-bar input {
+  width: 100%;
+  height: 44px;
+  border: 0;
+  background: none;
+  color: var(--text);
+  outline: 0;
+}
+.ask-bar button {
+  width: 44px;
+  border: 0;
+  border-radius: 16px;
+  background: var(--primary-violet);
+  color: white;
+}
+.ask-bar svg {
+  width: 18px;
+}
+.advice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.advice-header button {
+  min-height: 44px;
+  border: 0;
+  background: none;
+  color: var(--primary-violet);
+}
+.advice-header svg {
+  width: 16px;
+  vertical-align: middle;
+}
+.search {
+  height: 46px;
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 0 12px;
+  background: var(--surface);
+}
+.search svg {
+  width: 16px;
+}
+.search input {
+  flex: 1;
+  border: 0;
+  background: none;
+  padding: 8px;
+  color: var(--text);
+}
+.advice-list article {
+  padding: 18px;
+  border: 1px solid var(--glass-line);
+  border-radius: 23px;
+  background: var(--glass);
+  margin: 10px 0;
+}
+.advice-list h3 {
+  margin: 6px 0;
+}
+.advice-list p {
+  font-size: 13px;
+  color: var(--muted);
+}
+.advice-list article button {
+  min-height: 40px;
+  padding: 0 8px;
+  border: 0;
+  background: none;
+  border-radius: 12px;
+  font-size: 11px;
+}
+.advice-list article button.primary-mini {
+  background: var(--primary-violet);
+  color: white;
+}
+.advice-list article svg {
+  width: 14px;
+}
+.empty-state {
+  text-align: center;
+  padding: 28px;
+  color: var(--muted);
+}
+.status-banner {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 10px;
+  border-radius: 15px;
+  background: var(--brand-soft);
+  font-size: 12px;
+}
+.status-banner svg {
+  width: 16px;
+}
+.section-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.section-heading span {
+  display: flex;
+  gap: 7px;
+  align-items: center;
+}
+.section-heading svg {
+  width: 18px;
+}
+.comfort-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.comfort-chips button {
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: none;
+  padding: 0 11px;
+}
+.comfort-chips button.active {
+  background: var(--brand-soft);
+  color: var(--primary-violet);
+}
+.comfort-actions {
+  display: flex;
+  margin-top: 10px;
+}
+.comfort-actions button {
+  min-height: 40px;
+  border: 0;
+  background: none;
+  color: var(--primary-violet);
+}
+.profile-links {
+  padding: 4px 18px;
+}
+.profile-links > label,
+.profile-links > button,
+.profile-links > a {
+  min-height: 58px;
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border: 0;
+  border-bottom: 1px solid var(--line);
+  background: none;
+  color: var(--text);
+  text-decoration: none;
+}
+.profile-links span {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+.profile-links svg {
+  width: 18px;
+}
+.demo-settings > label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 46px;
+}
+.privacy-note {
+  text-align: center;
+  color: var(--muted);
+  font-size: 11px;
+}
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+@supports not (backdrop-filter: blur(2px)) {
+  .liquid-panel,
+  .bottom-nav,
+  .wallet-layer,
+  .dial-options {
+    background: var(--surface);
+  }
+}
+@media (max-width: 359px) {
+  .wallet-stage {
+    height: 340px;
+    padding-top: 8px;
+  }
+  .overview {
+    padding-inline: 12px;
+  }
+  .wallet-amount {
+    font-size: 35px !important;
+  }
+  .assistant-capsule {
+    min-height: 105px;
+  }
+  .money-view > header {
+    height: 105px;
+  }
+  .expanded-fan {
+    height: 68px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Visual fidelity pass: measured 390px iPhone composition and layered liquid optics. */
+:root {
+  --canvas: 430px;
+  --gutter: clamp(13px, 4.6vw, 20px);
+  --pearl: #f9f8fc;
+  --pearl-cool: #f0eff8;
+  --violet-ink: #393457;
+  --rim: rgba(255, 255, 255, 0.86);
+  --liquid-ease: cubic-bezier(0.2, 0.82, 0.2, 1);
+}
+html:not([data-theme='dark']) body {
+  background:
+    radial-gradient(42% 26% at 81% 8%, rgba(191, 178, 242, 0.2), transparent 76%),
+    radial-gradient(65% 38% at 30% 43%, rgba(202, 213, 247, 0.22), transparent 74%),
+    linear-gradient(155deg, #fcfbfd 0%, var(--pearl) 52%, #f5f4fa 100%);
+  background-attachment: fixed;
+}
+.app-shell {
+  max-width: var(--canvas);
+  min-height: 100dvh;
+  position: relative;
+  padding-bottom: calc(78px + var(--safe-bottom));
+}
+.app-shell::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  top: 104px;
+  left: 50%;
+  width: min(520px, 100vw);
+  height: 440px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 68% 40%, rgba(164, 174, 236, 0.16), transparent 34%),
+    radial-gradient(circle at 28% 65%, rgba(217, 192, 237, 0.14), transparent 39%);
+  pointer-events: none;
+}
+.liquid-topbar {
+  height: calc(77px + var(--safe-top));
+  padding: calc(15px + var(--safe-top)) var(--gutter) 4px;
+}
+.watermark {
+  width: 43px;
+  height: 43px;
+  filter: drop-shadow(0 7px 10px rgba(91, 75, 178, 0.12));
+}
+.watermark i {
+  border-color: rgba(101, 84, 190, 0.64);
+  box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.8);
+}
+.watermark i:nth-child(3) {
+  background: linear-gradient(145deg, #afa1ed, #7065c7);
+}
+.liquid-topbar .demo-mark {
+  margin-left: 1px;
+  background: rgba(255, 255, 255, 0.28);
+}
+.mode-dial {
+  width: 64px;
+  height: 54px;
+}
+.dial-trigger {
+  width: 54px;
+  height: 54px;
+  -webkit-backdrop-filter: blur(12px) saturate(1.18);
+  backdrop-filter: blur(12px) saturate(1.18);
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  background:
+    radial-gradient(circle at 30% 20%, rgba(255, 255, 255, 0.97) 0 8%, transparent 38%),
+    radial-gradient(circle at 67% 72%, rgba(121, 105, 202, 0.28), transparent 47%),
+    rgba(246, 244, 253, 0.45);
+  box-shadow:
+    0 14px 26px rgba(70, 60, 121, 0.14),
+    0 2px 5px rgba(75, 64, 128, 0.1),
+    inset 1px 1px 0 rgba(255, 255, 255, 0.9),
+    inset -4px -5px 12px rgba(112, 96, 190, 0.12);
+}
+.dial-trigger::after {
+  content: '';
+  position: absolute;
+  inset: 5px;
+  border: 1px solid rgba(125, 109, 194, 0.12);
+  border-radius: inherit;
+}
+.dial-trigger span {
+  font-weight: 690;
+  letter-spacing: -0.02em;
+}
+.dial-options {
+  -webkit-backdrop-filter: blur(24px) saturate(1.3);
+  backdrop-filter: blur(24px) saturate(1.3);
+  background: rgba(248, 247, 253, 0.67);
+  box-shadow:
+    0 18px 45px rgba(61, 52, 98, 0.16),
+    inset 0 1px rgba(255, 255, 255, 0.9);
+}
+.overview {
+  padding: 0 var(--gutter) 18px;
+  min-height: calc(100dvh - 155px);
+}
+.wallet-stage {
+  position: relative;
+  height: clamp(330px, 48dvh, 392px);
+  min-height: 330px;
+  padding-top: clamp(10px, 3dvh, 28px);
+  isolation: isolate;
+}
+.wallet-aura {
+  position: absolute;
+  inset: 16% -10% 0;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(135, 138, 218, 0.22), transparent 67%);
+  filter: blur(28px);
+  opacity: 0.72;
+}
+.wallet-stack {
+  height: 340px;
+  perspective: 1100px;
+  transform-style: preserve-3d;
+}
+.wallet-layer {
+  left: 1px;
+  width: calc(100% - 2px);
+  height: 226px;
+  padding: 19px 22px;
+  border: 1px solid var(--rim);
+  border-radius: 35px 35px 30px 30px;
+  color: var(--violet-ink);
+  overflow: hidden;
+  -webkit-backdrop-filter: blur(17px) saturate(1.32);
+  backdrop-filter: blur(17px) saturate(1.32);
+  transform-origin: 50% 90%;
+  transition:
+    transform 0.44s var(--liquid-ease),
+    filter 0.44s var(--liquid-ease);
+  box-shadow:
+    0 24px 48px rgba(74, 68, 121, 0.12),
+    0 4px 10px rgba(73, 65, 115, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.96),
+    inset 0 -12px 25px rgba(102, 91, 160, 0.08),
+    inset 4px 0 11px rgba(255, 255, 255, 0.36);
+}
+.wallet-layer::before {
+  inset: -36% 10% 51% -28%;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(255, 255, 255, 0.86),
+    rgba(255, 255, 255, 0.16) 45%,
+    transparent 68%
+  );
+  transform: rotate(-8deg);
+}
+.wallet-layer::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  border: 1px solid rgba(111, 101, 174, 0.1);
+  border-left-color: rgba(255, 255, 255, 0.6);
+  border-bottom-color: rgba(113, 108, 169, 0.15);
+  pointer-events: none;
+}
+.wallet-layer.comfort {
+  top: 3px;
+  transform: translateZ(-44px) scale(0.968);
+  background:
+    radial-gradient(circle at 82% 22%, rgba(255, 255, 255, 0.58), transparent 27%),
+    linear-gradient(
+      138deg,
+      rgba(226, 216, 246, 0.68),
+      rgba(204, 196, 238, 0.34) 55%,
+      rgba(236, 233, 248, 0.56)
+    );
+}
+.wallet-layer.obligations {
+  top: 55px;
+  transform: translateZ(-22px) scale(0.984);
+  background:
+    radial-gradient(circle at 17% 28%, rgba(255, 255, 255, 0.64), transparent 30%),
+    linear-gradient(
+      140deg,
+      rgba(240, 213, 211, 0.63),
+      rgba(222, 189, 199, 0.34) 56%,
+      rgba(229, 216, 232, 0.5)
+    );
+}
+.wallet-layer.reserve {
+  top: 108px;
+  height: 230px;
+  padding: 29px 23px 62px;
+  overflow: visible;
+  background:
+    radial-gradient(ellipse at 18% 4%, rgba(255, 255, 255, 0.9), transparent 34%),
+    radial-gradient(ellipse at 90% 67%, rgba(134, 145, 216, 0.25), transparent 45%),
+    linear-gradient(
+      145deg,
+      rgba(226, 231, 250, 0.68),
+      rgba(191, 198, 235, 0.48) 54%,
+      rgba(211, 207, 239, 0.57)
+    );
+  box-shadow:
+    0 31px 58px rgba(69, 69, 126, 0.17),
+    0 6px 13px rgba(76, 72, 126, 0.1),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -17px 32px rgba(98, 93, 165, 0.1),
+    inset 5px 0 14px rgba(255, 255, 255, 0.48);
+}
+.wallet-caustic {
+  position: absolute;
+  width: 190px;
+  height: 90px;
+  right: -42px;
+  top: 15px;
+  border-radius: 50%;
+  border: 11px solid rgba(255, 255, 255, 0.17);
+  transform: rotate(-25deg);
+  filter: blur(3px);
+  pointer-events: none;
+}
+.wallet-layer-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  position: relative;
+  z-index: 1;
+}
+.wallet-layer-heading svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.7;
+  opacity: 0.67;
+}
+.wallet-layer small {
+  font-size: 12px;
+  font-weight: 560;
+  letter-spacing: 0.01em;
+  opacity: 0.7;
+}
+.wallet-layer > b {
+  position: relative;
+  z-index: 1;
+  font-weight: 610;
+  font-variant-numeric: tabular-nums;
+}
+.wallet-amount {
+  margin-top: 8px !important;
+  font-size: clamp(34px, 11.4vw, 48px) !important;
+  font-weight: 570 !important;
+  letter-spacing: -0.055em !important;
+  color: #35334f;
+}
+.safe-strip {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  min-height: 31px;
+  padding: 6px 10px;
+  gap: 6px;
+  align-items: center;
+  color: #555073;
+  background: linear-gradient(105deg, rgba(255, 255, 255, 0.5), rgba(178, 174, 226, 0.26));
+  border: 1px solid rgba(255, 255, 255, 0.58);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.7),
+    0 5px 12px rgba(91, 81, 149, 0.08);
+}
+.safe-strip svg {
+  width: 13px;
+  height: 13px;
+}
+.safe-strip strong {
+  font-weight: 690;
+  font-variant-numeric: tabular-nums;
+}
+.wallet-lip {
+  height: 56px;
+  padding: 0 21px;
+  border-radius: 0 0 29px 29px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.06), rgba(255, 255, 255, 0.25));
+  border-top: 1px solid rgba(255, 255, 255, 0.48);
+  box-shadow: inset 0 1px rgba(121, 112, 177, 0.08);
+}
+.wallet-lip em {
+  color: #5d5976;
+  opacity: 0.8;
+}
+.wallet-lip b {
+  color: #3c3954;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.clasp {
+  right: -10px;
+  top: 74px;
+  width: 73px;
+  height: 57px;
+  z-index: 5;
+  border-radius: 30px 12px 12px 30px;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  background:
+    radial-gradient(circle at 25% 20%, rgba(255, 255, 255, 0.92), transparent 32%),
+    linear-gradient(110deg, rgba(236, 239, 252, 0.72), rgba(164, 174, 223, 0.48));
+  -webkit-backdrop-filter: blur(10px) saturate(1.4);
+  backdrop-filter: blur(10px) saturate(1.4);
+  box-shadow:
+    0 12px 24px rgba(66, 71, 129, 0.18),
+    inset 1px 1px rgba(255, 255, 255, 0.95),
+    inset -7px -5px 13px rgba(91, 102, 173, 0.15);
+  transition: transform 0.18s ease;
+}
+.clasp-neck {
+  position: absolute;
+  right: -1px;
+  inset-block: 7px;
+  width: 13px;
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  background: rgba(119, 130, 192, 0.08);
+  border-radius: 0 8px 8px 0;
+}
+.clasp i {
+  width: 27px;
+  height: 27px;
+  border: 1px solid rgba(100, 98, 161, 0.22);
+  background: radial-gradient(
+    circle at 32% 28%,
+    white 0 10%,
+    rgba(222, 225, 246, 0.72) 43%,
+    rgba(135, 145, 204, 0.35)
+  );
+  box-shadow:
+    0 4px 9px rgba(79, 78, 135, 0.14),
+    inset 0 2px 4px rgba(255, 255, 255, 0.9);
+}
+.wallet-stack:active .wallet-layer {
+  transform: scale(0.992) translateY(2px);
+}
+.wallet-stack:active .clasp {
+  transform: translateX(-7px) scaleX(0.88);
+}
+
+.liquid-panel {
+  -webkit-backdrop-filter: blur(16px) saturate(1.22);
+  backdrop-filter: blur(16px) saturate(1.22);
+}
+.assistant-capsule {
+  position: relative;
+  min-height: 106px;
+  border-radius: 28px;
+  padding: 14px 15px;
+  gap: 12px;
+  overflow: hidden;
+  background: linear-gradient(125deg, rgba(255, 255, 255, 0.55), rgba(245, 243, 251, 0.28));
+  border: 1px solid rgba(255, 255, 255, 0.78);
+  box-shadow:
+    0 14px 35px rgba(73, 65, 108, 0.09),
+    inset 0 1px rgba(255, 255, 255, 0.9);
+}
+.assistant-shimmer {
+  position: absolute;
+  inset: -50% 40% 45% -20%;
+  transform: rotate(-12deg);
+  background: radial-gradient(ellipse, rgba(255, 255, 255, 0.8), transparent 68%);
+}
+.lens-dot {
+  width: 37px;
+  height: 37px;
+  background: radial-gradient(circle at 30% 20%, white, rgba(187, 177, 230, 0.38));
+  box-shadow:
+    0 7px 15px rgba(82, 68, 141, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+}
+.assistant-capsule small {
+  font-size: 11px;
+  font-weight: 680;
+}
+.assistant-capsule h2 {
+  font-size: 16px;
+  font-weight: 620;
+  letter-spacing: -0.025em;
+  margin: 2px 0 8px;
+}
+.assistant-capsule a {
+  min-height: 31px;
+  padding: 6px 10px;
+  border-color: rgba(111, 102, 153, 0.12);
+  background: rgba(255, 255, 255, 0.3);
+}
+.overview-note {
+  margin: 10px 12px 0;
+  font-size: 10px;
+}
+
+.bottom-nav {
+  width: min(calc(100% - 28px), 402px);
+  height: 64px;
+  bottom: max(8px, var(--safe-bottom));
+  padding: 4px 7px;
+  border-radius: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  background: rgba(249, 248, 252, 0.52);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  backdrop-filter: blur(22px) saturate(1.3);
+  box-shadow:
+    0 14px 36px rgba(60, 53, 91, 0.13),
+    inset 0 1px rgba(255, 255, 255, 0.9);
+}
+.bottom-nav a {
+  min-height: 52px;
+  font-size: 9px;
+  font-weight: 540;
+  gap: 0;
+}
+.nav-lens {
+  width: 43px;
+  height: 34px;
+}
+.bottom-nav svg {
+  width: 19px;
+  stroke-width: 1.65;
+}
+.bottom-nav a.active {
+  transform: none;
+  font-weight: 600;
+}
+.bottom-nav a.active .nav-lens {
+  background: radial-gradient(
+    circle at 34% 20%,
+    rgba(255, 255, 255, 0.94),
+    rgba(183, 175, 230, 0.35)
+  );
+  box-shadow:
+    0 5px 13px rgba(82, 68, 141, 0.12),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.74);
+}
+
+/* Expanded wallet remains one connected stack rather than dashboard cards. */
+.money-view {
+  max-width: var(--canvas);
+  overflow: hidden;
+  background:
+    radial-gradient(60% 27% at 72% 8%, rgba(190, 180, 235, 0.24), transparent 75%),
+    radial-gradient(80% 50% at 35% 72%, rgba(199, 210, 241, 0.2), transparent 72%),
+    linear-gradient(160deg, #fcfbfd, #f4f3fa);
+  animation: wallet-open 0.52s var(--liquid-ease);
+}
+.money-backdrop-light {
+  position: absolute;
+  inset: 100px -60px auto;
+  height: 430px;
+  background: radial-gradient(ellipse, rgba(155, 159, 218, 0.18), transparent 68%);
+  filter: blur(26px);
+  pointer-events: none;
+}
+.money-view > header {
+  position: relative;
+  z-index: 6;
+  height: 112px;
+  padding: calc(15px + var(--safe-top)) var(--gutter) 8px;
+  gap: 13px;
+}
+.money-view > header button {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.42);
+  border-color: rgba(255, 255, 255, 0.84);
+  -webkit-backdrop-filter: blur(13px);
+  backdrop-filter: blur(13px);
+  box-shadow:
+    0 8px 20px rgba(65, 56, 105, 0.1),
+    inset 0 1px rgba(255, 255, 255, 0.9);
+}
+.money-view > header button svg {
+  width: 18px;
+}
+.money-view > header small {
+  font-size: 11px;
+  color: #716c83;
+}
+.money-view > header h1 {
+  font-size: 30px;
+  font-weight: 590;
+  letter-spacing: -0.045em;
+  font-variant-numeric: tabular-nums;
+}
+.expanded-scene {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  perspective: 1100px;
+}
+.expanded-fan {
+  height: 118px;
+  margin: 0 var(--gutter);
+  position: relative;
+  z-index: 1;
+  perspective: 900px;
+}
+.expanded-fan > i {
+  inset: auto 4% 0;
+  height: 116px;
+  border-radius: 34px 34px 25px 25px;
+  border: 1px solid rgba(255, 255, 255, 0.82);
+  -webkit-backdrop-filter: blur(15px) saturate(1.3);
+  backdrop-filter: blur(15px) saturate(1.3);
+  box-shadow:
+    0 -2px 7px rgba(83, 76, 128, 0.05),
+    0 12px 20px rgba(80, 70, 125, 0.09),
+    inset 0 1px rgba(255, 255, 255, 0.9);
+  transform-origin: 50% 100%;
+}
+.expanded-fan .fan-comfort {
+  background: linear-gradient(135deg, rgba(225, 213, 245, 0.66), rgba(203, 196, 235, 0.38));
+  transform: translateY(-66px) rotateX(-4deg) scale(0.91);
+}
+.expanded-fan .fan-obligations {
+  background: linear-gradient(135deg, rgba(239, 213, 215, 0.63), rgba(218, 194, 213, 0.39));
+  transform: translateY(-35px) rotateX(-2deg) scale(0.95);
+}
+.expanded-fan .fan-reserve {
+  background: linear-gradient(135deg, rgba(224, 229, 248, 0.72), rgba(183, 193, 232, 0.46));
+  transform: translateY(-4px) scale(0.985);
+}
+.fan-clasp {
+  position: absolute;
+  z-index: 5;
+  right: -3px;
+  bottom: 14px;
+  width: 67px;
+  height: 52px;
+  border-radius: 27px 10px 10px 27px;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: linear-gradient(120deg, rgba(250, 250, 255, 0.78), rgba(164, 174, 222, 0.52));
+  box-shadow:
+    0 10px 21px rgba(65, 66, 118, 0.16),
+    inset 0 1px white;
+  display: grid;
+  place-items: center;
+}
+.fan-clasp i {
+  width: 25px;
+  height: 25px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 30% 25%, white, rgba(163, 171, 219, 0.5));
+  border: 1px solid rgba(108, 106, 168, 0.18);
+}
+.money-surface {
+  position: absolute;
+  z-index: 3;
+  inset: 82px var(--gutter) 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  border: 1px solid rgba(255, 255, 255, 0.88);
+  border-bottom: 0;
+  border-radius: 34px 34px 0 0;
+  background: linear-gradient(145deg, rgba(249, 249, 253, 0.69), rgba(229, 231, 246, 0.52));
+  -webkit-backdrop-filter: blur(22px) saturate(1.25);
+  backdrop-filter: blur(22px) saturate(1.25);
+  box-shadow:
+    0 -2px 5px rgba(255, 255, 255, 0.7),
+    0 22px 50px rgba(66, 61, 107, 0.14),
+    inset 0 1px white,
+    inset 0 18px 44px rgba(255, 255, 255, 0.2);
+}
+.money-surface::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid rgba(114, 105, 167, 0.08);
+  pointer-events: none;
+}
+.money-tabs {
+  position: relative;
+  z-index: 2;
+  margin: 13px 13px 8px;
+  padding: 3px;
+  min-height: 43px;
+  background: rgba(255, 255, 255, 0.22);
+  border: 1px solid rgba(255, 255, 255, 0.54);
+  border-radius: 16px;
+}
+.money-tabs button {
+  min-height: 35px;
+  font-size: 12px;
+  color: #666078;
+}
+.money-tabs button[aria-selected='true'] {
+  background: radial-gradient(circle at 34% 15%, white, rgba(244, 242, 251, 0.72));
+  color: #403b59;
+  box-shadow:
+    0 5px 14px rgba(74, 63, 118, 0.1),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+  font-weight: 650;
+}
+.money-scroll {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 0 12px calc(22px + var(--safe-bottom));
+  overscroll-behavior: contain;
+}
+.movement,
+.transactions-preview {
+  margin: 8px 0 11px;
+  padding: 15px;
+  border-radius: 24px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.38), rgba(238, 238, 248, 0.22));
+  border: 1px solid rgba(255, 255, 255, 0.63);
+  box-shadow:
+    0 11px 24px rgba(68, 61, 105, 0.07),
+    inset 0 1px rgba(255, 255, 255, 0.8);
+}
+.movement-heading,
+.transactions-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.movement-heading small {
+  font-size: 10px;
+  color: #777186;
+}
+.movement h2,
+.transactions-preview h2 {
+  font-size: 16px;
+  font-weight: 630;
+  letter-spacing: -0.025em;
+  margin: 1px 0 8px;
+}
+.movement svg {
+  height: 145px;
+  overflow: visible;
+}
+.movement line {
+  stroke: rgba(93, 85, 134, 0.11);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+.chart-area {
+  fill: url(#chartFill);
+}
+.chart-curve {
+  fill: none;
+  stroke: var(--primary-violet);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.chart-point-halo {
+  fill: rgba(113, 93, 202, 0.16);
+}
+.chart-point {
+  fill: white;
+  stroke: var(--primary-violet);
+  stroke-width: 2;
+}
+.transactions-heading {
+  margin-bottom: 5px;
+}
+.transactions-heading a {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  color: #625b80;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.28);
+}
+.transactions-heading svg {
+  width: 15px;
+}
+.transactions-preview article {
+  display: grid;
+  grid-template-columns: 37px minmax(0, 1fr) auto;
+  min-height: 58px;
+  gap: 10px;
+  padding: 8px 7px;
+  margin: 4px 0;
+  border: 1px solid rgba(255, 255, 255, 0.38);
+  border-radius: 17px;
+  background: rgba(255, 255, 255, 0.2);
+}
+.transactions-preview article:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--brand) 45%, transparent);
+  outline-offset: 1px;
+}
+.transactions-preview article > span {
+  width: 35px;
+  height: 35px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+}
+.transactions-preview article > span svg {
+  width: 16px;
+}
+.transactions-preview article > span.income {
+  color: #4d7b68;
+  background: rgba(154, 194, 174, 0.2);
+}
+.transactions-preview article > span.expense {
+  color: #a16258;
+  background: rgba(211, 155, 143, 0.18);
+}
+.transactions-preview article > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.transactions-preview article b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 630;
+}
+.transactions-preview article small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  color: #7a7487;
+}
+.transactions-preview article > strong {
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+.income-text {
+  color: #527b68;
+}
+.expense-text {
+  color: #a46158;
+}
+.compact-empty {
+  box-shadow: none;
+  background: transparent;
+  border: 0;
+  padding-block: 25px;
+}
+.compact-empty svg {
+  width: 25px;
+  color: var(--muted);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .wallet-layer,
+  .assistant-capsule,
+  .bottom-nav,
+  .dial-trigger,
+  .dial-options,
+  .money-surface,
+  .expanded-fan > i {
+    background-color: rgba(245, 244, 250, 0.96);
+  }
+}
+@media (max-width: 359px) {
+  .liquid-topbar {
+    height: 70px;
+    padding-top: 10px;
+  }
+  .overview {
+    padding-inline: 12px;
+  }
+  .wallet-stage {
+    height: 327px;
+    padding-top: 3px;
+  }
+  .wallet-stack {
+    height: 325px;
+  }
+  .wallet-layer {
+    height: 208px;
+    border-radius: 30px;
+    padding-inline: 18px;
+  }
+  .wallet-layer.obligations {
+    top: 48px;
+  }
+  .wallet-layer.reserve {
+    top: 96px;
+    height: 222px;
+    padding-top: 24px;
+  }
+  .wallet-amount {
+    font-size: 34px !important;
+  }
+  .safe-strip {
+    margin-top: 11px;
+    font-size: 10px;
+  }
+  .clasp {
+    right: -8px;
+    top: 68px;
+    width: 64px;
+  }
+  .assistant-capsule {
+    min-height: 99px;
+    padding: 12px;
+  }
+  .assistant-capsule h2 {
+    font-size: 15px;
+  }
+  .assistant-capsule a {
+    padding-inline: 8px;
+  }
+  .overview-note {
+    display: none;
+  }
+  .money-view > header {
+    height: 98px;
+  }
+  .expanded-fan {
+    height: 100px;
+  }
+  .money-surface {
+    inset-top: 70px;
+  }
+  .movement svg {
+    height: 115px;
+  }
+}
+@media (min-width: 431px) {
+  .app-shell,
+  .money-view {
+    box-shadow: 0 0 70px rgba(57, 49, 91, 0.08);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .money-view {
+    animation-name: wallet-fade;
+  }
+  .wallet-layer {
+    transform: none !important;
+  }
+}
+@keyframes wallet-fade {
+  from {
+    opacity: 0;
+    transform: scale(0.985);
+  }
+}
+
+/* P0 overview and Money repair.
+   These semantic tokens are the complete colour contract for both wallet scenes. */
+:root {
+  --page-bg: #f7f6fa;
+  --page-glow: rgba(140, 124, 210, 0.13);
+  --glass-fill: rgba(248, 247, 252, 0.88);
+  --glass-fill-strong: rgba(241, 239, 248, 0.96);
+  --glass-rim: rgba(93, 82, 139, 0.2);
+  --glass-inner-highlight: rgba(255, 255, 255, 0.88);
+  --glass-shadow: rgba(55, 45, 91, 0.14);
+  --text-primary: #211d31;
+  --text-secondary: #585268;
+  --text-tertiary: #716b7d;
+  --violet: #6757bd;
+  --terracotta: #a85f52;
+  --reserve: #6675ad;
+  --positive: #28705a;
+  --divider: rgba(66, 57, 92, 0.14);
+  --nav-fill: rgba(250, 249, 252, 0.96);
+}
+:root[data-theme='dark'] {
+  --page-bg: #17151e;
+  --page-glow: rgba(132, 113, 214, 0.18);
+  --glass-fill: rgba(36, 33, 47, 0.94);
+  --glass-fill-strong: rgba(44, 40, 57, 0.98);
+  --glass-rim: rgba(225, 218, 245, 0.2);
+  --glass-inner-highlight: rgba(255, 255, 255, 0.1);
+  --glass-shadow: rgba(0, 0, 0, 0.34);
+  --text-primary: #f5f2fa;
+  --text-secondary: #c7c0d2;
+  --text-tertiary: #aaa2b6;
+  --violet: #b3a5ff;
+  --terracotta: #e39a8c;
+  --reserve: #a9b8ee;
+  --positive: #8bd0b7;
+  --divider: rgba(235, 229, 247, 0.14);
+  --nav-fill: rgba(31, 28, 40, 0.97);
+}
+html,
+body,
+#root {
+  background: var(--page-bg);
+  color: var(--text-primary);
+}
+body {
+  background-image:
+    radial-gradient(circle at 82% 8%, var(--page-glow), transparent 30rem),
+    radial-gradient(circle at 5% 55%, var(--page-glow), transparent 25rem);
+  background-attachment: fixed;
+}
+.app-shell {
+  min-height: 100svh;
+  min-height: 100dvh;
+  padding-bottom: calc(76px + var(--safe-bottom));
+  background: transparent;
+}
+.liquid-topbar {
+  height: calc(66px + var(--safe-top));
+  padding: calc(9px + var(--safe-top)) var(--gutter) 3px;
+}
+.watermark {
+  width: 40px;
+  height: 40px;
+  filter: none;
+}
+.mode-dial {
+  width: 58px;
+  height: 48px;
+}
+.dial-trigger {
+  width: 48px;
+  height: 48px;
+  color: var(--text-primary);
+  border: 1px solid var(--glass-rim);
+  background: var(--glass-fill);
+  box-shadow:
+    0 7px 18px var(--glass-shadow),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.dial-options {
+  top: 55px;
+  color: var(--text-primary);
+  background: var(--glass-fill-strong);
+  border-color: var(--glass-rim);
+  box-shadow: 0 12px 28px var(--glass-shadow);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.dial-options button small {
+  color: var(--text-secondary);
+}
+.overview {
+  min-height: auto;
+  padding: 0 var(--gutter) 16px;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(10px, 2dvh, 16px);
+}
+.wallet-stage {
+  width: min(100%, 390px);
+  height: auto;
+  min-height: 0;
+  aspect-ratio: 1.17 / 1;
+  margin: 0 auto;
+  padding: 6px 0 0;
+  display: block;
+}
+.wallet-aura {
+  inset: 20% 4% 6%;
+  filter: blur(18px);
+  opacity: 0.45;
+  background: radial-gradient(ellipse, var(--page-glow), transparent 70%);
+}
+.wallet-stack {
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+.wallet-layer {
+  left: 2%;
+  width: 96%;
+  height: 65%;
+  padding: clamp(15px, 4vw, 19px) clamp(17px, 5vw, 22px);
+  color: var(--text-primary);
+  border: 1px solid var(--glass-rim);
+  border-radius: clamp(24px, 8vw, 32px);
+  background: var(--glass-fill);
+  box-shadow:
+    0 12px 28px var(--glass-shadow),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+}
+.wallet-layer::before {
+  inset: -25% 45% 68% -12%;
+  background: radial-gradient(ellipse, var(--glass-inner-highlight), transparent 68%);
+}
+.wallet-layer::after {
+  border-color: var(--glass-rim);
+}
+.wallet-layer.comfort {
+  top: 1%;
+  color: var(--text-primary);
+  transform: scale(0.96);
+  background: linear-gradient(145deg, var(--glass-fill-strong), rgba(205, 196, 235, 0.72));
+}
+.wallet-layer.obligations {
+  top: 17%;
+  color: var(--text-primary);
+  transform: scale(0.98);
+  background: linear-gradient(145deg, var(--glass-fill-strong), rgba(224, 188, 181, 0.75));
+}
+.wallet-layer.reserve {
+  top: 34%;
+  height: 65%;
+  padding-top: clamp(22px, 7vw, 29px);
+  color: var(--text-primary);
+  background: linear-gradient(145deg, var(--glass-fill-strong), rgba(190, 201, 232, 0.84));
+}
+:root[data-theme='dark'] .wallet-layer.comfort,
+:root[data-theme='dark'] .wallet-layer.obligations,
+:root[data-theme='dark'] .wallet-layer.reserve {
+  background: var(--glass-fill-strong);
+}
+.wallet-layer small,
+.wallet-lip em {
+  color: var(--text-secondary);
+  opacity: 1;
+}
+.wallet-layer-heading {
+  gap: 7px;
+}
+.wallet-layer-heading svg {
+  color: var(--violet);
+}
+.wallet-amount {
+  max-width: calc(100% - 48px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: clamp(28px, 9vw, 44px) !important;
+  color: var(--text-primary);
+}
+.safe-strip {
+  max-width: calc(100% - 20px);
+  margin-top: clamp(9px, 3vw, 14px);
+  color: var(--text-primary);
+  background: rgba(103, 87, 189, 0.12);
+  border-color: var(--glass-rim);
+}
+.safe-strip strong {
+  color: var(--text-primary);
+}
+.wallet-lip {
+  height: clamp(49px, 14vw, 56px);
+  padding: 0 clamp(16px, 5vw, 22px);
+  color: var(--text-primary);
+  border-color: var(--divider);
+  background: rgba(255, 255, 255, 0.18);
+}
+:root[data-theme='dark'] .wallet-lip {
+  background: rgba(0, 0, 0, 0.12);
+}
+.clasp {
+  top: -15px;
+  right: clamp(16px, 6vw, 25px);
+  width: 58px;
+  height: 39px;
+  background: var(--glass-fill-strong);
+  border-color: var(--glass-rim);
+  box-shadow:
+    0 6px 14px var(--glass-shadow),
+    inset 0 1px var(--glass-inner-highlight);
+}
+.assistant-capsule {
+  position: relative;
+  flex: none;
+  min-height: 96px;
+  margin: 0;
+  padding: 14px 15px;
+  gap: 12px;
+  color: var(--text-primary);
+  border: 1px solid var(--glass-rim);
+  border-radius: 25px;
+  background: var(--glass-fill);
+  box-shadow:
+    0 8px 22px var(--glass-shadow),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+}
+.assistant-capsule h2 {
+  margin: 1px 0 6px;
+  font-size: clamp(16px, 4.7vw, 19px);
+  color: var(--text-primary);
+}
+.assistant-capsule small {
+  color: var(--text-secondary);
+}
+.assistant-capsule a {
+  min-height: 44px;
+  padding: 0 11px;
+  color: var(--text-secondary);
+  background: transparent;
+  border: 1px solid var(--divider);
+}
+.assistant-capsule a:last-child {
+  color: var(--violet);
+  background: rgba(103, 87, 189, 0.1);
+}
+.lens-dot {
+  width: 38px;
+  height: 38px;
+  flex-basis: 38px;
+  color: var(--violet);
+  background: rgba(103, 87, 189, 0.1);
+  box-shadow: none;
+}
+.overview-note {
+  display: none;
+}
+.bottom-nav {
+  bottom: max(6px, var(--safe-bottom));
+  width: calc(min(100%, 430px) - 20px);
+  height: 62px;
+  padding: 4px 7px;
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-rim);
+  border-radius: 22px;
+  background: var(--nav-fill);
+  box-shadow: 0 8px 22px var(--glass-shadow);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+.bottom-nav a {
+  min-height: 52px;
+  color: var(--text-secondary);
+}
+.bottom-nav a.active {
+  color: var(--violet);
+  transform: none;
+}
+.nav-lens {
+  width: 42px;
+  height: 31px;
+}
+.bottom-nav a.active .nav-lens {
+  background: rgba(103, 87, 189, 0.12);
+  box-shadow: none;
+}
+.money-view {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  min-height: 100svh;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--text-primary);
+  background: var(--page-bg);
+  background-image: radial-gradient(circle at 76% 9%, var(--page-glow), transparent 22rem);
+  overscroll-behavior: contain;
+}
+.money-backdrop-light {
+  display: none;
+}
+.money-view > .money-header {
+  position: relative;
+  z-index: 5;
+  width: min(100%, 430px);
+  height: auto;
+  min-height: calc(118px + var(--safe-top));
+  margin: 0 auto;
+  padding: calc(17px + var(--safe-top)) var(--gutter) 12px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+.money-header > div {
+  display: grid;
+  min-width: 0;
+}
+.money-header > div > span {
+  font-size: 23px;
+  font-weight: 700;
+  letter-spacing: -0.035em;
+}
+.money-header small {
+  margin-top: 9px;
+  color: var(--text-secondary);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.money-view > .money-header h1 {
+  max-width: calc(100vw - 126px);
+  margin: 1px 0 0;
+  overflow: hidden;
+  color: var(--text-primary);
+  font-size: clamp(29px, 9.6vw, 42px);
+  line-height: 1.05;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.money-header .demo-mark {
+  margin: 4px 46px 0 auto;
+  color: var(--text-secondary);
+}
+.money-view > .money-header button {
+  position: absolute;
+  top: calc(15px + var(--safe-top));
+  right: var(--gutter);
+  width: 44px;
+  height: 44px;
+  color: var(--text-primary);
+  border: 1px solid var(--glass-rim);
+  border-radius: 50%;
+  background: var(--glass-fill);
+  box-shadow: 0 5px 14px var(--glass-shadow);
+}
+.expanded-scene {
+  position: relative;
+  width: min(100%, 430px);
+  min-height: 560px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) calc(24px + var(--safe-bottom));
+}
+.expanded-fan {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 118px;
+  margin: 0;
+}
+.expanded-fan > i {
+  position: absolute;
+  left: 2%;
+  width: 96%;
+  height: 96px;
+  border: 1px solid var(--glass-rim);
+  border-radius: 27px 27px 12px 12px;
+  background: var(--glass-fill-strong);
+  box-shadow:
+    0 8px 20px var(--glass-shadow),
+    inset 0 1px var(--glass-inner-highlight);
+}
+.expanded-fan .fan-comfort {
+  top: 0;
+  transform: rotate(-2.2deg) scale(0.95);
+}
+.expanded-fan .fan-obligations {
+  top: 24px;
+  transform: rotate(1.4deg) scale(0.975);
+}
+.expanded-fan .fan-reserve {
+  top: 49px;
+  transform: none;
+}
+.fan-clasp {
+  top: 73px;
+  right: 8px;
+  z-index: 4;
+  width: 57px;
+  height: 38px;
+  border: 1px solid var(--glass-rim);
+  background: var(--glass-fill-strong);
+  box-shadow:
+    0 6px 15px var(--glass-shadow),
+    inset 0 1px var(--glass-inner-highlight);
+}
+.money-surface {
+  position: relative;
+  z-index: 2;
+  min-height: 410px;
+  margin: -26px 0 0;
+  padding: 15px 14px 18px;
+  overflow: visible;
+  color: var(--text-primary);
+  border: 1px solid var(--glass-rim);
+  border-radius: 29px;
+  background: var(--glass-fill-strong);
+  box-shadow:
+    0 14px 32px var(--glass-shadow),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(7px);
+  backdrop-filter: blur(7px);
+}
+.money-surface::before {
+  display: none;
+}
+.money-tabs {
+  width: max-content;
+  max-width: 100%;
+  min-height: 36px;
+  margin: 0 0 10px;
+  padding: 3px;
+  border: 1px solid var(--divider);
+  background: transparent;
+}
+.money-tabs button {
+  min-height: 32px;
+  padding: 0 12px;
+  color: var(--text-secondary);
+}
+.money-tabs button[aria-selected='true'] {
+  color: var(--violet);
+  background: rgba(103, 87, 189, 0.11);
+  box-shadow: none;
+}
+.money-scroll {
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+.movement,
+.transactions-preview {
+  color: var(--text-primary);
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+.movement {
+  padding: 10px 3px 5px;
+}
+.movement-heading small,
+.movement-heading span,
+.transactions-preview article small {
+  color: var(--text-secondary);
+}
+.movement h2,
+.transactions-preview h2 {
+  color: var(--text-primary);
+}
+.movement svg {
+  height: 126px;
+  margin-top: 4px;
+}
+.movement line {
+  stroke: var(--divider);
+}
+.chart-curve {
+  stroke: var(--violet);
+}
+.chart-point {
+  fill: var(--violet);
+}
+.transactions-preview {
+  margin-top: 2px;
+  padding: 10px 3px 0;
+  border-top: 1px solid var(--divider);
+}
+.transactions-preview article {
+  min-height: 54px;
+  padding: 7px 0;
+  color: var(--text-primary);
+  border-color: var(--divider);
+}
+.transactions-preview article b {
+  color: var(--text-primary);
+}
+.transactions-preview article > strong {
+  color: var(--text-primary);
+}
+.transactions-preview .income-text {
+  color: var(--positive);
+}
+.transactions-preview .expense-text {
+  color: var(--terracotta);
+}
+@media (max-height: 700px) {
+  .app-shell {
+    padding-bottom: calc(72px + var(--safe-bottom));
+  }
+  .wallet-stage {
+    width: min(88vw, 335px);
+  }
+  .expanded-scene {
+    min-height: 540px;
+  }
+}
+@media (max-width: 359px) {
+  .overview {
+    padding-inline: 12px;
+  }
+  .wallet-stage {
+    width: 296px;
+    max-width: 100%;
+  }
+  .wallet-layer {
+    padding-inline: 15px;
+  }
+  .safe-strip span {
+    display: none;
+  }
+  .assistant-capsule {
+    padding: 12px;
+  }
+  .assistant-capsule a {
+    padding-inline: 8px;
+  }
+  .money-tabs button {
+    padding-inline: 9px;
+  }
+}
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .wallet-layer,
+  .assistant-capsule,
+  .money-surface,
+  .dial-options,
+  .bottom-nav {
+    background: var(--glass-fill-strong);
+  }
+}
+
+.hub-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.hub-grid a,
+.preset-card {
+  min-height: 48px;
+  padding: 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface-2);
+  color: var(--text);
+  font-weight: 700;
+  text-decoration: none;
+}
+.preset-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 4px;
+  text-align: left;
+}
+.preset-card span {
+  font-size: 12px;
+  color: var(--muted);
+}
+.diagnosis-page {
+  min-height: 100dvh;
+  max-width: 600px;
+  margin: auto;
+  padding: calc(42px + var(--safe-top)) 20px calc(28px + var(--safe-bottom));
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+.diagnosis-page h1 {
+  font-size: 34px;
+  line-height: 1.08;
+  letter-spacing: -0.045em;
+  margin: 14px 0;
+}
+.diagnosis-lead {
+  font-size: 17px;
+  line-height: 1.55;
+  color: var(--muted);
+}
+.diagnosis-risk {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  border-color: color-mix(in srgb, var(--warning) 40%, var(--line));
+}
+.diagnosis-risk > svg {
+  color: var(--warning);
+  flex: none;
+}
+.diagnosis-risk div {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.diagnosis-risk small,
+.diagnosis-page > small {
+  color: var(--muted);
+}
+.diagnosis-factors {
+  display: grid;
+  gap: 10px;
+  margin: 8px 0 20px;
+}
+.diagnosis-factors div {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 2px;
+}
+.diagnosis-factors svg {
+  color: var(--brand);
+  width: 22px;
+}
+.diagnosis-factors span {
+  display: flex;
+  flex-direction: column;
+}
+.diagnosis-page > .button {
+  width: 100%;
+  margin-bottom: 12px;
+}
+.eyebrow {
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 750;
+  color: var(--brand);
+  font-size: 12px;
+}
+.welcome h1 {
+  font-size: 48px;
+  letter-spacing: 0.14em;
+  margin: 2px 0;
+}
+.welcome h2 {
+  font-size: 27px;
+  line-height: 1.15;
+  letter-spacing: -0.04em;
+}
+.welcome-actions,
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 30px;
+}
+.text-button,
+.lang,
+.back {
+  border: 0;
+  background: none;
+  min-height: 44px;
+  text-decoration: none;
+  color: var(--brand);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.back svg {
+  width: 18px;
+}
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+  margin: 10px 0;
+  font-weight: 650;
+}
+.field input,
+.field select,
+select {
+  width: 100%;
+  min-height: 50px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--raised);
+  color: var(--text);
+  padding: 0 14px;
+  font-size: 16px;
+}
+.field small {
+  color: var(--danger);
+}
+.password {
+  position: relative;
+}
+.password .field {
+  margin: 0;
+}
+.password > button {
+  position: absolute;
+  right: 3px;
+  top: 28px;
+  width: 48px;
+  height: 48px;
+  border: 0;
+  background: none;
+}
+.banner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 14px;
+  padding: 12px 14px;
+  margin: 10px 0;
+  background: var(--brand-soft);
+  color: var(--brand);
+  font-size: 14px;
+}
+.banner.danger {
+  background: color-mix(in srgb, var(--danger) 14%, transparent);
+  color: var(--danger);
+}
+.banner.offline {
+  background: color-mix(in srgb, var(--warning) 15%, transparent);
+  color: var(--warning);
+}
+.row-link {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  padding: 18px;
+  border-radius: var(--r);
+  text-decoration: none;
+  color: var(--text);
+  margin: 12px 0;
+}
+.row-link span {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.row-link small {
+  color: var(--muted);
+}
+.card-heading,
+.setting,
+.debt-foot,
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.source,
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  border-radius: 99px;
+  padding: 5px 7px;
+  background: var(--brand-soft);
+  color: var(--brand);
+}
+.badge.pending {
+  color: var(--warning);
+}
+.badge.failed,
+.badge.conflict {
+  color: var(--danger);
+}
+.disclaimer {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.list {
+  display: flex;
+  flex-direction: column;
+}
+.debt-main {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  text-align: left;
+  border: 0;
+  background: none;
+  padding: 0;
+  min-height: 52px;
+}
+.debt-main span,
+.setting span {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.debt-main small,
+.setting small {
+  color: var(--muted);
+}
+.debt-foot {
+  margin-top: 15px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.debt-foot button,
+.transaction-list article > button,
+.setting button {
+  border: 0;
+  background: none;
+  min-width: 44px;
+  min-height: 44px;
+}
+.debt-foot svg,
+.transaction-list article > button svg {
+  width: 16px;
+}
+.modal-wrap {
+  position: fixed;
+  inset: 0;
+  background: #0008;
+  z-index: 50;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.modal {
+  background: var(--surface);
+  border-radius: 28px 28px 0 0;
+  padding: 22px 18px calc(22px + var(--safe-bottom));
+  width: min(100%, 640px);
+  max-height: 92dvh;
+  overflow-y: auto;
+}
+.field-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.sheet-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+}
+.check {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 44px;
+}
+.check input {
+  width: 22px;
+  height: 22px;
+}
+.segment,
+.chips,
+.theme-picker,
+.choice {
+  display: flex;
+  gap: 6px;
+}
+.segment label {
+  flex: 1;
+}
+.segment input {
+  position: absolute;
+  opacity: 0;
+}
+.segment span,
+.chips button,
+.theme-picker button,
+.choice button {
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--raised);
+}
+.segment input:checked + span,
+.chips button.active,
+.theme-picker button.active,
+.choice button.active {
+  background: var(--brand-soft);
+  color: var(--brand);
+  border-color: var(--brand);
+}
+.segment span {
+  display: grid;
+  place-items: center;
+}
+.transaction-list article {
+  display: grid;
+  grid-template-columns: 40px minmax(0, 1fr) auto 30px;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 2px;
+  border-bottom: 1px solid var(--line);
+}
+.transaction-list article > div:nth-child(2) {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+.transaction-list small {
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.transaction-list strong.expense {
+  color: var(--text);
+}
+.transaction-list strong.income {
+  color: var(--positive);
+}
+.tx-icon {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 12px;
+  background: var(--raised);
+}
+.tx-icon.income {
+  color: var(--positive);
+  background: color-mix(in srgb, var(--positive) 13%, transparent);
+}
+.setting {
+  min-height: 58px;
+  border-bottom: 1px solid var(--line);
+}
+.setting:last-child {
+  border: 0;
+}
+.switch {
+  width: 48px;
+  height: 28px;
+  accent-color: var(--brand);
+}
+.theme-picker {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+}
+.theme-picker button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+}
+.theme-picker svg {
+  width: 18px;
+}
+.dialog-overlay {
+  position: fixed;
+  inset: 0;
+  background: #0008;
+  z-index: 60;
+}
+.dialog {
+  position: fixed;
+  z-index: 61;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: min(calc(100% - 32px), 420px);
+  background: var(--surface);
+  padding: 22px;
+  border-radius: 22px;
+}
+.dialog > div {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 22px;
+}
+.empty {
+  text-align: center;
+  padding: 30px 20px;
+}
+.empty-icon {
+  font-size: 50px;
+  color: var(--muted);
+}
+.skeleton-stack {
+  display: grid;
+  gap: 12px;
+}
+.skeleton-stack i {
+  height: 120px;
+  border-radius: 20px;
+  background: linear-gradient(90deg, var(--surface), var(--raised), var(--surface));
+  background-size: 200%;
+  animation: shimmer 1.3s infinite;
+}
+.skeleton-stack i:nth-child(2) {
+  height: 80px;
+}
+.onboarding {
+  min-height: 100dvh;
+  max-width: 600px;
+  margin: auto;
+  display: grid;
+  grid-template-rows: auto 1fr auto;
+  padding: calc(20px + var(--safe-top)) 20px calc(18px + var(--safe-bottom));
+}
+.onboarding header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.onboarding progress {
+  width: 100%;
+  accent-color: var(--brand);
+}
+.onboarding main {
+  padding: 30px 0;
+}
+.onboarding main h1 {
+  font-size: 31px;
+  letter-spacing: -0.04em;
+}
+.onboarding footer {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.choice {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+}
+.choice.vertical {
+  grid-template-columns: 1fr;
+}
+.choice button {
+  font-weight: 650;
+}
+.back {
+  padding: 0;
+}
+.skeleton-stack i {
+  display: block;
+}
+@keyframes shimmer {
+  to {
+    background-position: -200%;
+  }
+}
+@media (min-width: 700px) {
+  .app-shell {
+    box-shadow: 0 0 60px #0001;
+  }
+  .page {
+    padding-left: 28px;
+    padding-right: 28px;
+  }
+}
+@media (max-width: 374px) {
+  .metrics {
+    grid-template-columns: 1fr;
+  }
+  .page-title h1 {
+    font-size: 28px;
+  }
+  .hero > strong {
+    font-size: 29px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ==========================================================================
+   VYHOD liquid fidelity 9/10 — authoritative surface for Overview + Money
+   Tokens only. Continuous fan expand. Radial Base dial. Water-lens nav.
+   ========================================================================== */
+:root {
+  --bg-pearl: #eceaf1;
+  --comfort-violet: #9a8af4;
+  --primary-violet: #8174e8;
+  --reserve-blue-violet: #7186c8;
+  --obligation-terracotta: #c98272;
+  --positive-sage: #7e9f92;
+  --ink: #14131a;
+  --muted-ink: #625f70;
+  --hard-plum: #8e536e;
+  --page-bg: var(--bg-pearl);
+  --page-glow: color-mix(in srgb, var(--comfort-violet) 18%, transparent);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted-ink);
+  --text-tertiary: color-mix(in srgb, var(--ink) 55%, white);
+  --violet: var(--primary-violet);
+  --terracotta: var(--obligation-terracotta);
+  --reserve: var(--reserve-blue-violet);
+  --positive: var(--positive-sage);
+  --glass-fill: color-mix(in srgb, white 52%, transparent);
+  --glass-fill-strong: color-mix(in srgb, white 72%, transparent);
+  --glass-rim: color-mix(in srgb, white 78%, transparent);
+  --glass-inner-highlight: color-mix(in srgb, white 92%, transparent);
+  --glass-shadow: color-mix(in srgb, var(--ink) 16%, transparent);
+  --nav-fill: color-mix(in srgb, var(--bg-pearl) 55%, white);
+  --divider: color-mix(in srgb, var(--ink) 12%, transparent);
+  --liquid-ease: cubic-bezier(0.18, 0.88, 0.22, 1.18);
+  --liquid-ease-soft: cubic-bezier(0.22, 0.82, 0.2, 1);
+  --spring: cubic-bezier(0.2, 0.9, 0.25, 1.28);
+  --gutter: clamp(14px, 4.8vw, 20px);
+  --canvas: 430px;
+}
+:root[data-theme='dark'] {
+  --bg-pearl: #15141c;
+  --ink: #f4f1fa;
+  --muted-ink: #b5afc3;
+  --page-bg: var(--bg-pearl);
+  --page-glow: color-mix(in srgb, var(--comfort-violet) 22%, transparent);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted-ink);
+  --glass-fill: color-mix(in srgb, #2a2736 78%, transparent);
+  --glass-fill-strong: color-mix(in srgb, #322e40 90%, transparent);
+  --glass-rim: color-mix(in srgb, white 16%, transparent);
+  --glass-inner-highlight: color-mix(in srgb, white 12%, transparent);
+  --glass-shadow: color-mix(in srgb, black 40%, transparent);
+  --nav-fill: color-mix(in srgb, #1c1a24 92%, transparent);
+  --divider: color-mix(in srgb, white 12%, transparent);
+}
+
+html,
+body,
+#root {
+  background: var(--bg-pearl);
+  color: var(--ink);
+}
+html:not([data-theme='dark']) body {
+  background:
+    radial-gradient(42% 28% at 82% 6%, color-mix(in srgb, var(--comfort-violet) 16%, transparent), transparent 72%),
+    radial-gradient(58% 36% at 18% 48%, color-mix(in srgb, var(--reserve-blue-violet) 12%, transparent), transparent 74%),
+    linear-gradient(160deg, color-mix(in srgb, white 55%, var(--bg-pearl)), var(--bg-pearl) 55%, color-mix(in srgb, var(--bg-pearl) 92%, var(--comfort-violet)));
+  background-attachment: fixed;
+}
+.app-shell {
+  max-width: var(--canvas);
+  min-height: 100dvh;
+  padding-bottom: calc(78px + var(--safe-bottom));
+  background: transparent;
+}
+.app-shell::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  top: 96px;
+  left: 50%;
+  width: min(520px, 100vw);
+  height: 420px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 70% 42%, color-mix(in srgb, var(--reserve-blue-violet) 14%, transparent), transparent 36%),
+    radial-gradient(circle at 28% 68%, color-mix(in srgb, var(--comfort-violet) 12%, transparent), transparent 40%);
+  pointer-events: none;
+}
+
+/* —— Top bar + Mode dial (radial glass) —— */
+.liquid-topbar {
+  height: calc(74px + var(--safe-top));
+  padding: calc(12px + var(--safe-top)) var(--gutter) 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 40;
+  border: 0;
+  border-bottom: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.watermark {
+  width: 44px;
+  height: 44px;
+  position: relative;
+  filter: drop-shadow(0 8px 12px color-mix(in srgb, var(--primary-violet) 18%, transparent));
+}
+.watermark i {
+  position: absolute;
+  inset: 7px;
+  border: 1.5px solid color-mix(in srgb, var(--primary-violet) 70%, white);
+  border-radius: 52% 48% 60% 40%;
+  transform: rotate(-20deg);
+}
+.watermark i:nth-child(2) {
+  inset: 13px;
+  transform: rotate(31deg);
+}
+.watermark i:nth-child(3) {
+  inset: 19px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--comfort-violet) 70%, white), var(--primary-violet));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary-violet) 45%, transparent);
+  border: 0;
+}
+.mode-dial {
+  position: relative;
+  width: 72px;
+  height: 58px;
+  margin-left: auto;
+  z-index: 50;
+  overflow: visible;
+}
+/* Kill legacy dropdown chrome entirely — radial dial is sole selector */
+.mode-dial .dial-options {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.dial-trigger {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-rim);
+  color: var(--ink);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 30% 22%, color-mix(in srgb, white 96%, transparent), transparent 38%),
+    radial-gradient(circle at 68% 74%, color-mix(in srgb, var(--primary-violet) 28%, transparent), transparent 48%),
+    color-mix(in srgb, white 42%, transparent);
+  box-shadow:
+    0 12px 28px color-mix(in srgb, var(--primary-violet) 18%, transparent),
+    0 2px 6px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 1px 1px 0 var(--glass-inner-highlight),
+    inset -5px -6px 14px color-mix(in srgb, var(--primary-violet) 14%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  transition: transform 0.48s var(--spring);
+}
+.dial-refract {
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--primary-violet) 12%, transparent);
+  background: radial-gradient(circle at 28% 24%, color-mix(in srgb, white 55%, transparent), transparent 42%);
+  pointer-events: none;
+}
+.dial-trigger span:not(.dial-refract) {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+.mode-dial.open .dial-trigger {
+  transform: rotate(108deg) scale(0.92);
+}
+.dial-orbit {
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  width: 148px;
+  height: 148px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.55);
+  transform-origin: 78% 42%;
+  transition:
+    opacity 0.28s var(--liquid-ease-soft),
+    transform 0.48s var(--spring);
+}
+.mode-dial.open .dial-orbit {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.dial-arc {
+  position: absolute;
+  width: 64px;
+  min-height: 52px;
+  padding: 8px 6px;
+  border: 1px solid var(--glass-rim);
+  border-radius: 20px;
+  background: color-mix(in srgb, white 70%, transparent);
+  box-shadow:
+    0 10px 24px color-mix(in srgb, var(--ink) 12%, transparent),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  backdrop-filter: blur(16px) saturate(1.25);
+  display: grid;
+  place-items: center;
+  font-weight: 780;
+  line-height: 1.1;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.36s var(--spring),
+    background 0.2s ease;
+}
+.dial-arc small {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted-ink);
+  margin-top: 2px;
+}
+.dial-arc.base {
+  right: 78px;
+  top: 8px;
+  transform: rotate(-8deg);
+}
+.dial-arc.hard {
+  right: 18px;
+  top: 78px;
+  transform: rotate(6deg);
+}
+.dial-arc.active {
+  background: color-mix(in srgb, var(--primary-violet) 18%, white);
+  color: var(--primary-violet);
+  box-shadow:
+    0 12px 26px color-mix(in srgb, var(--primary-violet) 20%, transparent),
+    inset 0 1px white;
+}
+.dial-arc.hard.active {
+  background: color-mix(in srgb, var(--hard-plum) 16%, white);
+  color: var(--hard-plum);
+}
+.mode-dial.open .dial-arc.base {
+  transform: rotate(-8deg) translateY(-2px);
+}
+.mode-dial.open .dial-arc.hard {
+  transform: rotate(6deg) translateY(-2px);
+}
+.dial-options {
+  /* secondary list kept for tests / reduced-motion fallback, hidden by default chrome */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+.mode-dial.open .dial-options {
+  /* keep clipped; radial is primary */
+  pointer-events: none;
+}
+.dial-risk {
+  position: absolute;
+  right: 0;
+  top: 156px;
+  width: 210px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  padding: 7px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-rim);
+  background: color-mix(in srgb, white 74%, transparent);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--ink) 12%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  animation: dial-risk-in 0.36s var(--spring);
+}
+.dial-risk button {
+  min-height: 40px;
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 650;
+  color: var(--muted-ink);
+  cursor: pointer;
+}
+.dial-risk button.active {
+  background: color-mix(in srgb, var(--hard-plum) 14%, white);
+  color: var(--hard-plum);
+  border-color: color-mix(in srgb, var(--hard-plum) 28%, transparent);
+}
+@keyframes dial-risk-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* —— Overview wallet closed state —— */
+.overview {
+  padding: 2px var(--gutter) 18px;
+  min-height: calc(100dvh - 160px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2.2dvh, 18px);
+}
+.wallet-stage {
+  position: relative;
+  width: min(100%, 390px);
+  max-width: 100%;
+  height: clamp(318px, 46dvh, 372px);
+  min-height: 318px;
+  margin: 0 auto;
+  padding-top: clamp(8px, 2.4dvh, 22px);
+  isolation: isolate;
+  display: block;
+  aspect-ratio: auto;
+  overflow: hidden;
+}
+.wallet-aura {
+  position: absolute;
+  inset: 18% 0 2%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--reserve-blue-violet) 22%, transparent), transparent 68%);
+  filter: blur(28px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.wallet-stack {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  position: relative;
+  border: 0;
+  background: none;
+  padding: 0;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  text-align: left;
+  cursor: pointer;
+  overflow: visible;
+}
+.wallet-stack:disabled {
+  cursor: default;
+}
+.wallet-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 8;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, white 55%, transparent) 0%,
+    color-mix(in srgb, var(--primary-violet) 18%, transparent) 42%,
+    transparent 70%
+  );
+  animation: wallet-ripple 0.62s var(--liquid-ease-soft) forwards;
+  mix-blend-mode: soft-light;
+}
+@keyframes wallet-ripple {
+  from {
+    transform: scale(0.2);
+    opacity: 0.75;
+  }
+  to {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+.wallet-layer {
+  position: absolute;
+  left: 1.5%;
+  width: 97%;
+  height: 62%;
+  border: 1px solid var(--glass-rim);
+  border-radius: 34px 34px 28px 28px;
+  padding: 18px 22px;
+  color: var(--ink);
+  overflow: hidden;
+  transform-origin: 50% 92%;
+  transform-style: preserve-3d;
+  -webkit-backdrop-filter: blur(16px) saturate(1.28);
+  backdrop-filter: blur(16px) saturate(1.28);
+  transition:
+    transform 0.5s var(--liquid-ease),
+    filter 0.45s var(--liquid-ease-soft),
+    box-shadow 0.45s ease,
+    opacity 0.35s ease;
+  box-shadow:
+    0 22px 48px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 4px 12px color-mix(in srgb, var(--ink) 8%, transparent),
+    inset 0 1px 0 var(--glass-inner-highlight),
+    inset 0 -14px 28px color-mix(in srgb, var(--primary-violet) 8%, transparent),
+    inset 4px 0 12px color-mix(in srgb, white 28%, transparent);
+  will-change: transform;
+}
+.wallet-layer::before {
+  content: '';
+  position: absolute;
+  inset: -36% 12% 50% -28%;
+  background: radial-gradient(ellipse, color-mix(in srgb, white 86%, transparent), transparent 68%);
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+.wallet-layer::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--primary-violet) 10%, transparent);
+  border-left-color: color-mix(in srgb, white 55%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--ink) 10%, transparent);
+  pointer-events: none;
+}
+.wallet-layer.comfort {
+  top: 2%;
+  z-index: 1;
+  transform: translate3d(0, 0, -48px) scale(0.965);
+  background:
+    radial-gradient(circle at 82% 20%, color-mix(in srgb, white 55%, transparent), transparent 28%),
+    linear-gradient(
+      138deg,
+      color-mix(in srgb, var(--comfort-violet) 42%, white),
+      color-mix(in srgb, var(--comfort-violet) 28%, transparent) 55%,
+      color-mix(in srgb, var(--bg-pearl) 40%, white)
+    );
+}
+.wallet-layer.obligations {
+  top: 17%;
+  z-index: 2;
+  transform: translate3d(0, 0, -24px) scale(0.982);
+  background:
+    radial-gradient(circle at 18% 26%, color-mix(in srgb, white 60%, transparent), transparent 30%),
+    linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--obligation-terracotta) 38%, white),
+      color-mix(in srgb, var(--obligation-terracotta) 24%, transparent) 56%,
+      color-mix(in srgb, var(--bg-pearl) 45%, white)
+    );
+}
+.wallet-layer.reserve {
+  top: 33%;
+  z-index: 3;
+  height: 64%;
+  padding: 28px 22px 58px;
+  overflow: visible;
+  transform: translate3d(0, 0, 0) scale(1);
+  background:
+    radial-gradient(ellipse at 16% 2%, color-mix(in srgb, white 88%, transparent), transparent 34%),
+    radial-gradient(ellipse at 92% 70%, color-mix(in srgb, var(--reserve-blue-violet) 28%, transparent), transparent 46%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--reserve-blue-violet) 22%, white),
+      color-mix(in srgb, var(--reserve-blue-violet) 42%, white) 52%,
+      color-mix(in srgb, var(--comfort-violet) 18%, var(--reserve-blue-violet))
+    );
+  box-shadow:
+    0 28px 56px color-mix(in srgb, var(--reserve-blue-violet) 22%, transparent),
+    0 6px 14px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 1.5px 0 var(--glass-inner-highlight),
+    inset 0 -18px 34px color-mix(in srgb, var(--primary-violet) 10%, transparent),
+    inset 5px 0 14px color-mix(in srgb, white 42%, transparent);
+}
+.wallet-caustic {
+  position: absolute;
+  width: 160px;
+  height: 80px;
+  right: 4px;
+  top: 12px;
+  border-radius: 50%;
+  border: 11px solid color-mix(in srgb, white 18%, transparent);
+  transform: rotate(-25deg);
+  filter: blur(3px);
+  pointer-events: none;
+}
+.wallet-edge-tension {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 50%, color-mix(in srgb, white 35%, transparent), transparent 18%),
+    radial-gradient(circle at 94% 42%, color-mix(in srgb, var(--primary-violet) 16%, transparent), transparent 16%);
+  mix-blend-mode: soft-light;
+  opacity: 0.85;
+}
+.wallet-layer-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  position: relative;
+  z-index: 1;
+}
+.wallet-layer-heading svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.7;
+  opacity: 0.7;
+  color: color-mix(in srgb, var(--ink) 70%, var(--primary-violet));
+}
+.wallet-layer small {
+  font-size: 12px;
+  font-weight: 580;
+  letter-spacing: 0.01em;
+  opacity: 0.72;
+  color: var(--ink);
+}
+.wallet-layer > b {
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  margin-top: 4px;
+  letter-spacing: -0.03em;
+}
+.wallet-amount {
+  margin-top: 8px !important;
+  font-size: clamp(34px, 11.2vw, 50px) !important;
+  font-weight: 580 !important;
+  letter-spacing: -0.055em !important;
+  line-height: 1;
+  max-width: calc(100% - 52px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.safe-strip {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  min-height: 31px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--ink) 78%, var(--primary-violet));
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--primary-violet) 22%, transparent),
+    color-mix(in srgb, var(--reserve-blue-violet) 26%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, white 42%, transparent);
+  box-shadow:
+    inset 0 1px color-mix(in srgb, white 55%, transparent),
+    0 5px 12px color-mix(in srgb, var(--primary-violet) 10%, transparent);
+  font-size: 12px;
+}
+.safe-strip svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+.safe-strip strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.wallet-lip {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 54px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0 0 28px 28px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, white 4%, transparent),
+    color-mix(in srgb, white 28%, transparent)
+  );
+  border-top: 1px solid color-mix(in srgb, white 40%, transparent);
+  box-shadow: inset 0 1px color-mix(in srgb, var(--primary-violet) 8%, transparent);
+}
+.wallet-lip em {
+  font-size: 11px;
+  font-style: normal;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+.wallet-lip b {
+  display: block;
+  font-size: 13px;
+  font-weight: 680;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.clasp {
+  position: absolute;
+  right: 10px;
+  top: 68px;
+  width: 68px;
+  height: 52px;
+  z-index: 6;
+  border-radius: 30px 12px 12px 30px;
+  border: 1px solid color-mix(in srgb, white 88%, transparent);
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 25% 20%, color-mix(in srgb, white 92%, transparent), transparent 32%),
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, white 72%, var(--reserve-blue-violet)),
+      color-mix(in srgb, var(--reserve-blue-violet) 42%, transparent)
+    );
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow:
+    0 12px 24px color-mix(in srgb, var(--reserve-blue-violet) 24%, transparent),
+    inset 1px 1px color-mix(in srgb, white 95%, transparent),
+    inset -7px -5px 13px color-mix(in srgb, var(--reserve-blue-violet) 18%, transparent);
+  transition: transform 0.22s var(--spring);
+}
+.clasp-neck {
+  position: absolute;
+  right: -1px;
+  inset-block: 7px;
+  width: 13px;
+  border-left: 1px solid color-mix(in srgb, white 50%, transparent);
+  background: color-mix(in srgb, var(--reserve-blue-violet) 10%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.clasp i {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  background: radial-gradient(
+    circle at 32% 28%,
+    white 0 10%,
+    color-mix(in srgb, white 70%, var(--reserve-blue-violet)) 43%,
+    color-mix(in srgb, var(--reserve-blue-violet) 40%, transparent)
+  );
+  box-shadow:
+    0 4px 9px color-mix(in srgb, var(--ink) 12%, transparent),
+    inset 0 2px 4px color-mix(in srgb, white 90%, transparent);
+}
+
+/* Press feedback: keep depth, slight compress + clasp bite */
+.wallet-stack:active:not(:disabled) .wallet-layer.comfort {
+  transform: translate3d(0, 2px, -48px) scale(0.955);
+}
+.wallet-stack:active:not(:disabled) .wallet-layer.obligations {
+  transform: translate3d(0, 2px, -24px) scale(0.972);
+}
+.wallet-stack:active:not(:disabled) .wallet-layer.reserve {
+  transform: translate3d(0, 2px, 0) scale(0.988);
+}
+.wallet-stack:active:not(:disabled) .clasp {
+  transform: translateX(-8px) scaleX(0.9) scaleY(0.96);
+}
+
+/* Opening fan of compact layers (continuous spatial handoff) */
+.wallet-is-open .wallet-stack .wallet-layer.comfort {
+  transform: translate3d(0, -18px, -90px) scale(0.9) rotateX(14deg);
+  filter: blur(0.2px);
+  opacity: 0.55;
+}
+.wallet-is-open .wallet-stack .wallet-layer.obligations {
+  transform: translate3d(0, -8px, -50px) scale(0.94) rotateX(8deg);
+  opacity: 0.7;
+}
+.wallet-is-open .wallet-stack .wallet-layer.reserve {
+  transform: translate3d(0, 6px, 20px) scale(1.02);
+  opacity: 0.35;
+}
+.wallet-is-open .wallet-stack .clasp {
+  transform: translateX(4px) rotate(8deg);
+  opacity: 0.4;
+}
+.wallet-is-open .assistant-capsule {
+  opacity: 0.35;
+  transform: translateY(8px) scale(0.98);
+  pointer-events: none;
+  transition:
+    opacity 0.4s ease,
+    transform 0.45s var(--liquid-ease);
+}
+
+/* —— Assistant capsule (compact morphing glass) —— */
+.assistant-capsule {
+  position: relative;
+  flex: none;
+  max-height: 18dvh;
+  min-height: 96px;
+  margin: 0;
+  padding: 14px 15px;
+  gap: 12px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid color-mix(in srgb, white 78%, transparent);
+  color: var(--ink);
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, white 58%, transparent),
+    color-mix(in srgb, var(--bg-pearl) 40%, transparent)
+  );
+  box-shadow:
+    0 14px 34px color-mix(in srgb, var(--ink) 9%, transparent),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(16px) saturate(1.22);
+  backdrop-filter: blur(16px) saturate(1.22);
+  transition:
+    opacity 0.4s ease,
+    transform 0.45s var(--liquid-ease);
+}
+.assistant-shimmer {
+  position: absolute;
+  inset: -50% 40% 45% -20%;
+  transform: rotate(-12deg);
+  background: radial-gradient(ellipse, color-mix(in srgb, white 80%, transparent), transparent 68%);
+  pointer-events: none;
+}
+.lens-dot {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--primary-violet);
+  background: radial-gradient(
+    circle at 30% 20%,
+    white,
+    color-mix(in srgb, var(--primary-violet) 22%, transparent)
+  );
+  box-shadow:
+    0 7px 15px color-mix(in srgb, var(--primary-violet) 12%, transparent),
+    inset 0 0 0 1px var(--glass-rim);
+}
+.lens-dot svg {
+  width: 18px;
+}
+.assistant-capsule small {
+  color: var(--primary-violet);
+  font-size: 11px;
+  font-weight: 750;
+}
+.assistant-capsule h2 {
+  font-size: clamp(15px, 4.4vw, 17px);
+  font-weight: 640;
+  letter-spacing: -0.025em;
+  margin: 2px 0 8px;
+  color: var(--ink);
+}
+.assistant-capsule > div {
+  flex: 1;
+  min-width: 0;
+}
+.assistant-capsule > div > div {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.assistant-capsule a {
+  min-height: 32px;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  padding: 6px 11px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 11px;
+  background: color-mix(in srgb, white 30%, transparent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.assistant-capsule a:last-child {
+  margin-left: auto;
+  color: var(--primary-violet);
+  background: color-mix(in srgb, var(--primary-violet) 12%, transparent);
+  border-color: color-mix(in srgb, var(--primary-violet) 18%, transparent);
+}
+.assistant-capsule a svg {
+  width: 12px;
+}
+
+/* —— Bottom nav water-lens —— */
+.bottom-nav {
+  grid-template-columns: repeat(4, 1fr);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  bottom: max(8px, var(--safe-bottom));
+  width: min(calc(100% - 28px), 402px);
+  max-width: calc(100vw - 28px);
+  height: 66px;
+  padding: 5px 8px;
+  border-radius: 26px;
+  border: 1px solid color-mix(in srgb, white 80%, transparent);
+  background: color-mix(in srgb, var(--bg-pearl) 42%, white);
+  box-shadow:
+    0 14px 36px color-mix(in srgb, var(--ink) 12%, transparent),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  backdrop-filter: blur(22px) saturate(1.3);
+  color: var(--muted-ink);
+  box-sizing: border-box;
+}
+.bottom-nav a {
+  min-height: 54px;
+  font-size: 9px;
+  font-weight: 560;
+  gap: 0;
+  color: var(--muted-ink);
+  transition: transform 0.32s var(--spring), color 0.2s ease;
+}
+.bottom-nav a b {
+  font-weight: 620;
+}
+.nav-lens {
+  width: 46px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition:
+    transform 0.36s var(--spring),
+    background 0.28s ease,
+    box-shadow 0.28s ease;
+}
+.bottom-nav svg {
+  width: 19px;
+  stroke-width: 1.7;
+}
+.bottom-nav a.active {
+  color: var(--primary-violet);
+  transform: translateY(-3px);
+  font-weight: 650;
+}
+.bottom-nav a.active .nav-lens {
+  transform: scale(1.08) translateY(-1px);
+  background:
+    radial-gradient(circle at 34% 18%, color-mix(in srgb, white 95%, transparent), transparent 42%),
+    radial-gradient(circle at 50% 80%, color-mix(in srgb, var(--primary-violet) 28%, transparent), transparent 55%),
+    color-mix(in srgb, var(--primary-violet) 16%, transparent);
+  box-shadow:
+    0 8px 16px color-mix(in srgb, var(--primary-violet) 16%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, white 70%, transparent),
+    inset 0 -6px 12px color-mix(in srgb, var(--primary-violet) 12%, transparent);
+}
+
+/* —— Money expanded: continuous fan, not a foreign modal —— */
+.money-view {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  max-width: var(--canvas);
+  margin: auto;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--ink);
+  background:
+    radial-gradient(58% 26% at 74% 6%, color-mix(in srgb, var(--comfort-violet) 18%, transparent), transparent 74%),
+    radial-gradient(70% 42% at 28% 70%, color-mix(in srgb, var(--reserve-blue-violet) 14%, transparent), transparent 72%),
+    var(--bg-pearl);
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  animation: money-fan-in 0.52s var(--liquid-ease) both;
+}
+.money-view.money-phase-closing {
+  animation: money-fan-out 0.4s var(--liquid-ease-soft) both;
+}
+.money-backdrop-light {
+  position: absolute;
+  inset: 100px -40px auto;
+  height: 380px;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--reserve-blue-violet) 16%, transparent), transparent 68%);
+  filter: blur(24px);
+  pointer-events: none;
+  display: block;
+}
+@keyframes money-fan-in {
+  from {
+    opacity: 0.35;
+    transform: translateY(10%) scale(0.96);
+    clip-path: inset(18% 4% 40% 4% round 34px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0 round 0);
+  }
+}
+@keyframes money-fan-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8%) scale(0.97);
+  }
+}
+.money-view > .money-header,
+.money-view > header {
+  position: relative;
+  z-index: 6;
+  width: min(100%, var(--canvas));
+  height: auto;
+  min-height: calc(108px + var(--safe-top));
+  margin: 0 auto;
+  padding: calc(14px + var(--safe-top)) var(--gutter) 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: money-header-in 0.48s var(--liquid-ease) both;
+}
+@keyframes money-header-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.money-header > div {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+.money-header > div > span {
+  font-size: 22px;
+  font-weight: 720;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.money-header small {
+  margin-top: 8px;
+  color: var(--muted-ink);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.money-view > .money-header h1,
+.money-view > header h1 {
+  max-width: calc(100vw - 126px);
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: clamp(30px, 9.6vw, 42px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.money-header .demo-mark {
+  margin: 4px 46px 0 auto;
+  color: var(--muted-ink);
+}
+.money-view > .money-header button,
+.money-view > header button {
+  position: absolute;
+  top: calc(14px + var(--safe-top));
+  right: var(--gutter);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  border: 1px solid var(--glass-rim);
+  border-radius: 50%;
+  background: color-mix(in srgb, white 48%, transparent);
+  box-shadow:
+    0 8px 20px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+.money-view > .money-header button svg {
+  width: 18px;
+}
+.expanded-scene {
+  position: relative;
+  width: min(100%, var(--canvas));
+  min-height: 560px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) calc(24px + var(--safe-bottom));
+  flex: 1;
+  perspective: 1100px;
+}
+.expanded-fan {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 124px;
+  margin: 0;
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+.expanded-fan > i {
+  position: absolute;
+  left: 2%;
+  width: 96%;
+  height: 104px;
+  border: 1px solid color-mix(in srgb, white 86%, transparent);
+  border-radius: 32px 32px 20px 20px;
+  -webkit-backdrop-filter: blur(16px) saturate(1.32);
+  backdrop-filter: blur(16px) saturate(1.32);
+  box-shadow:
+    0 -2px 8px color-mix(in srgb, var(--ink) 5%, transparent),
+    0 14px 26px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 1px var(--glass-inner-highlight),
+    inset 0 -10px 22px color-mix(in srgb, var(--primary-violet) 6%, transparent);
+  transform-origin: 50% 100%;
+  animation: fan-layer-in 0.55s var(--liquid-ease) both;
+}
+.expanded-fan .fan-comfort {
+  top: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 78% 20%, color-mix(in srgb, white 55%, transparent), transparent 32%),
+    linear-gradient(
+      138deg,
+      color-mix(in srgb, var(--comfort-violet) 38%, white),
+      color-mix(in srgb, var(--comfort-violet) 18%, transparent) 58%,
+      color-mix(in srgb, white 45%, transparent)
+    );
+  transform: translate3d(0, -10px, -42px) rotateX(10deg) scale(0.91);
+  animation-delay: 0.02s;
+}
+.expanded-fan .fan-obligations {
+  top: 24px;
+  z-index: 2;
+  background:
+    radial-gradient(circle at 20% 24%, color-mix(in srgb, white 50%, transparent), transparent 30%),
+    linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--obligation-terracotta) 32%, white),
+      color-mix(in srgb, var(--obligation-terracotta) 16%, transparent) 56%,
+      color-mix(in srgb, white 42%, transparent)
+    );
+  transform: translate3d(0, -2px, -22px) rotateX(5deg) scale(0.955);
+  animation-delay: 0.08s;
+}
+.expanded-fan .fan-reserve {
+  top: 48px;
+  z-index: 3;
+  background:
+    radial-gradient(ellipse at 18% 8%, color-mix(in srgb, white 70%, transparent), transparent 36%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--reserve-blue-violet) 26%, white),
+      color-mix(in srgb, var(--reserve-blue-violet) 22%, transparent) 55%,
+      color-mix(in srgb, var(--comfort-violet) 12%, white)
+    );
+  transform: translate3d(0, 6px, 0) scale(0.99);
+  animation-delay: 0.12s;
+}
+@keyframes fan-layer-in {
+  from {
+    opacity: 0.2;
+    transform: translate3d(0, 40px, 0) scale(0.98);
+  }
+}
+.fan-clasp {
+  position: absolute;
+  z-index: 5;
+  right: 10px;
+  top: 74px;
+  width: 66px;
+  height: 48px;
+  border-radius: 28px 12px 12px 28px;
+  border: 1px solid color-mix(in srgb, white 90%, transparent);
+  background:
+    radial-gradient(circle at 28% 22%, color-mix(in srgb, white 90%, transparent), transparent 34%),
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, white 78%, transparent),
+      color-mix(in srgb, var(--reserve-blue-violet) 38%, transparent)
+    );
+  box-shadow:
+    0 10px 22px color-mix(in srgb, var(--reserve-blue-violet) 18%, transparent),
+    inset 0 1px white,
+    inset -6px -4px 12px color-mix(in srgb, var(--reserve-blue-violet) 14%, transparent);
+  display: grid;
+  place-items: center;
+  -webkit-backdrop-filter: blur(12px) saturate(1.35);
+  backdrop-filter: blur(12px) saturate(1.35);
+  animation: fan-layer-in 0.55s var(--liquid-ease) both;
+  animation-delay: 0.16s;
+}
+.fan-clasp .clasp-neck {
+  position: absolute;
+  right: -1px;
+  inset-block: 7px;
+  width: 12px;
+  border-left: 1px solid color-mix(in srgb, white 50%, transparent);
+  background: color-mix(in srgb, var(--reserve-blue-violet) 10%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.fan-clasp > i {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 32% 28%,
+    white 0 12%,
+    color-mix(in srgb, white 72%, var(--reserve-blue-violet)) 45%,
+    color-mix(in srgb, var(--reserve-blue-violet) 36%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  box-shadow:
+    0 3px 8px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 2px 3px color-mix(in srgb, white 85%, transparent);
+}
+.money-surface {
+  position: relative;
+  z-index: 3;
+  min-height: 420px;
+  margin: -22px 0 0;
+  padding: 14px 13px 18px;
+  overflow: visible;
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, white 86%, transparent);
+  border-radius: 32px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, white 72%, transparent),
+    color-mix(in srgb, var(--reserve-blue-violet) 14%, white)
+  );
+  box-shadow:
+    0 -2px 6px color-mix(in srgb, white 60%, transparent),
+    0 22px 48px color-mix(in srgb, var(--ink) 12%, transparent),
+    inset 0 1px white,
+    inset 0 18px 44px color-mix(in srgb, white 18%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  backdrop-filter: blur(20px) saturate(1.25);
+  animation: money-surface-in 0.55s var(--liquid-ease) both;
+  animation-delay: 0.1s;
+}
+@keyframes money-surface-in {
+  from {
+    opacity: 0.3;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.money-surface::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--primary-violet) 8%, transparent);
+  pointer-events: none;
+  display: block;
+}
+.money-tabs {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 100%;
+  min-height: 42px;
+  margin: 0 0 10px;
+  padding: 3px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid color-mix(in srgb, white 54%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, white 22%, transparent);
+}
+.money-tabs button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 13px;
+  background: none;
+  font-size: 12px;
+  color: var(--muted-ink);
+  cursor: pointer;
+}
+.money-tabs button[aria-selected='true'] {
+  color: var(--ink);
+  font-weight: 680;
+  background: radial-gradient(circle at 34% 15%, white, color-mix(in srgb, var(--bg-pearl) 70%, white));
+  box-shadow:
+    0 5px 14px color-mix(in srgb, var(--primary-violet) 12%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, white 80%, transparent);
+}
+.money-scroll {
+  position: relative;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+.movement,
+.transactions-preview {
+  margin: 8px 0 12px;
+  padding: 14px;
+  border-radius: 22px;
+  color: var(--ink);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, white 40%, transparent),
+    color-mix(in srgb, var(--bg-pearl) 30%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, white 55%, transparent);
+  box-shadow:
+    0 10px 22px color-mix(in srgb, var(--ink) 6%, transparent),
+    inset 0 1px color-mix(in srgb, white 70%, transparent);
+}
+.movement-heading,
+.transactions-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.movement-heading small,
+.movement-heading span {
+  font-size: 10px;
+  color: var(--muted-ink);
+}
+.movement h2,
+.transactions-preview h2 {
+  font-size: 16px;
+  font-weight: 640;
+  letter-spacing: -0.025em;
+  margin: 1px 0 8px;
+  color: var(--ink);
+}
+.movement svg {
+  width: 100%;
+  height: 140px;
+  margin-top: 4px;
+  overflow: visible;
+}
+.movement line {
+  stroke: var(--divider);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+.chart-area {
+  fill: url(#chartFill);
+}
+.chart-curve {
+  fill: none;
+  stroke: var(--primary-violet);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.chart-point-halo {
+  fill: color-mix(in srgb, var(--primary-violet) 16%, transparent);
+}
+.chart-point {
+  fill: white;
+  stroke: var(--primary-violet);
+  stroke-width: 2;
+}
+.transactions-heading {
+  margin-bottom: 5px;
+}
+.transactions-heading a {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  color: var(--muted-ink);
+  border-radius: 50%;
+  background: color-mix(in srgb, white 30%, transparent);
+  text-decoration: none;
+}
+.transactions-heading svg {
+  width: 15px;
+}
+.transactions-preview article {
+  display: grid;
+  grid-template-columns: 37px minmax(0, 1fr) auto;
+  min-height: 56px;
+  gap: 10px;
+  padding: 8px 6px;
+  margin: 4px 0;
+  border: 1px solid color-mix(in srgb, white 35%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, white 22%, transparent);
+  color: var(--ink);
+}
+.transactions-preview article > span {
+  width: 35px;
+  height: 35px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+}
+.transactions-preview article > span svg {
+  width: 16px;
+}
+.transactions-preview .income {
+  color: var(--positive-sage);
+  background: color-mix(in srgb, var(--positive-sage) 18%, transparent);
+}
+.transactions-preview .expense {
+  color: var(--obligation-terracotta);
+  background: color-mix(in srgb, var(--obligation-terracotta) 16%, transparent);
+}
+.transactions-preview article b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 640;
+  color: var(--ink);
+}
+.transactions-preview article small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  color: var(--muted-ink);
+}
+.transactions-preview article > strong {
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 660;
+  font-variant-numeric: tabular-nums;
+}
+.income-text {
+  color: var(--positive-sage) !important;
+}
+.expense-text {
+  color: var(--obligation-terracotta) !important;
+}
+
+/* Plan risk uses tokens */
+.risk-section button.active {
+  background: var(--hard-plum);
+  color: white;
+}
+
+/* Reduced motion: calm crossfade + scale, no 3D fan thrash */
+@media (prefers-reduced-motion: reduce) {
+  .wallet-layer,
+  .wallet-is-open .wallet-stack .wallet-layer.comfort,
+  .wallet-is-open .wallet-stack .wallet-layer.obligations,
+  .wallet-is-open .wallet-stack .wallet-layer.reserve {
+    transform: none !important;
+    filter: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+  .wallet-stack:active:not(:disabled) .wallet-layer {
+    transform: scale(0.99) !important;
+  }
+  .money-view,
+  .money-view.money-phase-closing,
+  .expanded-fan > i,
+  .fan-clasp,
+  .money-surface,
+  .money-view > .money-header,
+  .dial-orbit,
+  .dial-risk,
+  .wallet-ripple {
+    animation: wallet-fade 0.2s ease both !important;
+  }
+  .mode-dial.open .dial-trigger {
+    transform: scale(0.96) !important;
+  }
+  .bottom-nav a.active {
+    transform: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .wallet-stage {
+    width: 100%;
+    height: 310px;
+    min-height: 300px;
+  }
+  .wallet-layer {
+    padding-inline: 16px;
+  }
+  .clasp {
+    right: -6px;
+    width: 62px;
+    top: 60px;
+  }
+  .safe-strip span {
+    display: none;
+  }
+  .assistant-capsule {
+    min-height: 92px;
+    max-height: 20dvh;
+  }
+  .dial-risk {
+    width: 180px;
+  }
+}
+@media (max-height: 700px) {
+  .wallet-stage {
+    height: 300px;
+    min-height: 290px;
+  }
+  .assistant-capsule {
+    max-height: 16dvh;
+  }
+}
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .wallet-layer,
+  .assistant-capsule,
+  .money-surface,
+  .dial-trigger,
+  .dial-arc,
+  .bottom-nav {
+    background-color: color-mix(in srgb, var(--bg-pearl) 40%, white);
+  }
+}
+
+
+
+/* ==========================================================================
+   LQ WALLET — CSS 3D liquid glass, THREE independent cards (reference 1:1)
+   Engine: pure CSS. Readable type. No WebGL texture clipping.
+   ========================================================================== */
+
+.lq-wallet {
+  --lq-comfort: var(--comfort-violet, #9a8af4);
+  --lq-obl: var(--obligation-terracotta, #c98272);
+  --lq-res: var(--reserve-blue-violet, #7186c8);
+  --lq-ink: var(--ink, #171621);
+  --lq-ease: cubic-bezier(0.22, 0.82, 0.2, 1.05);
+  --lq-spring: cubic-bezier(0.18, 0.9, 0.24, 1.12);
+
+  position: relative;
+  width: min(100%, 390px);
+  margin: 0 auto;
+  /* Stage height fits three stacked peeks + reserve body */
+  height: clamp(340px, 50dvh, 400px);
+  min-height: 340px;
+  isolation: isolate;
+  /* perspective ONLY here — not on body/app-shell */
+  perspective: 1200px;
+  perspective-origin: 50% 42%;
+}
+
+.lq-aura {
+  position: absolute;
+  inset: 8% -12% 0;
+  z-index: 0;
+  pointer-events: none;
+  border-radius: 50%;
+  background:
+    radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--lq-res) 30%, transparent), transparent 68%),
+    radial-gradient(ellipse at 75% 30%, color-mix(in srgb, var(--lq-comfort) 18%, transparent), transparent 55%);
+  filter: blur(28px);
+  opacity: 0.9;
+}
+
+/* 3D scene root */
+.lq-stack {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  -webkit-tap-highlight-color: transparent;
+  transition: transform 0.28s var(--lq-spring);
+}
+.lq-stack:disabled {
+  cursor: default;
+}
+.lq-stack:focus-visible {
+  outline: 3px solid color-mix(in srgb, var(--primary-violet, #8174e8) 50%, transparent);
+  outline-offset: 4px;
+  border-radius: 28px;
+}
+
+/* —— Each layer is its own glass card —— */
+.lq-layer {
+  position: absolute;
+  left: 4.5%;
+  width: 91%;
+  box-sizing: border-box;
+  border-radius: 32px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  padding: 16px 18px 18px;
+  color: var(--lq-ink);
+  transform-style: preserve-3d;
+  transform-origin: 50% 100%;
+  overflow: hidden;
+  will-change: transform;
+  transition:
+    transform 0.55s var(--lq-spring),
+    box-shadow 0.4s ease,
+    filter 0.4s ease;
+  box-shadow:
+    0 18px 40px rgba(55, 48, 95, 0.14),
+    0 4px 12px rgba(55, 48, 95, 0.08),
+    inset 0 1px 0 rgba(255, 255, 255, 0.92),
+    inset 0 -16px 32px rgba(90, 80, 150, 0.07);
+  -webkit-backdrop-filter: blur(18px) saturate(1.35);
+  backdrop-filter: blur(18px) saturate(1.35);
+}
+
+.lq-sheen {
+  position: absolute;
+  inset: -20% 10% 50% -15%;
+  background: radial-gradient(ellipse at 30% 20%, rgba(255, 255, 255, 0.72), transparent 62%);
+  transform: rotate(-8deg);
+  pointer-events: none;
+  opacity: 0.85;
+}
+.lq-sheen-strong {
+  inset: -30% 5% 40% -20%;
+  opacity: 1;
+}
+.lq-caustic {
+  position: absolute;
+  width: 160px;
+  height: 90px;
+  right: 8%;
+  top: 18%;
+  border-radius: 50%;
+  border: 10px solid rgba(255, 255, 255, 0.14);
+  transform: rotate(-22deg);
+  filter: blur(2px);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+/* CLOSED stack — three visible peeks (reference) */
+.lq-comfort {
+  top: 2%;
+  height: 34%;
+  z-index: 1;
+  transform: translate3d(0, 0, -48px) scale(0.94);
+  background:
+    radial-gradient(circle at 82% 14%, rgba(255, 255, 255, 0.55), transparent 34%),
+    linear-gradient(
+      148deg,
+      color-mix(in srgb, var(--lq-comfort) 58%, white) 0%,
+      color-mix(in srgb, var(--lq-comfort) 42%, transparent) 52%,
+      color-mix(in srgb, white 55%, var(--lq-comfort)) 100%
+    );
+}
+.lq-obligations {
+  top: 18%;
+  height: 34%;
+  z-index: 2;
+  transform: translate3d(0, 0, -24px) scale(0.97);
+  background:
+    radial-gradient(circle at 16% 20%, rgba(255, 255, 255, 0.5), transparent 32%),
+    linear-gradient(
+      148deg,
+      color-mix(in srgb, var(--lq-obl) 56%, white) 0%,
+      color-mix(in srgb, var(--lq-obl) 40%, transparent) 52%,
+      color-mix(in srgb, white 50%, var(--lq-obl)) 100%
+    );
+}
+.lq-reserve {
+  top: 34%;
+  height: 62%;
+  z-index: 3;
+  padding: 20px 18px 56px;
+  overflow: visible;
+  transform: translate3d(0, 0, 0) scale(1);
+  background:
+    radial-gradient(ellipse at 12% -8%, rgba(255, 255, 255, 0.85), transparent 40%),
+    radial-gradient(ellipse at 92% 70%, color-mix(in srgb, var(--lq-res) 32%, transparent), transparent 48%),
+    linear-gradient(
+      152deg,
+      color-mix(in srgb, var(--lq-res) 32%, white) 0%,
+      color-mix(in srgb, var(--lq-res) 55%, white) 48%,
+      color-mix(in srgb, var(--lq-comfort) 22%, var(--lq-res)) 100%
+    );
+  box-shadow:
+    0 28px 52px rgba(60, 58, 110, 0.18),
+    0 6px 14px rgba(60, 58, 110, 0.1),
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.95),
+    inset 0 -18px 36px rgba(90, 88, 150, 0.1),
+    inset 5px 0 14px rgba(255, 255, 255, 0.35);
+}
+
+/* OPEN fan — controlled, no wild rotateZ */
+.lq-wallet.is-open .lq-comfort {
+  transform: translate3d(0, -18px, -72px) rotateX(8deg) scale(0.9);
+  filter: brightness(1.02);
+}
+.lq-wallet.is-open .lq-obligations {
+  transform: translate3d(0, -6px, -36px) rotateX(4deg) scale(0.95);
+}
+.lq-wallet.is-open .lq-reserve {
+  transform: translate3d(0, 8px, 12px) scale(1.01);
+}
+.lq-wallet.is-open .lq-clasp {
+  transform: translate3d(6px, -4px, 8px) rotate(8deg);
+}
+
+/* Press squash */
+.lq-wallet.is-pressed:not(.is-open) .lq-comfort {
+  transform: translate3d(0, 3px, -48px) scale(0.93);
+}
+.lq-wallet.is-pressed:not(.is-open) .lq-obligations {
+  transform: translate3d(0, 3px, -24px) scale(0.96);
+}
+.lq-wallet.is-pressed:not(.is-open) .lq-reserve {
+  transform: translate3d(0, 3px, 0) scale(0.985);
+}
+.lq-wallet.is-pressed:not(.is-open) .lq-clasp {
+  transform: translateX(-6px) scaleX(0.92);
+}
+
+/* Idle float on layers only — keep button box stable for a11y/e2e */
+@keyframes lq-float-c {
+  0%, 100% { transform: translate3d(0, 0, -48px) scale(0.94); }
+  50% { transform: translate3d(0, -3px, -48px) scale(0.94); }
+}
+@keyframes lq-float-o {
+  0%, 100% { transform: translate3d(0, 0, -24px) scale(0.97); }
+  50% { transform: translate3d(0, -3px, -24px) scale(0.97); }
+}
+@keyframes lq-float-r {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  50% { transform: translate3d(0, -3px, 0) scale(1); }
+}
+.lq-wallet:not(.is-open):not(.is-pressed):not(.is-reduced) .lq-comfort {
+  animation: lq-float-c 5.5s ease-in-out infinite;
+}
+.lq-wallet:not(.is-open):not(.is-pressed):not(.is-reduced) .lq-obligations {
+  animation: lq-float-o 5.5s ease-in-out infinite;
+}
+.lq-wallet:not(.is-open):not(.is-pressed):not(.is-reduced) .lq-reserve {
+  animation: lq-float-r 5.5s ease-in-out infinite;
+}
+
+/* Typography — real DOM, never clipped by WebGL UV */
+.lq-head {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 12.5px;
+  font-weight: 620;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--lq-ink) 72%, transparent);
+}
+.lq-head svg { flex: none; opacity: 0.75; }
+.lq-amt {
+  position: relative;
+  z-index: 2;
+  margin-top: 5px;
+  font-size: 19px;
+  font-weight: 650;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  color: var(--lq-ink);
+}
+.lq-amt-xl {
+  margin-top: 8px;
+  font-size: clamp(36px, 11vw, 50px);
+  font-weight: 600;
+  letter-spacing: -0.055em;
+  line-height: 1.02;
+  max-width: calc(100% - 72px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lq-safe {
+  position: relative;
+  z-index: 2;
+  display: inline-flex !important;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  min-height: 32px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--lq-ink) 80%, var(--primary-violet, #8174e8));
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--primary-violet, #8174e8) 22%, transparent),
+    color-mix(in srgb, var(--lq-res) 26%, transparent)
+  );
+  border: 1px solid rgba(255, 255, 255, 0.48);
+  box-shadow:
+    inset 0 1px rgba(255, 255, 255, 0.55),
+    0 4px 12px rgba(90, 80, 160, 0.08);
+}
+.lq-safe strong {
+  font-weight: 720;
+  font-variant-numeric: tabular-nums;
+}
+
+.lq-lip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 2;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.42);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(255, 255, 255, 0.28));
+  border-radius: 0 0 30px 30px;
+  box-shadow: inset 0 1px rgba(120, 110, 180, 0.06);
+}
+.lq-lip em {
+  display: block;
+  font-style: normal;
+  font-size: 10.5px;
+  font-weight: 550;
+  color: color-mix(in srgb, var(--lq-ink) 62%, transparent);
+}
+.lq-lip b {
+  display: block;
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--lq-ink);
+}
+
+/* Clasp — glass pill on Reserve right */
+.lq-clasp {
+  position: absolute !important;
+  right: 12px !important;
+  top: 58px !important;
+  width: 68px !important;
+  height: 52px !important;
+  z-index: 6 !important;
+  border-radius: 28px 12px 12px 28px !important;
+  border: 1px solid rgba(255, 255, 255, 0.9) !important;
+  display: grid !important;
+  place-items: center !important;
+  background:
+    radial-gradient(circle at 28% 20%, rgba(255, 255, 255, 0.95), transparent 38%),
+    linear-gradient(
+      115deg,
+      color-mix(in srgb, white 78%, var(--lq-res)),
+      color-mix(in srgb, var(--lq-res) 42%, transparent)
+    ) !important;
+  box-shadow:
+    0 12px 24px color-mix(in srgb, var(--lq-res) 26%, transparent),
+    inset 1px 1px rgba(255, 255, 255, 0.95),
+    inset -6px -5px 12px color-mix(in srgb, var(--lq-res) 16%, transparent) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  transition: transform 0.35s var(--lq-spring);
+  overflow: visible !important;
+}
+.lq-clasp .clasp-neck {
+  position: absolute;
+  right: -1px;
+  top: 8px;
+  bottom: 8px;
+  width: 12px;
+  border-left: 1px solid rgba(255, 255, 255, 0.5);
+  background: color-mix(in srgb, var(--lq-res) 10%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.lq-clasp i {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--lq-ink) 14%, transparent);
+  background: radial-gradient(
+    circle at 32% 28%,
+    #fff 0 12%,
+    color-mix(in srgb, white 70%, var(--lq-res)) 45%,
+    color-mix(in srgb, var(--lq-res) 40%, transparent)
+  );
+  box-shadow:
+    0 3px 8px rgba(60, 58, 110, 0.14),
+    inset 0 2px 3px rgba(255, 255, 255, 0.9);
+}
+
+/* When money dialog open, dim wallet slightly under overlay */
+.wallet-is-open .lq-wallet {
+  pointer-events: none;
+}
+
+/* Reduced motion */
+.lq-wallet.is-reduced .lq-layer,
+.lq-wallet.is-reduced .lq-clasp {
+  transition-duration: 0.15s !important;
+}
+.lq-wallet.is-reduced .lq-stack {
+  animation: none !important;
+}
+@media (prefers-reduced-motion: reduce) {
+  .lq-wallet .lq-stack { animation: none !important; }
+  .lq-wallet .lq-layer,
+  .lq-wallet .lq-clasp {
+    transition-duration: 0.12s !important;
+  }
+}
+
+/* Compact phones */
+@media (max-width: 359px) {
+  .lq-wallet {
+    width: 100%;
+    height: 320px;
+    min-height: 310px;
+  }
+  .lq-layer { left: 3.5%; width: 93%; border-radius: 28px; padding-inline: 14px; }
+  .lq-amt-xl { font-size: 34px; max-width: calc(100% - 60px); }
+  .lq-clasp { width: 58px !important; height: 46px !important; right: 10px !important; top: 52px !important; }
+  .lq-comfort { height: 32%; }
+  .lq-obligations { top: 16%; height: 32%; }
+  .lq-reserve { top: 32%; height: 64%; }
+}
+
+/* Short viewports — keep assistant visible */
+@media (max-height: 700px) {
+  .lq-wallet {
+    height: 300px;
+    min-height: 290px;
+  }
+  .overview .assistant-capsule {
+    margin-top: 4px;
+  }
+}
+
+/* Overview rhythm */
+.overview {
+  gap: clamp(10px, 1.8dvh, 14px) !important;
+}
+.overview .assistant-capsule {
+  margin-top: 2px;
+}
+
+/* ============================================================
+   Fidelity override pass — force reference material over shadcn
+   Measured against docs/design-references/screenshots/*
+   ============================================================ */
+
+html,
+body,
+#root {
+  background: var(--bg-pearl, #eceaf1) !important;
+  color: var(--ink, #171621);
+}
+
+.app-shell {
+  min-height: 100dvh;
+  max-width: 430px;
+  margin: 0 auto;
+  background:
+    radial-gradient(42% 28% at 82% 6%, color-mix(in srgb, var(--comfort-violet) 16%, transparent), transparent 72%),
+    radial-gradient(65% 40% at 18% 55%, color-mix(in srgb, var(--reserve-blue-violet) 14%, transparent), transparent 70%),
+    linear-gradient(165deg, color-mix(in srgb, white 50%, var(--bg-pearl)), var(--bg-pearl) 55%);
+  padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px));
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* —— Wallet closed: real stacked glass with depth peeks —— */
+.lq-wallet {
+  position: relative;
+  width: 100%;
+  min-height: min(52dvh, 420px);
+  margin: 4px 0 8px;
+  perspective: 1400px;
+  isolation: isolate;
+}
+
+.lq-aura {
+  position: absolute;
+  inset: 8% 4% 4%;
+  border-radius: 40px;
+  background:
+    radial-gradient(ellipse at 50% 60%, color-mix(in srgb, var(--reserve-blue-violet) 28%, transparent), transparent 68%),
+    radial-gradient(ellipse at 75% 30%, color-mix(in srgb, var(--comfort-violet) 16%, transparent), transparent 55%);
+  filter: blur(28px);
+  opacity: 0.9;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.lq-stack {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: min(48dvh, 390px);
+  border: 0;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  transform-style: preserve-3d;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.lq-layer {
+  position: absolute;
+  left: 4%;
+  width: 92%;
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.72);
+  box-shadow:
+    0 18px 40px rgba(71, 62, 104, 0.14),
+    0 4px 12px rgba(71, 62, 104, 0.06),
+    inset 0 1px 1px rgba(255, 255, 255, 0.92),
+    inset 0 -12px 28px rgba(255, 255, 255, 0.18);
+  backdrop-filter: blur(22px) saturate(1.35);
+  -webkit-backdrop-filter: blur(22px) saturate(1.35);
+  overflow: hidden;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.lq-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    125deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 255, 255, 0.08) 38%,
+    transparent 55%,
+    rgba(255, 255, 255, 0.18) 100%
+  );
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+}
+
+.lq-sheen-strong {
+  background:
+    radial-gradient(ellipse at 78% 42%, rgba(255, 255, 255, 0.55), transparent 42%),
+    linear-gradient(125deg, rgba(255, 255, 255, 0.62) 0%, transparent 45%, rgba(255, 255, 255, 0.2) 100%);
+}
+
+.lq-caustic {
+  position: absolute;
+  right: 18%;
+  top: 18%;
+  width: 42%;
+  height: 48%;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.45), transparent 68%);
+  filter: blur(8px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Comfort — back peek */
+.lq-comfort {
+  top: 0;
+  height: 34%;
+  z-index: 1;
+  padding: 16px 18px 12px;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--comfort-violet) 48%, white) 0%,
+      color-mix(in srgb, var(--comfort-violet) 28%, transparent) 55%,
+      color-mix(in srgb, white 62%, var(--comfort-violet)) 100%
+    );
+  transform: translate3d(0, 0, -48px) scale(0.96);
+}
+
+/* Obligations — mid peek */
+.lq-obligations {
+  top: 15%;
+  height: 34%;
+  z-index: 2;
+  padding: 16px 18px 12px;
+  background:
+    linear-gradient(
+      160deg,
+      color-mix(in srgb, var(--obligation-terracotta) 42%, white) 0%,
+      color-mix(in srgb, var(--obligation-terracotta) 26%, transparent) 55%,
+      color-mix(in srgb, white 58%, var(--obligation-terracotta)) 100%
+    );
+  transform: translate3d(0, 0, -24px) scale(0.98);
+}
+
+/* Reserve — front hero */
+.lq-reserve {
+  top: 30%;
+  height: 66%;
+  z-index: 3;
+  padding: 18px 18px 16px;
+  background:
+    radial-gradient(ellipse at 92% 68%, color-mix(in srgb, var(--reserve-blue-violet) 28%, transparent), transparent 48%),
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--reserve-blue-violet) 22%, white) 0%,
+      color-mix(in srgb, var(--reserve-blue-violet) 48%, white) 48%,
+      color-mix(in srgb, var(--comfort-violet) 18%, var(--reserve-blue-violet)) 100%
+    );
+  transform: translate3d(0, 0, 0) scale(1);
+}
+
+.lq-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 560;
+  letter-spacing: 0.01em;
+  color: color-mix(in srgb, var(--ink) 70%, transparent);
+  position: relative;
+  z-index: 1;
+}
+
+.lq-amt {
+  position: relative;
+  z-index: 1;
+  margin-top: 6px;
+  font-size: 18px;
+  font-weight: 680;
+  letter-spacing: -0.03em;
+  font-variant-numeric: tabular-nums;
+  color: var(--ink);
+}
+
+.lq-amt-xl {
+  margin-top: 10px;
+  font-size: 40px;
+  font-weight: 720;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  max-width: calc(100% - 72px);
+}
+
+.lq-safe {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  padding: 9px 14px;
+  border-radius: 999px;
+  font-size: 13px;
+  font-weight: 520;
+  color: color-mix(in srgb, var(--ink) 82%, var(--primary-violet));
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.42)),
+    color-mix(in srgb, var(--reserve-blue-violet) 18%, transparent);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.85), 0 4px 14px rgba(113, 134, 200, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.lq-safe strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.lq-lip {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1;
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.45);
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08), rgba(255, 255, 255, 0.28));
+}
+
+.lq-lip span {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.lq-lip em {
+  font-style: normal;
+  font-size: 12px;
+  color: color-mix(in srgb, var(--ink) 58%, transparent);
+}
+
+.lq-lip b {
+  font-size: 14px;
+  font-weight: 680;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Clasp — liquid glass latch (ref: pearl sphere + bar) */
+.lq-clasp {
+  position: absolute !important;
+  right: 14px !important;
+  top: 58px !important;
+  width: 62px !important;
+  height: 48px !important;
+  border-radius: 18px !important;
+  z-index: 5 !important;
+  display: grid !important;
+  place-items: center !important;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.98), transparent 42%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, white 82%, var(--reserve-blue-violet)),
+      color-mix(in srgb, var(--reserve-blue-violet) 38%, transparent)
+    ) !important;
+  border: 1px solid rgba(255, 255, 255, 0.85) !important;
+  box-shadow:
+    0 14px 28px color-mix(in srgb, var(--reserve-blue-violet) 28%, transparent),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset -6px -5px 14px color-mix(in srgb, var(--reserve-blue-violet) 18%, transparent) !important;
+  backdrop-filter: blur(16px) saturate(1.4) !important;
+}
+
+.lq-clasp .clasp-neck {
+  position: absolute;
+  left: -10px;
+  top: 50%;
+  width: 12px;
+  height: 18px;
+  transform: translateY(-50%);
+  border-radius: 6px 0 0 6px;
+  background: color-mix(in srgb, var(--reserve-blue-violet) 12%, rgba(255, 255, 255, 0.4));
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.45);
+}
+
+.lq-clasp i {
+  display: block !important;
+  width: 10px !important;
+  height: 28px !important;
+  border-radius: 999px !important;
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent) !important;
+  background:
+    linear-gradient(
+      180deg,
+      rgba(255, 255, 255, 0.95),
+      color-mix(in srgb, white 55%, var(--reserve-blue-violet)) 45%,
+      color-mix(in srgb, var(--reserve-blue-violet) 35%, transparent)
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.9),
+    0 2px 6px rgba(71, 62, 104, 0.12) !important;
+}
+
+/* Press + open motion */
+.lq-wallet.is-pressed:not(.is-open) .lq-comfort {
+  transform: translate3d(0, 2px, -48px) scale(0.948);
+}
+.lq-wallet.is-pressed:not(.is-open) .lq-obligations {
+  transform: translate3d(0, 3px, -24px) scale(0.968);
+}
+.lq-wallet.is-pressed:not(.is-open) .lq-reserve {
+  transform: translate3d(0, 4px, 0) scale(0.985);
+}
+.lq-wallet.is-pressed:not(.is-open) .lq-clasp {
+  transform: scale(0.96) translateX(1px);
+}
+
+.lq-wallet.is-open .lq-comfort {
+  transform: translate3d(-6%, -18%, -80px) rotateZ(-8deg) scale(0.88);
+  opacity: 0.55;
+}
+.lq-wallet.is-open .lq-obligations {
+  transform: translate3d(4%, -6%, -40px) rotateZ(4deg) scale(0.92);
+  opacity: 0.7;
+}
+.lq-wallet.is-open .lq-reserve {
+  transform: translate3d(0, 12%, 0) scale(0.96);
+  opacity: 0.35;
+}
+
+/* Expanded money fan — three tinted plates like ref */
+.money-view {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  max-width: 430px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  background:
+    radial-gradient(50% 30% at 50% 0%, color-mix(in srgb, var(--comfort-violet) 18%, transparent), transparent 70%),
+    var(--bg-pearl);
+  animation: wallet-open 0.48s cubic-bezier(0.18, 0.85, 0.22, 1);
+  overflow: hidden;
+}
+
+.money-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: calc(18px + env(safe-area-inset-top, 0px)) 20px 12px;
+}
+
+.money-header h1 {
+  margin: 4px 0 0;
+  font-size: 34px;
+  letter-spacing: -0.04em;
+  font-weight: 720;
+}
+
+.money-header small {
+  display: block;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  font-size: 13px;
+}
+
+.money-header > div span:first-child {
+  font-weight: 650;
+  font-size: 16px;
+}
+
+.money-header button {
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  background: rgba(255, 255, 255, 0.72);
+  box-shadow: 0 6px 18px rgba(71, 62, 104, 0.1);
+  display: grid;
+  place-items: center;
+  margin-left: auto;
+}
+
+.expanded-fan {
+  position: relative;
+  height: 132px;
+  margin: 8px 20px 18px;
+  perspective: 900px;
+}
+
+.expanded-fan i {
+  position: absolute;
+  left: 8%;
+  right: 8%;
+  height: 56px;
+  border-radius: 22px;
+  border: 1px solid rgba(255, 255, 255, 0.55);
+  box-shadow: 0 14px 30px rgba(71, 62, 104, 0.12);
+}
+
+.expanded-fan .fan-comfort,
+.expanded-fan i:nth-child(1) {
+  top: 0;
+  background: linear-gradient(130deg, var(--comfort-violet), #b0a7ef);
+  transform: translateZ(-40px) rotateX(18deg) scale(0.94);
+  opacity: 0.9;
+}
+
+.expanded-fan .fan-obligations,
+.expanded-fan i:nth-child(2) {
+  top: 28px;
+  background: linear-gradient(130deg, var(--obligation-terracotta), #d9a095);
+  transform: translateZ(-20px) rotateX(12deg) scale(0.97);
+}
+
+.expanded-fan .fan-reserve,
+.expanded-fan i:nth-child(3) {
+  top: 56px;
+  background: linear-gradient(130deg, var(--reserve-blue-violet), #92a2d5);
+  transform: translateZ(0) rotateX(6deg);
+}
+
+.fan-clasp {
+  position: absolute;
+  right: 4%;
+  top: 62px;
+  width: 54px;
+  height: 42px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 30% 25%, white, transparent 40%),
+    linear-gradient(145deg, white, color-mix(in srgb, var(--reserve-blue-violet) 35%, transparent));
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 10px 22px rgba(113, 134, 200, 0.28);
+  z-index: 4;
+}
+
+.fan-clasp i {
+  position: static !important;
+  left: auto !important;
+  right: auto !important;
+  width: 8px !important;
+  height: 22px !important;
+  border-radius: 999px !important;
+  background: linear-gradient(180deg, white, color-mix(in srgb, var(--reserve-blue-violet) 40%, white)) !important;
+  box-shadow: none !important;
+  border: 1px solid rgba(23, 22, 33, 0.1) !important;
+}
+
+.money-surface {
+  flex: 1;
+  overflow: auto;
+  padding: 0 16px calc(24px + env(safe-area-inset-bottom, 0px));
+}
+
+.money-tabs {
+  display: flex;
+  gap: 4px;
+  padding: 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.55);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  margin-bottom: 14px;
+}
+
+.money-tabs button {
+  flex: 1;
+  border: 0;
+  background: transparent;
+  border-radius: 999px;
+  padding: 10px 8px;
+  font-size: 13px;
+  font-weight: 560;
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+}
+
+.money-tabs button[aria-selected='true'] {
+  background: white;
+  color: var(--ink);
+  box-shadow: 0 4px 14px rgba(71, 62, 104, 0.1);
+}
+
+.movement,
+.transactions-preview {
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 24px;
+  padding: 16px;
+  margin-bottom: 12px;
+  box-shadow: 0 10px 28px rgba(71, 62, 104, 0.08);
+  backdrop-filter: blur(16px);
+}
+
+.movement-heading,
+.transactions-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.movement-heading h2,
+.transactions-heading h2 {
+  margin: 2px 0 0;
+  font-size: 16px;
+}
+
+.movement-heading small {
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  font-size: 12px;
+}
+
+.chart-curve {
+  fill: none;
+  stroke: var(--primary-violet);
+  stroke-width: 2.4;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.chart-area {
+  fill: url(#chartFill);
+}
+
+.chart-point {
+  fill: white;
+  stroke: var(--primary-violet);
+  stroke-width: 2;
+}
+
+.chart-point-halo {
+  fill: color-mix(in srgb, var(--primary-violet) 22%, transparent);
+}
+
+.movement svg line {
+  stroke: color-mix(in srgb, var(--ink) 10%, transparent);
+}
+
+.transactions-preview article {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 4px;
+  border-top: 1px solid color-mix(in srgb, var(--ink) 6%, transparent);
+}
+
+.transactions-preview article:first-of-type {
+  border-top: 0;
+}
+
+.transactions-preview article span {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+}
+
+.transactions-preview article span.expense {
+  background: color-mix(in srgb, var(--obligation-terracotta) 16%, white);
+  color: var(--obligation-terracotta);
+}
+
+.transactions-preview article span.income {
+  background: color-mix(in srgb, var(--positive-sage) 18%, white);
+  color: var(--positive-sage);
+}
+
+.transactions-preview article div {
+  flex: 1;
+  min-width: 0;
+}
+
+.transactions-preview article b {
+  display: block;
+  font-size: 14px;
+}
+
+.transactions-preview article small {
+  color: color-mix(in srgb, var(--ink) 55%, transparent);
+  font-size: 12px;
+}
+
+.expense-text {
+  color: var(--obligation-terracotta);
+  font-variant-numeric: tabular-nums;
+}
+
+.income-text {
+  color: var(--positive-sage);
+  font-variant-numeric: tabular-nums;
+}
+
+/* Assistant capsule glass */
+.assistant-capsule {
+  position: relative;
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  padding: 16px 16px 14px;
+  border-radius: 26px;
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  background:
+    linear-gradient(160deg, rgba(255, 255, 255, 0.82), rgba(255, 255, 255, 0.55));
+  box-shadow: 0 16px 36px rgba(71, 62, 104, 0.1), inset 0 1px 0 rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px) saturate(1.25);
+  overflow: hidden;
+}
+
+.assistant-capsule .lens-dot {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: radial-gradient(circle at 30% 25%, white, color-mix(in srgb, var(--comfort-violet) 35%, white));
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 8px 18px rgba(154, 138, 244, 0.22);
+  flex: none;
+  color: var(--primary-violet);
+}
+
+.assistant-capsule small {
+  display: block;
+  color: var(--primary-violet);
+  font-weight: 600;
+  font-size: 12px;
+  margin-bottom: 4px;
+}
+
+.assistant-capsule h2 {
+  margin: 0 0 12px;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+}
+
+.assistant-capsule > div > div {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.assistant-capsule a {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 560;
+  color: var(--ink);
+  background: rgba(255, 255, 255, 0.65);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+}
+
+.assistant-capsule a:last-child {
+  margin-left: auto;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--primary-violet) 88%, white), var(--primary-violet));
+  color: white;
+  border-color: transparent;
+  box-shadow: 0 8px 18px rgba(129, 116, 232, 0.28);
+}
+
+/* Topbar + dial + nav */
+.liquid-topbar {
+  position: sticky;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: calc(12px + env(safe-area-inset-top, 0px)) 18px 10px;
+  background: color-mix(in srgb, var(--bg-pearl) 78%, transparent);
+  backdrop-filter: blur(18px);
+}
+
+.liquid-topbar .watermark {
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--primary-violet) 35%, white);
+  display: grid;
+  place-items: center;
+  background: rgba(255, 255, 255, 0.55);
+  position: relative;
+}
+
+.liquid-topbar .watermark i {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  border: 1.5px solid color-mix(in srgb, var(--primary-violet) 55%, transparent);
+}
+
+.liquid-topbar .watermark i:nth-child(1) {
+  transform: translate(-4px, -3px);
+}
+.liquid-topbar .watermark i:nth-child(2) {
+  transform: translate(4px, -1px);
+  opacity: 0.7;
+}
+.liquid-topbar .watermark i:nth-child(3) {
+  width: 7px;
+  height: 7px;
+  background: var(--primary-violet);
+  border: 0;
+}
+
+.demo-mark {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  color: color-mix(in srgb, var(--ink) 70%, var(--primary-violet));
+  font-weight: 620;
+}
+
+.mode-dial {
+  margin-left: auto;
+  position: relative;
+  width: 56px;
+  height: 56px;
+}
+
+.dial-trigger {
+  position: relative;
+  z-index: 2;
+  width: 56px;
+  height: 56px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  background:
+    radial-gradient(circle at 30% 22%, rgba(255, 255, 255, 0.98), transparent 38%),
+    radial-gradient(circle at 68% 72%, color-mix(in srgb, var(--primary-violet) 28%, transparent), transparent 48%),
+    linear-gradient(160deg, rgba(255, 255, 255, 0.92), color-mix(in srgb, var(--reserve-blue-violet) 18%, white));
+  box-shadow:
+    0 10px 24px rgba(71, 62, 104, 0.14),
+    inset 0 1px 1px rgba(255, 255, 255, 0.95),
+    inset 0 -8px 16px rgba(129, 116, 232, 0.1);
+  font-size: 12px;
+  font-weight: 680;
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  backdrop-filter: blur(14px);
+}
+
+.dial-refract {
+  position: absolute;
+  inset: 4px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  pointer-events: none;
+}
+
+.bottom-nav {
+  position: fixed;
+  left: 50%;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
+  transform: translateX(-50%);
+  width: min(400px, calc(100% - 24px));
+  z-index: 40;
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 2px;
+  padding: 6px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  box-shadow: 0 14px 36px rgba(71, 62, 104, 0.12);
+  backdrop-filter: blur(22px) saturate(1.3);
+}
+
+.bottom-nav a {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-decoration: none;
+  color: color-mix(in srgb, var(--ink) 48%, transparent);
+  padding: 8px 4px;
+  border-radius: 999px;
+  font-size: 10px;
+  font-weight: 560;
+}
+
+.bottom-nav a b {
+  font-weight: 560;
+}
+
+.bottom-nav a.active {
+  color: var(--primary-violet);
+  background: color-mix(in srgb, var(--comfort-violet) 16%, white);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+}
+
+.bottom-nav a.active .nav-lens {
+  background: radial-gradient(circle at 35% 30%, white, color-mix(in srgb, var(--comfort-violet) 30%, transparent));
+}
+
+.bottom-nav svg {
+  width: 20px;
+  height: 20px;
+}
+
+.overview {
+  padding: 4px 4px 12px;
+}
+
+.overview .assistant-capsule {
+  margin-top: 10px;
+}
+
+/* hint under wallet */
+.lq-wallet::after {
+  content: 'Нажмите, чтобы открыть историю';
+  display: block;
+  text-align: center;
+  margin-top: 12px;
+  font-size: 13px;
+  color: color-mix(in srgb, var(--ink) 45%, transparent);
+}
+
+.lq-wallet.is-open::after {
+  opacity: 0;
+}
+
+main#main {
+  padding: 0 16px 8px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lq-layer,
+  .lq-clasp,
+  .money-view,
+  .dial-arc,
+  .dial-orbit {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ============================================================
+   Pass 2 — kill purple frame, pearl clasp, soft fan, polish
+   ============================================================ */
+
+/* Focus: never draw a giant purple rounded box on the stack */
+.lq-stack:focus,
+.lq-stack:focus-visible,
+.wallet-stack:focus,
+.wallet-stack:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+.lq-stack:focus-visible .lq-reserve,
+.wallet-stack:focus-visible .lq-reserve {
+  box-shadow:
+    0 18px 40px rgba(71, 62, 104, 0.16),
+    0 0 0 3px color-mix(in srgb, var(--primary-violet) 35%, transparent),
+    inset 0 1px 1px rgba(255, 255, 255, 0.92) !important;
+}
+
+/* Remove any accidental stage frame */
+.lq-wallet,
+.wallet-stage,
+[data-testid='wallet-stage'] {
+  border: 0 !important;
+  outline: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  overflow: visible !important;
+}
+
+/* Compact stage height so assistant fits without push */
+.lq-wallet {
+  height: clamp(300px, 44dvh, 360px) !important;
+  min-height: 300px !important;
+  margin-bottom: 4px !important;
+}
+.lq-stack {
+  height: 100% !important;
+}
+
+/* Layer peeks — more translucent glass like reference */
+.lq-comfort {
+  top: 0 !important;
+  height: 30% !important;
+  padding: 14px 16px 10px !important;
+  background:
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--comfort-violet) 38%, rgba(255,255,255,0.92)) 0%,
+      color-mix(in srgb, var(--comfort-violet) 22%, transparent) 55%,
+      rgba(255, 255, 255, 0.55) 100%
+    ) !important;
+  transform: translate3d(0, 0, -56px) scale(0.955) !important;
+}
+.lq-obligations {
+  top: 13% !important;
+  height: 30% !important;
+  padding: 14px 16px 10px !important;
+  background:
+    linear-gradient(
+      155deg,
+      color-mix(in srgb, var(--obligation-terracotta) 34%, rgba(255,255,255,0.92)) 0%,
+      color-mix(in srgb, var(--obligation-terracotta) 18%, transparent) 55%,
+      rgba(255, 255, 255, 0.52) 100%
+    ) !important;
+  transform: translate3d(0, 0, -28px) scale(0.978) !important;
+}
+.lq-reserve {
+  top: 26% !important;
+  height: 70% !important;
+  padding: 16px 16px 14px !important;
+  background:
+    radial-gradient(ellipse at 88% 38%, rgba(255,255,255,0.55), transparent 42%),
+    linear-gradient(
+      150deg,
+      color-mix(in srgb, var(--reserve-blue-violet) 18%, white) 0%,
+      color-mix(in srgb, var(--reserve-blue-violet) 42%, white) 46%,
+      color-mix(in srgb, var(--comfort-violet) 16%, var(--reserve-blue-violet)) 100%
+    ) !important;
+  transform: translate3d(0, 0, 0) scale(1) !important;
+}
+
+/* Pearl sphere clasp matching reference */
+.lq-clasp {
+  right: 16px !important;
+  top: 52px !important;
+  width: 54px !important;
+  height: 54px !important;
+  border-radius: 999px !important;
+  background:
+    radial-gradient(circle at 32% 28%, rgba(255,255,255,1) 0 10%, transparent 36%),
+    radial-gradient(circle at 70% 72%, color-mix(in srgb, var(--reserve-blue-violet) 35%, transparent), transparent 48%),
+    linear-gradient(160deg, rgba(255,255,255,0.95), color-mix(in srgb, var(--reserve-blue-violet) 22%, white)) !important;
+  box-shadow:
+    0 12px 26px color-mix(in srgb, var(--reserve-blue-violet) 30%, transparent),
+    inset 0 1px 1px rgba(255,255,255,0.98),
+    inset 0 -10px 18px color-mix(in srgb, var(--reserve-blue-violet) 14%, transparent) !important;
+}
+.lq-clasp .clasp-neck {
+  left: -8px !important;
+  width: 10px !important;
+  height: 16px !important;
+  border-radius: 8px 0 0 8px !important;
+}
+.lq-clasp i {
+  width: 9px !important;
+  height: 26px !important;
+  border-radius: 999px !important;
+  background:
+    linear-gradient(180deg, #fff 0%, color-mix(in srgb, white 60%, var(--reserve-blue-violet)) 50%, color-mix(in srgb, var(--reserve-blue-violet) 40%, transparent) 100%) !important;
+}
+
+/* Soft glass expanded fan (not flat paint) */
+.expanded-fan {
+  height: 140px !important;
+  margin: 4px 18px 16px !important;
+}
+.expanded-fan i,
+.expanded-fan .fan-comfort,
+.expanded-fan .fan-obligations,
+.expanded-fan .fan-reserve {
+  height: 58px !important;
+  border-radius: 24px !important;
+  border: 1px solid rgba(255,255,255,0.55) !important;
+  box-shadow:
+    0 16px 32px rgba(71, 62, 104, 0.14),
+    inset 0 1px 1px rgba(255,255,255,0.65) !important;
+  backdrop-filter: blur(10px) !important;
+}
+.expanded-fan i:nth-child(1),
+.expanded-fan .fan-comfort {
+  top: 4px !important;
+  left: 10% !important;
+  right: 10% !important;
+  background:
+    linear-gradient(130deg,
+      color-mix(in srgb, var(--comfort-violet) 55%, white),
+      color-mix(in srgb, var(--comfort-violet) 70%, transparent)) !important;
+  transform: translate3d(0,0,-36px) rotateX(22deg) scale(0.93) !important;
+  opacity: 0.95 !important;
+}
+.expanded-fan i:nth-child(2),
+.expanded-fan .fan-obligations {
+  top: 32px !important;
+  left: 7% !important;
+  right: 7% !important;
+  background:
+    linear-gradient(130deg,
+      color-mix(in srgb, var(--obligation-terracotta) 52%, white),
+      color-mix(in srgb, var(--obligation-terracotta) 68%, transparent)) !important;
+  transform: translate3d(0,0,-18px) rotateX(14deg) scale(0.96) !important;
+}
+.expanded-fan i:nth-child(3),
+.expanded-fan .fan-reserve {
+  top: 60px !important;
+  left: 4% !important;
+  right: 4% !important;
+  background:
+    linear-gradient(130deg,
+      color-mix(in srgb, var(--reserve-blue-violet) 48%, white),
+      color-mix(in srgb, var(--reserve-blue-violet) 72%, #6a7db8)) !important;
+  transform: translate3d(0,0,0) rotateX(6deg) !important;
+}
+.fan-clasp {
+  right: 6% !important;
+  top: 66px !important;
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 999px !important;
+}
+
+/* Assistant layout fix — buttons in a row, no overflow */
+.assistant-capsule {
+  margin-top: 6px !important;
+}
+.assistant-capsule > div {
+  flex: 1;
+  min-width: 0;
+}
+.assistant-capsule > div > div {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+.assistant-capsule a:last-child {
+  margin-left: auto !important;
+}
+
+/* Top bar: thin violet hairline like ref */
+.liquid-topbar::after {
+  content: '';
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--primary-violet) 35%, transparent), transparent);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Hint only when closed */
+.lq-wallet::after {
+  content: 'Нажмите, чтобы открыть историю';
+  display: block;
+  text-align: center;
+  margin-top: 10px;
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--ink) 42%, transparent);
+  letter-spacing: 0.01em;
+}
+.lq-wallet.is-open::after {
+  content: none;
+  display: none;
+}
+
+/* Mode dial: glass sphere */
+.dial-trigger {
+  width: 52px !important;
+  height: 52px !important;
+}
+
+/* Amounts on peeks more readable */
+.lq-comfort .lq-amt,
+.lq-obligations .lq-amt {
+  font-size: 17px !important;
+  font-weight: 700 !important;
+  opacity: 0.92;
+}
+.lq-amt-xl {
+  font-size: 38px !important;
+}
+
+/* Press restore with new transforms */
+.lq-wallet.is-pressed:not(.is-open) .lq-comfort {
+  transform: translate3d(0, 2px, -56px) scale(0.945) !important;
+}
+.lq-wallet.is-pressed:not(.is-open) .lq-obligations {
+  transform: translate3d(0, 3px, -28px) scale(0.968) !important;
+}
+.lq-wallet.is-pressed:not(.is-open) .lq-reserve {
+  transform: translate3d(0, 4px, 0) scale(0.986) !important;
+}
+
+/* ============================================================
+   Pass 3 — assistant CTA inside card, fan clasp on plate
+   ============================================================ */
+
+.assistant-capsule {
+  display: grid !important;
+  grid-template-columns: 44px 1fr;
+  grid-template-rows: auto auto;
+  column-gap: 12px;
+  row-gap: 12px;
+  align-items: start;
+  padding: 16px !important;
+  overflow: hidden !important;
+}
+
+.assistant-capsule .lens-dot,
+.assistant-capsule > .lens-dot {
+  grid-column: 1;
+  grid-row: 1;
+  width: 42px !important;
+  height: 42px !important;
+}
+
+.assistant-capsule > div {
+  grid-column: 2;
+  grid-row: 1;
+  min-width: 0;
+}
+
+.assistant-capsule > div > div {
+  display: flex !important;
+  flex-wrap: nowrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 10px;
+  width: 100%;
+}
+
+.assistant-capsule a {
+  flex: 0 0 auto;
+  white-space: nowrap;
+}
+
+.assistant-capsule a:last-child {
+  margin-left: auto !important;
+  margin-right: 0 !important;
+  position: static !important;
+  transform: none !important;
+}
+
+/* If shimmer/extra spans exist, pin them */
+.assistant-capsule .assistant-shimmer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+/* Fan clasp sits ON the front plate, not floating off */
+.expanded-fan {
+  overflow: visible !important;
+}
+.fan-clasp {
+  right: 10% !important;
+  top: 68px !important;
+  z-index: 6 !important;
+}
+
+/* Keep peek amounts fully visible (less aggressive overlap) */
+.lq-obligations {
+  top: 14.5% !important;
+}
+.lq-reserve {
+  top: 28% !important;
+  height: 68% !important;
+}
+.lq-comfort .lq-amt,
+.lq-obligations .lq-amt {
+  margin-top: 4px !important;
+  line-height: 1.15 !important;
+}
+
+/* Spacing: assistant not crushed by wallet */
+.overview {
+  gap: 8px !important;
+}
+.lq-wallet {
+  margin-bottom: 0 !important;
+}
+.lq-wallet::after {
+  margin-top: 8px !important;
+  margin-bottom: 4px !important;
+}
+
+.assistant-capsule .assistant-actions {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin-top: 12px !important;
+  width: 100% !important;
+}
+.assistant-capsule .assistant-cta,
+.assistant-capsule a.assistant-cta {
+  margin-left: auto !important;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--primary-violet) 88%, white), var(--primary-violet)) !important;
+  color: #fff !important;
+  border-color: transparent !important;
+  box-shadow: 0 8px 18px rgba(129, 116, 232, 0.28) !important;
+}
+
+/* Pass 4 — hint under wallet not under assistant; CTA fully inside */
+.lq-wallet {
+  z-index: 1;
+  position: relative;
+}
+.lq-wallet::after {
+  position: relative;
+  z-index: 1;
+  margin-bottom: 10px !important;
+  opacity: 0.85;
+}
+.overview .assistant-capsule {
+  position: relative;
+  z-index: 2;
+  margin-top: 4px !important;
+  padding-bottom: 16px !important;
+  overflow: visible !important;
+  border-radius: 28px !important;
+}
+.assistant-capsule .assistant-actions {
+  padding-right: 0 !important;
+}
+.assistant-capsule a.assistant-cta {
+  position: relative !important;
+  bottom: 0 !important;
+  right: 0 !important;
+  transform: none !important;
+}
+/* If still wrapping, force full width row with space-between */
+.assistant-capsule .assistant-actions {
+  justify-content: flex-start !important;
+}
+.assistant-capsule .assistant-actions .assistant-cta {
+  margin-left: auto !important;
+}
+.lq-wallet::after { content: none !important; display: none !important; }
+.wallet-hint {
+  text-align: center;
+  margin: 6px 0 10px;
+  font-size: 12.5px;
+  color: color-mix(in srgb, var(--ink, #171621) 45%, transparent);
+  letter-spacing: 0.01em;
+}

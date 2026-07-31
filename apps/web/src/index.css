@@ -5,13 +5,13 @@
 @layer base {
   :root {
     /* Pearl-lilac atmosphere — matches design references */
-    --background: 250 35% 96%;
+    --background: 255 24% 93%; /* #ECEAF1 */
     --foreground: 250 18% 12%;
     --card: 0 0% 100%;
     --card-foreground: 250 18% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 250 18% 12%;
-    --primary: 252 58% 58%;
+    --primary: 248 70% 68%; /* #8174E8 */
     --primary-foreground: 0 0% 100%;
     --secondary: 250 40% 94%;
     --secondary-foreground: 250 20% 24%;
@@ -23,13 +23,20 @@
     --destructive-foreground: 0 0% 100%;
     --border: 250 22% 88%;
     --input: 250 22% 88%;
-    --ring: 252 58% 58%;
+    --ring: 248 70% 68%;
     --radius: 1rem;
-    /* Wallet layer tints */
-    --layer-comfort: 255 55% 94%;
-    --layer-obligations: 320 40% 95%;
-    --layer-reserve: 220 50% 96%;
+    /* Wallet layer tints (ref tokens) */
+    --layer-comfort: 252 70% 75%; /* comfort-violet tint */
+    --layer-obligations: 12 42% 62%; /* terracotta */
+    --layer-reserve: 226 42% 61%; /* reserve-blue-violet */
     --glass: 0 0% 100%;
+    --bg-pearl: #eceaf1;
+    --comfort-violet: #9a8af4;
+    --primary-violet: #8174e8;
+    --reserve-blue-violet: #7186c8;
+    --obligation-terracotta: #c98272;
+    --positive-sage: #7e9f92;
+    --ink: #171621;
   }
 
   .dark {

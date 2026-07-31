@@ -6,6 +6,7 @@ import { registerSW } from 'virtual:pwa-register';
 import { AppProvider } from './app/AppContext';
 import { router } from './app/router';
 import './index.css';
+import './design-system/liquid.css';
 const updateSW = registerSW({
   onNeedRefresh() {
     if (confirm('Доступна новая версия. Обновить сейчас?')) void updateSW(true);

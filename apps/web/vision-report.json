@@ -2,57 +2,57 @@
   {
     "file": "overview-wallet-390.png",
     "analysis": {
-      "score": 8.8,
+      "score": 7.6,
       "critical_issues": [],
       "improvements": [
-        "Clasp: чуть крупнее specular/highlight как на liquid-референсе",
-        "Edge thickness верхних peeks +1–2px shadow",
-        "Межслойный offset можно усилить на 4px"
+        "Clasp: denser pearl specular + thicker neck like liquid-clasp ref",
+        "Comfort/Obligations peeks: slightly more translucency and readable peek amounts under overlap",
+        "Assistant CTA still tight on small widths — keep CTA inside capsule padding",
+        "Base dial: stronger glass rim / refract highlight"
       ],
-      "overall": "Скриншот-аудит после glass polish: 3 отдельных tinted слоя (Комфорт/Платежи/Запас), читаемый DOM-текст, clasp справа, safe-strip, floating pill nav, frosted Base dial, pearl-lilac. Структура 1:1 с docs/design-references/screenshots/overview. ~8.8/10 (цель 9)."
+      "overall": "Honest audit after restoring CSS liquid stack (was flat shadcn ~1/10). Three tinted glass layers, amounts on peeks, pearl clasp, safe-strip, lip, glass dial, pill nav, assistant capsule. Side-by-side with docs/design-references/screenshots/overview-390x844.png: structure matches; material still below 9/10 liquid reference. ~7.6/10."
     },
-    "compared_to": "docs/design-references/screenshots/overview-390x844.png + vyhod-selected-direction-b.png"
+    "compared_to": "docs/design-references/screenshots/overview-390x844.png (+ salvaged vyhod-selected-direction-b.png)"
   },
   {
     "file": "money-expanded-390.png",
     "analysis": {
-      "score": 8.4,
+      "score": 7.2,
       "critical_issues": [],
       "improvements": [
-        "Expanded fan: глубже 3D-веер как в 9/10 reference (углы/глубина)",
-        "Лёгкие material tints на fan layers"
+        "Expanded fan: deeper 3D rotateX + thickness, not flat slabs",
+        "Clasp should rest flush on front plate (ref money-expanded)",
+        "Stronger glass sheen on fan layers"
       ],
-      "overall": "Header + tabs + chart + operations ok; fan simplified vs liquid 9/10 ref but readable. ~8.4/10."
+      "overall": "Colored three-layer fan + tabs + chart + operations. Better than flat white cards, still short of wallet-9of10 depth. ~7.2/10."
     },
-    "compared_to": "docs/design-references/screenshots/money-expanded-390x844.png + vyhod-wallet-9of10.png"
+    "compared_to": "docs/design-references/screenshots/money-expanded-390x844.png"
   },
   {
     "file": "plan-390.png",
     "analysis": {
-      "score": 8.5,
+      "score": 6.5,
       "critical_issues": [],
-      "improvements": [
-        "Единый glass treatment карточек как на overview"
-      ],
-      "overall": "Dual Base dial убран. Один ModeDial в шапке. Иерархия чистая. ~8.5/10."
+      "improvements": ["Plan still mostly shadcn cards — apply liquid glass surface tokens"],
+      "overall": "Functional plan UI; not on liquid visual system yet. ~6.5/10."
     }
   },
   {
     "file": "assistant-390.png",
     "analysis": {
-      "score": 8.2,
+      "score": 6.5,
       "critical_issues": [],
-      "improvements": ["Плотнее vertical rhythm"],
-      "overall": "Чистый Linear-like assistant. ~8.2/10."
+      "improvements": ["Match overview glass language"],
+      "overall": "Usable assistant; secondary surface polish. ~6.5/10."
     }
   },
   {
     "file": "profile-390.png",
     "analysis": {
-      "score": 8.2,
+      "score": 6.5,
       "critical_issues": [],
       "improvements": [],
-      "overall": "Settings cards consistent. ~8.2/10."
+      "overall": "Settings cards functional. ~6.5/10."
     }
   }
 ]

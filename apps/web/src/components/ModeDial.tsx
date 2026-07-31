@@ -1,8 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../app/AppContext';
-import { cn } from '../lib/utils';
-import { Button } from './ui/button';
-import { Card } from './ui/card';
 
 type HardRiskLevel = 'moderate' | 'high' | 'extreme';
 
@@ -28,7 +25,7 @@ export function ModeDial({ expanded = false }: { expanded?: boolean }) {
 
   const choose = (mode: 'base' | 'hard') => {
     void patch({ guidanceMode: mode });
-    navigator.vibrate?.(8);
+    navigator.vibrate?.(10);
     if (mode === 'base') setOpen(false);
   };
 
@@ -38,67 +35,62 @@ export function ModeDial({ expanded = false }: { expanded?: boolean }) {
     setOpen(false);
   };
 
+  const toggle = () => {
+    setOpen((value) => !value);
+    navigator.vibrate?.(6);
+  };
+
   return (
-    <div className="relative" ref={ref}>
+    <div
+      className={`mode-dial ${open ? 'open' : ''} mode-${settings.guidanceMode}`}
+      ref={ref}
+      data-mode={settings.guidanceMode}
+    >
+      <div className="dial-orbit" aria-hidden={!open}>
+        <button
+          type="button"
+          tabIndex={open ? 0 : -1}
+          className={`dial-arc base ${settings.guidanceMode === 'base' ? 'active' : ''}`}
+          onClick={() => choose('base')}
+        >
+          <span>Base</span>
+          <small>бережно</small>
+        </button>
+        <button
+          type="button"
+          tabIndex={open ? 0 : -1}
+          className={`dial-arc hard ${settings.guidanceMode === 'hard' ? 'active' : ''}`}
+          onClick={() => choose('hard')}
+        >
+          <span>Hard</span>
+          <small>интенсивно</small>
+        </button>
+      </div>
+
       <button
         type="button"
-        className={cn(
-          'inline-flex h-10 min-w-16 items-center justify-center rounded-full border border-white/70',
-          'bg-white/70 px-4 text-sm font-medium text-foreground shadow-dial backdrop-blur-xl',
-          'transition-colors hover:bg-white/90',
-          'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
-        )}
+        className="dial-trigger"
         aria-label={`Режим ${settings.guidanceMode}. Изменить`}
         aria-expanded={open}
-        onClick={() => {
-          setOpen((v) => !v);
-          navigator.vibrate?.(6);
-        }}
+        onClick={toggle}
       >
-        {settings.guidanceMode === 'base' ? 'Base' : 'Hard'}
+        <span className="dial-refract" aria-hidden="true" />
+        <span>{settings.guidanceMode === 'base' ? 'Base' : 'Hard'}</span>
       </button>
 
-      {open && (
-        <Card className="absolute right-0 top-12 z-50 w-56 space-y-2 border-white/60 bg-white/90 p-3 shadow-md backdrop-blur-xl">
-          <div className="grid grid-cols-2 gap-2">
-            <Button
+      {open && settings.guidanceMode === 'hard' && (
+        <div className="dial-risk" role="group" aria-label="Допустимый риск">
+          {riskOptions.map(([id, label]) => (
+            <button
               type="button"
-              size="sm"
-              variant={settings.guidanceMode === 'base' ? 'default' : 'ghost'}
-              onClick={() => choose('base')}
+              key={id}
+              className={settings.hardRiskLevel === id ? 'active' : ''}
+              onClick={() => chooseRisk(id)}
             >
-              Base
-            </Button>
-            <Button
-              type="button"
-              size="sm"
-              variant={settings.guidanceMode === 'hard' ? 'default' : 'ghost'}
-              onClick={() => choose('hard')}
-            >
-              Hard
-            </Button>
-          </div>
-          {settings.guidanceMode === 'hard' && (
-            <div
-              className="space-y-2 border-t border-border pt-3"
-              role="group"
-              aria-label="Допустимый риск"
-            >
-              {riskOptions.map(([id, label]) => (
-                <Button
-                  key={id}
-                  type="button"
-                  size="sm"
-                  variant={settings.hardRiskLevel === id ? 'secondary' : 'ghost'}
-                  className="w-full justify-start"
-                  onClick={() => chooseRisk(id)}
-                >
-                  {label}
-                </Button>
-              ))}
-            </div>
-          )}
-        </Card>
+              {label}
+            </button>
+          ))}
+        </div>
       )}
     </div>
   );
