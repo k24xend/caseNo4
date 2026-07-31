@@ -11,35 +11,58 @@ import {
   WifiOff,
   X,
 } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useId, useRef, useState, type PointerEvent as ReactPointerEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
 import { Skeleton } from '../../components/ui';
 import { formatMoney } from '../../domain/money';
 
 type MoneyTab = 'summary' | 'history' | 'chart';
+type WalletPhase = 'closed' | 'opening' | 'open' | 'closing';
+
+const prefersReducedMotion = () =>
+  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
 export function Today() {
   const { data, loading, error, settings, refresh } = useApp();
-  const [open, setOpen] = useState(false);
+  const [phase, setPhase] = useState<WalletPhase>('closed');
+  const open = phase === 'opening' || phase === 'open' || phase === 'closing';
   const trigger = useRef<HTMLButtonElement>(null);
+  const openTimer = useRef<number | undefined>(undefined);
+  const closeTimer = useRef<number | undefined>(undefined);
 
   useEffect(() => {
-    if (!open) trigger.current?.focus();
-  }, [open]);
+    if (phase === 'closed') trigger.current?.focus();
+  }, [phase]);
 
   useEffect(() => {
     if (!open) return;
     const previousOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
     history.pushState({ vyhodWallet: true }, '');
-    const pop = () => setOpen(false);
+    const pop = () => {
+      window.clearTimeout(openTimer.current);
+      setPhase(prefersReducedMotion() ? 'closed' : 'closing');
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = window.setTimeout(
+        () => setPhase('closed'),
+        prefersReducedMotion() ? 0 : 420,
+      );
+    };
     addEventListener('popstate', pop, { once: true });
     return () => {
       document.body.style.overflow = previousOverflow;
       removeEventListener('popstate', pop);
     };
   }, [open]);
+
+  useEffect(
+    () => () => {
+      window.clearTimeout(openTimer.current);
+      window.clearTimeout(closeTimer.current);
+    },
+    [],
+  );
 
   if (loading)
     return (
@@ -67,13 +90,51 @@ export function Today() {
   const obligations =
     snapshot.mandatory_before_next_income + snapshot.minimum_debt_payments_before_next_income;
   const reserve = Math.max(0, snapshot.available_now - comfort - obligations);
+
+  const openWallet = () => {
+    if (phase !== 'closed') return;
+    navigator.vibrate?.(6);
+    if (prefersReducedMotion()) {
+      setPhase('open');
+      return;
+    }
+    setPhase('opening');
+    window.clearTimeout(openTimer.current);
+    openTimer.current = window.setTimeout(() => setPhase('open'), 520);
+  };
+
   const closeWallet = () => {
     if (history.state?.vyhodWallet) history.back();
-    else setOpen(false);
+    else {
+      if (prefersReducedMotion()) {
+        setPhase('closed');
+        return;
+      }
+      setPhase('closing');
+      window.clearTimeout(closeTimer.current);
+      closeTimer.current = window.setTimeout(() => setPhase('closed'), 420);
+    }
+  };
+
+  const onWalletPointerDown = (event: ReactPointerEvent<HTMLButtonElement>) => {
+    const stack = event.currentTarget;
+    const rect = stack.getBoundingClientRect();
+    const ripple = document.createElement('span');
+    ripple.className = 'wallet-ripple';
+    const size = Math.max(rect.width, rect.height) * 1.15;
+    ripple.style.width = `${size}px`;
+    ripple.style.height = `${size}px`;
+    ripple.style.left = `${event.clientX - rect.left - size / 2}px`;
+    ripple.style.top = `${event.clientY - rect.top - size / 2}px`;
+    stack.appendChild(ripple);
+    window.setTimeout(() => ripple.remove(), 650);
   };
 
   return (
-    <div className={`overview ${open ? 'wallet-is-open' : ''}`}>
+    <div
+      className={`overview wallet-phase-${phase} ${open ? 'wallet-is-open' : ''}`}
+      data-wallet-phase={phase}
+    >
       {settings.demoOffline && (
         <div className="status-banner">
           <WifiOff />
@@ -85,26 +146,31 @@ export function Today() {
         <button
           ref={trigger}
           className="wallet-stack"
-          onClick={() => setOpen(true)}
+          onClick={openWallet}
+          onPointerDown={onWalletPointerDown}
           aria-haspopup="dialog"
+          aria-expanded={open}
           aria-label="Открыть кошелёк и историю"
+          disabled={open}
+          tabIndex={open ? -1 : 0}
         >
-          <span className="wallet-layer comfort">
+          <span className="wallet-layer comfort" data-layer="comfort">
             <span className="wallet-layer-heading">
               <Coffee aria-hidden="true" />
               <small>Комфорт</small>
             </span>
             <b>{formatMoney(comfort, plan.currency)}</b>
           </span>
-          <span className="wallet-layer obligations">
+          <span className="wallet-layer obligations" data-layer="obligations">
             <span className="wallet-layer-heading">
               <ReceiptText aria-hidden="true" />
               <small>Платежи</small>
             </span>
             <b>{formatMoney(obligations, plan.currency)}</b>
           </span>
-          <span className="wallet-layer reserve">
+          <span className="wallet-layer reserve" data-layer="reserve">
             <span className="wallet-caustic" aria-hidden="true" />
+            <span className="wallet-edge-tension" aria-hidden="true" />
             <span className="clasp" aria-hidden="true">
               <span className="clasp-neck" />
               <i />
@@ -148,7 +214,16 @@ export function Today() {
           </div>
         </div>
       </section>
-      {open && <WalletExpanded onClose={closeWallet} />}
+
+      {open && (
+        <WalletExpanded
+          phase={phase}
+          onClose={closeWallet}
+          comfort={comfort}
+          obligations={obligations}
+          reserve={reserve}
+        />
+      )}
     </div>
   );
 }
@@ -171,13 +246,27 @@ function smoothPath(points: Array<[number, number]>) {
   return path;
 }
 
-function WalletExpanded({ onClose }: { onClose: () => void }) {
+function WalletExpanded({
+  onClose,
+  phase,
+  comfort,
+  obligations,
+  reserve,
+}: {
+  onClose: () => void;
+  phase: WalletPhase;
+  comfort: number;
+  obligations: number;
+  reserve: number;
+}) {
   const { data, settings } = useApp();
   const [tab, setTab] = useState<MoneyTab>('summary');
   const titleId = useId();
   const close = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => close.current?.focus(), []);
+  useEffect(() => {
+    if (phase === 'open') close.current?.focus();
+  }, [phase]);
   useEffect(() => {
     const keyboard = (event: KeyboardEvent) => {
       if (event.key === 'Escape') onClose();
@@ -205,7 +294,13 @@ function WalletExpanded({ onClose }: { onClose: () => void }) {
   const latest = chartPoints.at(-1);
 
   return (
-    <div className="money-view" role="dialog" aria-modal="true" aria-labelledby={titleId}>
+    <div
+      className={`money-view money-phase-${phase}`}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={titleId}
+      data-wallet-phase={phase}
+    >
       <div className="money-backdrop-light" aria-hidden="true" />
       <header className="money-header" data-testid="money-header">
         <div>
@@ -221,10 +316,11 @@ function WalletExpanded({ onClose }: { onClose: () => void }) {
 
       <div className="expanded-scene">
         <div className="expanded-fan" aria-hidden="true" data-testid="expanded-fan">
-          <i className="fan-comfort" />
-          <i className="fan-obligations" />
-          <i className="fan-reserve" />
+          <i className="fan-comfort" data-amount={formatMoney(comfort, currency)} />
+          <i className="fan-obligations" data-amount={formatMoney(obligations, currency)} />
+          <i className="fan-reserve" data-amount={formatMoney(reserve, currency)} />
           <span className="fan-clasp">
+            <span className="clasp-neck" />
             <i />
           </span>
         </div>
