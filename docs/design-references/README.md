@@ -1,14 +1,16 @@
-# VYHOD design reference (single source of truth)
+# VYHOD design references (mint product)
 
-**Only this file is the visual ground truth:**
+**Only these files are ground truth** (owner photos, 2026-07-31). Previous liquid-glass / direction-b assets are retired.
 
-- `vyhod-selected-direction-b.png` (and `.jpg`) — dual mockup from the product owner (2026-07-31).
+| File | Screen |
+|------|--------|
+| `01-home-header.jpg` | Home — header, difficulty, financial progress, week bars, categories start |
+| `02-home-categories-history.jpg` | Home — categories, AI assistant toggle, recent history |
+| `03-history.jpg` | History — income/spent, search, full transaction list |
+| `04-assistant.jpg` | AI Assistant — intro + suggested questions + composer |
+| `05-home-full.jpg` | Home full frame (same system) |
 
-Phone crops for QA (derived from the same file):
+Palette: soft mint/teal background, white cards, teal accents, dark slate text.
+Nav: Home · Wallet · Assistant · History.
 
-- `screenshots/direction-b-overview-full.png`
-- `screenshots/direction-b-money-full.png`
-
-All previous reference PNGs (wallet-9of10, liquid-clasp, old 390 screenshots) are **retired** and must not be used for scoring.
-
-Do not embed these images in the product UI. Recreate with HTML/CSS/SVG and live data.
+Recreate with HTML/CSS — do not embed these photos in the product UI.

@@ -5,13 +5,13 @@
 @layer base {
   :root {
     /* Pearl-lilac atmosphere — matches design references */
-    --background: 255 24% 93%; /* #ECEAF1 */
+    --background: 185 25% 93%; /* mint */
     --foreground: 250 18% 12%;
     --card: 0 0% 100%;
     --card-foreground: 250 18% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 250 18% 12%;
-    --primary: 248 70% 68%; /* #8174E8 */
+    --primary: 185 48% 45%; /* mint teal */
     --primary-foreground: 0 0% 100%;
     --secondary: 250 40% 94%;
     --secondary-foreground: 250 20% 24%;
@@ -23,7 +23,7 @@
     --destructive-foreground: 0 0% 100%;
     --border: 250 22% 88%;
     --input: 250 22% 88%;
-    --ring: 248 70% 68%;
+    --ring: 185 48% 45%;
     --radius: 1rem;
     /* Wallet layer tints (ref tokens) */
     --layer-comfort: 252 70% 75%; /* comfort-violet tint */

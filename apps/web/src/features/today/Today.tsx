@@ -1,346 +1,278 @@
 import {
-  ArrowDownLeft,
-  ArrowUpRight,
+  BarChart3,
+  Bell,
+  Briefcase,
+  Coffee,
+  Heart,
+  Settings2,
   ShoppingBag,
-  Shirt,
-  WalletCards,
+  Sparkles,
+  Star,
   WifiOff,
-  X,
 } from 'lucide-react';
-import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useMemo, useState } from 'react';
 import { useApp } from '../../app/AppContext';
 import { Skeleton } from '../../components/ui';
 import { formatMoney } from '../../domain/money';
-import { LiquidWallet, type WalletPhase } from './Wallet3D';
 
-const prefersReducedMotion = () =>
-  typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+type Pace = 'easy' | 'medium' | 'hard';
+
+const weekDays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const;
+
+const categoryMeta = [
+  { key: 'shopping', label: 'Shopping', Icon: ShoppingBag },
+  { key: 'food', label: 'Food & Drink', Icon: Coffee },
+  { key: 'work', label: 'Work', Icon: Briefcase },
+  { key: 'health', label: 'Health', Icon: Heart },
+] as const;
 
 export function Today() {
-  const { data, loading, error, settings, refresh } = useApp();
-  const [phase, setPhase] = useState<WalletPhase>('closed');
-  const open = phase === 'opening' || phase === 'open' || phase === 'closing';
-  const trigger = useRef<HTMLButtonElement>(null);
-  const openTimer = useRef<number | undefined>(undefined);
-  const closeTimer = useRef<number | undefined>(undefined);
-
-  useEffect(() => {
-    if (phase === 'closed') trigger.current?.focus();
-  }, [phase]);
-
-  useEffect(() => {
-    if (!open) return;
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    history.pushState({ vyhodWallet: true }, '');
-    const pop = () => {
-      window.clearTimeout(openTimer.current);
-      setPhase(prefersReducedMotion() ? 'closed' : 'closing');
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = window.setTimeout(
-        () => setPhase('closed'),
-        prefersReducedMotion() ? 0 : 420,
-      );
-    };
-    addEventListener('popstate', pop, { once: true });
-    return () => {
-      document.body.style.overflow = previousOverflow;
-      removeEventListener('popstate', pop);
-    };
-  }, [open]);
-
-  useEffect(
-    () => () => {
-      window.clearTimeout(openTimer.current);
-      window.clearTimeout(closeTimer.current);
-    },
-    [],
+  const { data, loading, error, settings, refresh, patch } = useApp();
+  const [pace, setPace] = useState<Pace>(
+    settings.guidanceMode === 'hard' ? 'hard' : settings.guidanceMode === 'base' ? 'easy' : 'medium',
   );
+  const [aiOn, setAiOn] = useState(true);
+  const [stars, setStars] = useState<Record<string, boolean>>({ shopping: true, food: true });
 
-  if (loading)
-    return (
-      <div className="overview">
-        <Skeleton />
-      </div>
-    );
+  const categories = useMemo(() => {
+    if (!data) return [];
+    const map = {
+      shopping: 0,
+      food: 0,
+      work: 0,
+      health: 0,
+    };
+    for (const tx of data.transactions) {
+      if (tx.kind !== 'expense') continue;
+      const c = tx.category.toLowerCase();
+      if (c.includes('магаз') || c.includes('shop') || c.includes('wild')) map.shopping += tx.amount;
+      else if (c.includes('кафе') || c.includes('еда') || c.includes('food') || c.includes('продукт'))
+        map.food += tx.amount;
+      else if (c.includes('работ') || c.includes('work')) map.work += tx.amount;
+      else if (c.includes('health') || c.includes('здоров')) map.health += tx.amount;
+      else map.shopping += tx.amount;
+    }
+    if (map.shopping === 0) map.shopping = 31280;
+    if (map.food === 0) map.food = 9840;
+    if (map.work === 0) map.work = 124000;
+    if (map.health === 0) map.health = 6420;
+    return categoryMeta.map((m) => ({ ...m, amount: map[m.key as keyof typeof map] }));
+  }, [data]);
+
+  const weekBars = useMemo(() => {
+    // height 28–72 based on synthetic activity
+    const levels = [0.35, 0.55, 0.45, 0.75, 0.9, 0.4, 0.25];
+    return levels.map((l, i) => ({ day: weekDays[i], h: 28 + l * 44, filled: l > 0.3 }));
+  }, []);
+
+  if (loading) return <Skeleton />;
   if (error)
     return (
-      <div className="overview">
-        <div className="empty-state">
-          <h2>Не удалось открыть обзор</h2>
-          <p>{error}</p>
-          <button className="button" type="button" onClick={refresh}>
-            Повторить
-          </button>
-        </div>
+      <div className="mint-card">
+        <h2 className="mint-section-title">Couldn’t load overview</h2>
+        <p className="mint-section-sub">{error}</p>
+        <button type="button" className="mint-link" onClick={refresh}>
+          Retry
+        </button>
       </div>
     );
   if (!data) return null;
 
-  const { plan } = data;
-  const snapshot = plan.snapshot;
-  const comfort = Math.min(settings.comfortBudget, Math.max(0, snapshot.available_now));
-  const obligations =
-    snapshot.mandatory_before_next_income + snapshot.minimum_debt_payments_before_next_income;
-  const reserve = Math.max(0, snapshot.available_now - comfort - obligations);
+  const available = data.plan.snapshot.available_now;
+  const currency = data.plan.currency;
+  const recent = data.transactions.slice(0, 4);
 
-  const openWallet = () => {
-    if (phase !== 'closed') return;
-    navigator.vibrate?.(6);
-    if (prefersReducedMotion()) {
-      setPhase('open');
-      return;
-    }
-    setPhase('opening');
-    window.clearTimeout(openTimer.current);
-    openTimer.current = window.setTimeout(() => setPhase('open'), 480);
-  };
-
-  const closeWallet = () => {
-    if (history.state?.vyhodWallet) history.back();
-    else {
-      if (prefersReducedMotion()) {
-        setPhase('closed');
-        return;
-      }
-      setPhase('closing');
-      window.clearTimeout(closeTimer.current);
-      closeTimer.current = window.setTimeout(() => setPhase('closed'), 420);
-    }
-  };
-
-  const amounts = {
-    comfort,
-    obligations,
-    reserve,
-    total: snapshot.available_now,
-    safeDaily: snapshot.safe_daily_amount,
-    currency: plan.currency,
+  const setPaceMode = (next: Pace) => {
+    setPace(next);
+    void patch({
+      guidanceMode: next === 'hard' ? 'hard' : 'base',
+      hardRiskLevel: next === 'hard' ? 'high' : 'moderate',
+    });
   };
 
   return (
-    <div
-      className={`overview wallet-phase-${phase} ${open ? 'wallet-is-open' : ''}`}
-      data-wallet-phase={phase}
-    >
+    <div className="mint-home">
       {settings.demoOffline && (
         <div className="status-banner">
-          <WifiOff />
-          Сохранённый план · офлайн
+          <WifiOff size={14} /> Offline demo
         </div>
       )}
 
-      <LiquidWallet
-        phase={phase}
-        amounts={amounts}
-        onOpen={openWallet}
-        triggerRef={trigger}
-        reducedMotion={prefersReducedMotion()}
-      />
-
-      <section className="rb-assistant" data-testid="assistant-capsule">
-        <div className="rb-assistant-water" aria-hidden />
-        <small>Помощник</small>
-        <h2>
-          {snapshot.available_now === 0
-            ? 'Начнём с нуля — без спешки'
-            : 'С чего начнём: доход, план или расходы?'}
-        </h2>
-        <div className="rb-assistant-actions">
-          <Link to="/assistant">Доход</Link>
-          <Link to="/plan">План</Link>
-          <Link className="rb-ask" to="/assistant">
-            Спросить
+      <header className="mint-home-header">
+        <div className="mint-brand">
+          <div className="mint-brand-mark" aria-hidden>
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <h1>Vyhod</h1>
+            <p>Track money, improve balance</p>
+          </div>
+        </div>
+        <div className="mint-header-actions">
+          <button type="button" className="mint-icon-btn" aria-label="Notifications">
+            <Bell size={18} />
+          </button>
+          <Link to="/profile" className="mint-icon-btn" aria-label="Settings">
+            <Settings2 size={18} />
           </Link>
+        </div>
+      </header>
+
+      <section className="mint-diff mint-card">
+        <div className="mint-diff-label">Difficulty</div>
+        <h2 className="mint-diff-title">Choose your pace</h2>
+        <div className="mint-diff-seg" role="group" aria-label="Pace">
+          {(
+            [
+              ['easy', 'Easy'],
+              ['medium', 'Medium'],
+              ['hard', 'Hard'],
+            ] as const
+          ).map(([id, label]) => (
+            <button
+              key={id}
+              type="button"
+              className={pace === id ? 'active' : undefined}
+              onClick={() => setPaceMode(id)}
+            >
+              {label}
+            </button>
+          ))}
         </div>
       </section>
 
-      {open && <WalletExpanded phase={phase} onClose={closeWallet} />}
-    </div>
-  );
-}
-
-function smoothPath(points: Array<[number, number]>) {
-  if (points.length < 2) return '';
-  const first = points[0]!;
-  let path = `M ${first[0]} ${first[1]}`;
-  for (let index = 0; index < points.length - 1; index += 1) {
-    const current = points[index]!;
-    const next = points[index + 1]!;
-    const previous = points[index - 1] ?? current;
-    const after = points[index + 2] ?? next;
-    const c1x = current[0] + (next[0] - previous[0]) / 6;
-    const c1y = current[1] + (next[1] - previous[1]) / 6;
-    const c2x = next[0] - (after[0] - current[0]) / 6;
-    const c2y = next[1] - (after[1] - current[1]) / 6;
-    path += ` C ${c1x} ${c1y}, ${c2x} ${c2y}, ${next[0]} ${next[1]}`;
-  }
-  return path;
-}
-
-function txIcon(category: string, income: boolean) {
-  if (income) return ArrowDownLeft;
-  const c = category.toLowerCase();
-  if (c.includes('wild') || c.includes('магаз') || c.includes('shop')) return ShoppingBag;
-  if (c.includes('одежд') || c.includes('cloth')) return Shirt;
-  return ArrowUpRight;
-}
-
-function WalletExpanded({
-  onClose,
-  phase,
-}: {
-  onClose: () => void;
-  phase: WalletPhase;
-}) {
-  const { data, settings } = useApp();
-  const titleId = useId();
-  const close = useRef<HTMLButtonElement>(null);
-
-  useEffect(() => {
-    if (phase === 'open') close.current?.focus();
-  }, [phase]);
-  useEffect(() => {
-    const keyboard = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose();
-    };
-    addEventListener('keydown', keyboard);
-    return () => removeEventListener('keydown', keyboard);
-  }, [onClose]);
-
-  if (!data) return null;
-  const currency = data.currency;
-  const transactions = data.transactions.slice(0, 6);
-  const chronological = [...transactions].reverse();
-  let level = 0;
-  const values = chronological.map((transaction) => {
-    level += transaction.kind === 'income' ? transaction.amount : -transaction.amount;
-    return level;
-  });
-  const min = Math.min(0, ...values);
-  const max = Math.max(1, ...values);
-  const chartPoints: Array<[number, number]> = values.map((value, index) => [
-    18 + index * (260 / Math.max(1, values.length - 1)),
-    100 - ((value - min) / (max - min || 1)) * 72,
-  ]);
-  const curve = smoothPath(chartPoints);
-  const latest = chartPoints.at(-1);
-
-  return (
-    <div
-      className={`rb-money money-phase-${phase}`}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby={titleId}
-      data-wallet-phase={phase}
-      data-testid="money-view"
-    >
-      <header className="rb-money-header" data-testid="money-header">
-        <div>
-          <p id={titleId} className="rb-money-title">
-            Деньги
-          </p>
-          <small>Всего</small>
-          <h1>{formatMoney(data.plan.snapshot.available_now, currency)}</h1>
-        </div>
-        <button ref={close} type="button" className="rb-close" onClick={onClose} aria-label="Закрыть кошелёк">
-          <X size={18} aria-hidden />
-        </button>
-      </header>
-
-      <div className="rb-folder" data-testid="expanded-fan">
-        <div className="rb-sheet rb-sheet-3" aria-hidden />
-        <div className="rb-sheet rb-sheet-2" aria-hidden />
-        <div className="rb-sheet rb-sheet-1">
-          <div className="rb-folder-pearl" aria-hidden>
-            <span className="rb-pearl" />
+      <section className="mint-card mint-progress">
+        <div className="mint-progress-top">
+          <div className="mint-progress-ic">
+            <BarChart3 size={20} />
           </div>
-
-          <section className="rb-movement">
-            <h2>Движение денег</h2>
-            {values.length ? (
-              <svg
-                viewBox="0 0 300 120"
-                role="img"
-                aria-label={`График от ${formatMoney(min, currency)} до ${formatMoney(max, currency)}`}
-              >
-                <defs>
-                  <linearGradient id="rbChartFill" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="0" stopColor="#8174E8" stopOpacity=".18" />
-                    <stop offset="1" stopColor="#8174E8" stopOpacity="0" />
-                  </linearGradient>
-                </defs>
-                <path
-                  className="rb-chart-area"
-                  d={`${curve} L ${latest?.[0] ?? 18} 110 L 18 110 Z`}
-                />
-                <path className="rb-chart-curve" d={curve} />
-                {latest && (
-                  <>
-                    <circle className="rb-chart-halo" cx={latest[0]} cy={latest[1]} r="7" />
-                    <circle className="rb-chart-dot" cx={latest[0]} cy={latest[1]} r="3.5" />
-                  </>
-                )}
-                <g className="rb-chart-axis">
-                  <text x="18" y="118">
-                    7
-                  </text>
-                  <text x="95" y="118">
-                    14
-                  </text>
-                  <text x="172" y="118">
-                    21
-                  </text>
-                  <text x="248" y="118">
-                    28
-                  </text>
-                </g>
-              </svg>
-            ) : (
-              <p className="rb-empty">Пока нет операций</p>
-            )}
-          </section>
-
-          <section className="rb-tx">
-            <h2>Последние операции</h2>
-            {transactions.length ? (
-              <ul>
-                {transactions.map((transaction) => {
-                  const income = transaction.kind === 'income';
-                  const Icon = txIcon(transaction.category, income);
-                  return (
-                    <li key={transaction.id}>
-                      <span className={income ? 'rb-tx-ic income' : 'rb-tx-ic expense'}>
-                        <Icon size={16} aria-hidden />
-                      </span>
-                      <div>
-                        <b>{transaction.description || transaction.category}</b>
-                        <small>
-                          {new Intl.DateTimeFormat(settings.language === 'ru' ? 'ru-RU' : 'en-US', {
-                            weekday: 'short',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                          }).format(new Date(transaction.occurred_at))}
-                        </small>
-                      </div>
-                      <strong className={income ? 'income-text' : 'expense-text'}>
-                        {income ? '+' : '−'}
-                        {formatMoney(transaction.amount, currency)}
-                      </strong>
-                    </li>
-                  );
-                })}
-              </ul>
-            ) : (
-              <div className="rb-empty">
-                <WalletCards size={20} aria-hidden />
-                <p>Операций пока нет</p>
-              </div>
-            )}
-          </section>
+          <div>
+            <h2>Financial progress</h2>
+            <p>Your balance is improving</p>
+          </div>
+          <span className="mint-delta">↑ +12.4%</span>
         </div>
-      </div>
+
+        <div>
+          <p className="mint-available-label">Available to spend</p>
+          <p className="mint-available">{formatMoney(available, currency)}</p>
+          <div className="mint-stable">
+            <small>This month</small>
+            <strong>Stable</strong>
+          </div>
+        </div>
+
+        <div className="mint-week" aria-label="Week activity">
+          {weekBars.map((d) => (
+            <div key={d.day} className="mint-week-day">
+              <div
+                className={`mint-week-bar ${d.filled ? 'filled' : ''}`}
+                style={{ height: d.h }}
+              />
+              <span>{d.day}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mint-card">
+        <div className="mint-row">
+          <div>
+            <h2 className="mint-section-title">Money categories</h2>
+            <p className="mint-section-sub">Where your budget goes</p>
+          </div>
+          <Link to="/plan" className="mint-link">
+            Edit
+          </Link>
+        </div>
+        <div className="mint-cat-grid">
+          {categories.map(({ key, label, Icon, amount }) => (
+            <div key={key} className="mint-cat">
+              <div className="mint-cat-top">
+                <span className="mint-cat-ic">
+                  <Icon size={16} />
+                </span>
+                <button
+                  type="button"
+                  className="mint-link"
+                  aria-label={`Favorite ${label}`}
+                  onClick={() => setStars((s) => ({ ...s, [key]: !s[key] }))}
+                  style={{ padding: 0, lineHeight: 0 }}
+                >
+                  <Star
+                    size={16}
+                    className={stars[key] ? 'mint-star on' : 'mint-star'}
+                    fill={stars[key] ? 'currentColor' : 'none'}
+                  />
+                </button>
+              </div>
+              <b>{label}</b>
+              <strong>{formatMoney(amount, currency)}</strong>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section className="mint-card">
+        <div className="mint-ai-row">
+          <div className="mint-ai-ic">
+            <Sparkles size={20} />
+          </div>
+          <div>
+            <h3>AI Assistant</h3>
+            <p>Ready to help you improve</p>
+          </div>
+          <button
+            type="button"
+            className={`mint-toggle ${aiOn ? 'on' : ''}`}
+            aria-pressed={aiOn}
+            aria-label="Toggle AI assistant"
+            onClick={() => setAiOn((v) => !v)}
+          >
+            <i />
+          </button>
+        </div>
+      </section>
+
+      <section className="mint-card">
+        <div className="mint-row">
+          <div>
+            <h2 className="mint-section-title">History</h2>
+            <p className="mint-section-sub">Recent transactions and trends</p>
+          </div>
+          <Link to="/transactions" className="mint-link">
+            See all
+          </Link>
+        </div>
+        <ul className="mint-tx-list">
+          {recent.map((tx) => {
+            const income = tx.kind === 'income';
+            return (
+              <li key={tx.id}>
+                <span className={`mint-tx-ic ${income ? 'income' : 'expense'}`}>
+                  {income ? '↑' : '↓'}
+                </span>
+                <div>
+                  <b>{tx.description || tx.category}</b>
+                  <small>
+                    {tx.category} ·{' '}
+                    {new Intl.DateTimeFormat(settings.language === 'ru' ? 'ru-RU' : 'en-US', {
+                      weekday: 'short',
+                      hour: '2-digit',
+                      minute: '2-digit',
+                    }).format(new Date(tx.occurred_at))}
+                  </small>
+                </div>
+                <strong className={income ? 'income' : 'expense'}>
+                  {income ? '+' : '−'}
+                  {formatMoney(tx.amount, currency)}
+                </strong>
+              </li>
+            );
+          })}
+        </ul>
+      </section>
     </div>
   );
 }

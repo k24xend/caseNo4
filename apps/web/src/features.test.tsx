@@ -12,6 +12,7 @@ describe('Today', () => {
         </AppProvider>
       </MemoryRouter>,
     );
-    expect(await screen.findByText(/Безопасно сегодня/)).toBeInTheDocument();
+    expect(await screen.findByText(/Available to spend/i)).toBeInTheDocument();
+    expect(await screen.findByText(/Vyhod/i)).toBeInTheDocument();
   });
 });

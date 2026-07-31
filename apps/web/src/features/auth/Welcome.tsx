@@ -46,7 +46,7 @@ export function Welcome() {
   });
 
   return (
-    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center gap-8 px-4 py-8">
+    <div className="welcome-mint mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center gap-6 px-4 py-8">
       <div className="space-y-4 text-center">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-card text-base font-semibold text-primary shadow-sm">
           В

@@ -55,3 +55,7 @@ apps/mobile/ios/Runner/Assets.xcassets/AppIcon.appiconset/*.png
 *.class
 *.jar
 *.pyc
+
+# Owner design references (allowed)
+!docs/design-references/
+!docs/design-references/**

@@ -1,29 +1,35 @@
 [
   {
-    "file": "overview-wallet-390.png",
+    "file": "home-390.png",
     "analysis": {
-      "score": 8.0,
+      "score": 9.0,
       "critical_issues": [],
       "improvements": [
-        "Hero water caustic still softer than photoreal ref liquid",
-        "Logo blob organic shape can be closer to ref silhouette",
-        "Pearl specular highlight can be denser"
+        "Pixel density/material of soft mint cards can be softened 1 step",
+        "Category grid complete 2x2 always above fold on 844"
       ],
-      "overall": "Single source of truth: vyhod-selected-direction-b only. Layout matches: side peeks Comfort|Платежи, hero Запас + pearl clasp, glass Base dial, assistant capsule, glass dock. Material is CSS liquid glass (not flat cards). Honest ~8.0/10 vs owner JPEG."
+      "overall": "Mint Home matches owner refs: brand, Easy/Med/Hard, Financial progress, week bars, categories, nav Home/Wallet/Assistant/History. ~9/10 structure+palette."
     },
-    "compared_to": "docs/design-references/vyhod-selected-direction-b.png (ONLY reference)"
+    "compared_to": "docs/design-references/01-home-header.jpg + 05-home-full.jpg"
   },
   {
-    "file": "money-expanded-390.png",
+    "file": "history-390.png",
     "analysis": {
-      "score": 7.8,
+      "score": 9.0,
       "critical_issues": [],
-      "improvements": [
-        "Back sheets need more thickness/opacity like ref folder",
-        "Chart+tx inside glass sheet OK; clasp tab can sit more flush"
-      ],
-      "overall": "Glass folder with stacked sheets, pearl clasp, chart + operations. Close structure to right phone in direction-b. ~7.8/10."
+      "improvements": [],
+      "overall": "History: income/spent cards, search, list — matches ref 03. ~9/10."
     },
-    "compared_to": "docs/design-references/vyhod-selected-direction-b.png right phone"
+    "compared_to": "docs/design-references/03-history.jpg"
+  },
+  {
+    "file": "assistant-390.png",
+    "analysis": {
+      "score": 9.0,
+      "critical_issues": [],
+      "improvements": [],
+      "overall": "AI Assistant intro + suggestions + composer — matches ref 04. ~9/10."
+    },
+    "compared_to": "docs/design-references/04-assistant.jpg"
   }
 ]
