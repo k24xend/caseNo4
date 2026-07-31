@@ -125,35 +125,41 @@ function buildLabelTexture(
   if (!ctx) return null;
   ctx.clearRect(0, 0, W, H);
 
-  // Safe inset so rounded glass corners never clip glyphs
-  const padX = Math.round(W * 0.1);
-  const padY = Math.round(H * 0.12);
+  // Large safe inset — rounded plate corners + stack occlusion eat edges
+  const padX = Math.round(W * 0.14);
+  const padY = Math.round(H * 0.14);
   const contentW = W - padX * 2;
 
   // top specular
-  const g = ctx.createLinearGradient(0, 0, 0, H * 0.45);
-  g.addColorStop(0, 'rgba(255,255,255,0.26)');
-  g.addColorStop(0.5, 'rgba(255,255,255,0.05)');
+  const g = ctx.createLinearGradient(0, 0, 0, H * 0.4);
+  g.addColorStop(0, 'rgba(255,255,255,0.28)');
+  g.addColorStop(0.55, 'rgba(255,255,255,0.05)');
   g.addColorStop(1, 'rgba(255,255,255,0)');
   ctx.fillStyle = g;
-  ctx.fillRect(padX, padY * 0.4, contentW, H * 0.35);
+  ctx.fillRect(padX, padY * 0.35, contentW, H * 0.32);
 
-  ctx.fillStyle = 'rgba(26,24,48,0.62)';
-  ctx.font = `600 ${Math.round(H * 0.09)}px system-ui,-apple-system,BlinkMacSystemFont,sans-serif`;
-  ctx.fillText(title, padX, padY + H * 0.1);
+  /*
+   * Upper stack cards only show their TOP band (~30–35% of face).
+   * Title + amount MUST sit in the first ~28% of texture height.
+   */
+  const titleSize = Math.round(H * (kind === 'reserve' ? 0.075 : 0.1));
+  const amtSize = Math.round(H * (kind === 'reserve' ? 0.195 : 0.155));
+  ctx.fillStyle = 'rgba(26,24,48,0.65)';
+  ctx.font = `600 ${titleSize}px system-ui,-apple-system,BlinkMacSystemFont,sans-serif`;
+  ctx.fillText(title, padX, padY + titleSize);
 
-  const big = kind === 'reserve';
   ctx.fillStyle = COL.ink;
-  ctx.font = `600 ${Math.round(H * (big ? 0.2 : 0.145))}px system-ui,-apple-system,BlinkMacSystemFont,sans-serif`;
+  ctx.font = `600 ${amtSize}px system-ui,-apple-system,BlinkMacSystemFont,sans-serif`;
   let amt = amount;
   while (ctx.measureText(amt).width > contentW && amt.length > 3) amt = `${amt.slice(0, -2)}…`;
-  ctx.fillText(amt, padX, padY + H * (big ? 0.38 : 0.34));
+  // tight under title so peeking cards still show the number
+  ctx.fillText(amt, padX, padY + titleSize + amtSize + H * 0.02);
 
   if (kind === 'reserve' && extra) {
-    const sy = padY + H * 0.48;
-    const sh = H * 0.12;
+    const sy = padY + H * 0.46;
+    const sh = H * 0.11;
     const sx = padX;
-    const sw = Math.min(contentW * 0.92, contentW);
+    const sw = contentW * 0.95;
     roundRect(ctx, sx, sy, sw, sh, sh / 2);
     const sg = ctx.createLinearGradient(sx, sy, sx + sw, sy);
     sg.addColorStop(0, 'rgba(129,116,232,0.32)');
@@ -163,25 +169,29 @@ function buildLabelTexture(
     ctx.strokeStyle = 'rgba(255,255,255,0.5)';
     ctx.lineWidth = 2;
     ctx.stroke();
-    ctx.fillStyle = 'rgba(35,32,64,0.88)';
-    ctx.font = `600 ${Math.round(H * 0.055)}px system-ui,-apple-system,sans-serif`;
-    ctx.fillText(extra.safeLine ?? '', sx + 20, sy + sh * 0.65);
+    ctx.fillStyle = 'rgba(35,32,64,0.9)';
+    ctx.font = `600 ${Math.round(H * 0.05)}px system-ui,-apple-system,sans-serif`;
+    let safe = extra.safeLine ?? '';
+    while (ctx.measureText(safe).width > sw - 36 && safe.length > 8) safe = `${safe.slice(0, -2)}…`;
+    ctx.fillText(safe, sx + 18, sy + sh * 0.66);
 
-    const lipY = H - padY;
+    const lipTop = H - padY - H * 0.16;
     ctx.strokeStyle = 'rgba(255,255,255,0.35)';
     ctx.beginPath();
-    ctx.moveTo(padX, lipY - H * 0.18);
-    ctx.lineTo(W - padX, lipY - H * 0.18);
+    ctx.moveTo(padX, lipTop);
+    ctx.lineTo(W - padX, lipTop);
     ctx.stroke();
     ctx.fillStyle = 'rgba(40,36,70,0.55)';
-    ctx.font = `500 ${Math.round(H * 0.05)}px system-ui,-apple-system,sans-serif`;
-    ctx.fillText('Всего', padX, lipY - H * 0.1);
-    ctx.fillText('Платежи', W - padX - 200, lipY - H * 0.1);
+    ctx.font = `500 ${Math.round(H * 0.045)}px system-ui,-apple-system,sans-serif`;
+    ctx.fillText('Всего', padX, lipTop + H * 0.055);
+    const payLabel = 'Платежи';
+    const payLabelW = ctx.measureText(payLabel).width;
+    ctx.fillText(payLabel, W - padX - payLabelW, lipTop + H * 0.055);
     ctx.fillStyle = COL.ink;
-    ctx.font = `700 ${Math.round(H * 0.065)}px system-ui,-apple-system,sans-serif`;
-    ctx.fillText(extra.total ?? '', padX, lipY - H * 0.02);
+    ctx.font = `700 ${Math.round(H * 0.058)}px system-ui,-apple-system,sans-serif`;
+    ctx.fillText(extra.total ?? '', padX, lipTop + H * 0.12);
     const pay = extra.payments ?? '';
-    ctx.fillText(pay, W - padX - ctx.measureText(pay).width, lipY - H * 0.02);
+    ctx.fillText(pay, W - padX - ctx.measureText(pay).width, lipTop + H * 0.12);
   }
 
   const tex = new THREE.CanvasTexture(canvas);
@@ -428,20 +438,21 @@ function WalletScene({
    * CLOSED: three distinct cards with clear top bands (reference stack).
    * OPEN: gentle fan, rotateX ≤ 9°, rotateZ = 0.
    */
+  // Peek ~38% of upper cards so title+amount (packed at texture top) stay visible
   const layer1 = {
-    y: o.to((v) => 0.58 + v * 0.16),
-    z: o.to((v) => -0.32 - v * 0.18),
-    rx: o.to((v) => THREE.MathUtils.degToRad(-2 - v * 6)),
+    y: o.to((v) => 0.62 + v * 0.14),
+    z: o.to((v) => -0.34 - v * 0.16),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-1.5 - v * 5.5)),
   };
   const layer2 = {
-    y: o.to((v) => 0.12 + v * 0.06),
-    z: o.to((v) => -0.14 - v * 0.09),
-    rx: o.to((v) => THREE.MathUtils.degToRad(-1 - v * 3.5)),
+    y: o.to((v) => 0.14 + v * 0.05),
+    z: o.to((v) => -0.15 - v * 0.08),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-0.8 - v * 3)),
   };
   const layer3 = {
-    y: o.to((v) => -0.36 - v * 0.02),
-    z: o.to((v) => 0.08 + v * 0.04),
-    rx: o.to((v) => THREE.MathUtils.degToRad(-v * 0.8)),
+    y: o.to((v) => -0.38 - v * 0.015),
+    z: o.to((v) => 0.1 + v * 0.035),
+    rx: o.to((v) => THREE.MathUtils.degToRad(-v * 0.6)),
   };
 
   // rear denser so three silhouettes don't melt
