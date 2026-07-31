@@ -10,7 +10,8 @@ describe('settings migration', () => {
       scenario: 'normal',
       entered: true,
     });
-    expect(v.version).toBe(3);
+    expect(v.version).toBe(4);
+    expect(v.colorScheme).toBe('mint');
     expect(v.resources?.phone).toBe(true);
     expect(v.guidanceMode).toBe('base');
     expect(v.advice.length).toBeGreaterThan(0);
