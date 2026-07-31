@@ -1,0 +1,93 @@
+name: Vision UI Audit
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'apps/web/**'
+      - '.github/workflows/vision-ui-audit.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: vision-ui-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  vision-audit:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/web
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: apps/web/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Build
+        run: npm run build
+
+      - name: Start preview
+        run: |
+          npm run preview -- --host 127.0.0.1 --port 4173 &
+          echo $! > /tmp/vyhod-preview.pid
+          # wait until HTTP responds
+          for i in $(seq 1 40); do
+            if curl -sf http://127.0.0.1:4173/ >/dev/null; then
+              echo "preview ready"
+              exit 0
+            fi
+            sleep 1
+          done
+          echo "preview failed to start"
+          exit 1
+
+      - name: Capture screenshots
+        env:
+          BASE_URL: http://127.0.0.1:4173
+        run: npm run capture:screens
+
+      - name: Run Vision Audit (Claude, optional)
+        id: vision
+        continue-on-error: true
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          VISION_MIN_SCORE: '7'
+          VISION_REQUIRE_KEY: 'false'
+        run: npm run vision:audit
+
+      - name: Upload report & screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vision-report
+          path: |
+            apps/web/vision-report.json
+            apps/web/vision-report.anthropic.json
+            apps/web/screenshots/
+          if-no-files-found: warn
+          retention-days: 14
+
+      - name: Fail when Claude audit scores below threshold
+        if: steps.vision.outcome == 'failure'
+        run: |
+          echo "::error::Vision audit failed (score below VISION_MIN_SCORE or Claude error)."
+          echo "Download the vision-report artifact for details."
+          exit 1
+
+      - name: Stop preview
+        if: always()
+        run: |
+          if [ -f /tmp/vyhod-preview.pid ]; then
+            kill "$(cat /tmp/vyhod-preview.pid)" 2>/dev/null || true
+          fi

@@ -30,9 +30,20 @@ async function enterDemo(page) {
   }
 }
 
+async function shot(page, file, fullPage = false) {
+  // CI-safe: avoid fullPage hangs on infinite layout
+  await page.screenshot({
+    path: file,
+    fullPage,
+    timeout: 15000,
+    animations: 'disabled',
+  });
+  console.log('saved', file);
+}
+
 async function capture() {
   fs.mkdirSync(OUT, { recursive: true });
-  const browser = await chromium.launch();
+  const browser = await chromium.launch({ headless: true });
   // iPhone-like viewport (wallet QA)
   const context = await browser.newContext({
     ...devices['iPhone 13'],
@@ -40,40 +51,37 @@ async function capture() {
     deviceScaleFactor: 2,
   });
   const page = await context.newPage();
+  page.setDefaultTimeout(20000);
 
   await enterDemo(page);
 
   for (const p of pages) {
-    await page.goto(`${BASE}${p.path}`, { waitUntil: 'networkidle' });
-    await page.waitForTimeout(800);
-    const file = path.join(OUT, `${p.name}-390.png`);
-    await page.screenshot({ path: file, fullPage: false });
-    console.log('saved', file);
+    await page.goto(`${BASE}${p.path}`, { waitUntil: 'domcontentloaded' });
+    await page.waitForTimeout(1000);
+    await shot(page, path.join(OUT, `${p.name}-390.png`), false);
   }
 
   // Wallet expanded (Money)
-  await page.goto(`${BASE}/today`, { waitUntil: 'networkidle' });
-  await page.waitForTimeout(600);
+  await page.goto(`${BASE}/today`, { waitUntil: 'domcontentloaded' });
+  await page.waitForTimeout(800);
   const openBtn = page.getByRole('button', { name: /Открыть кошелёк/i });
   if (await openBtn.isVisible().catch(() => false)) {
     await openBtn.click();
     await page.getByRole('dialog', { name: /Деньги/i }).waitFor({ timeout: 10000 });
-    await page.waitForTimeout(900);
-    const moneyFile = path.join(OUT, 'money-expanded-390.png');
-    await page.screenshot({ path: moneyFile, fullPage: false });
-    console.log('saved', moneyFile);
+    await page.waitForTimeout(1000);
+    await shot(page, path.join(OUT, 'money-expanded-390.png'), false);
   }
 
-  // Desktop wide shot of overview
   await context.close();
+
+  // Desktop wide shot of overview (viewport only — avoids fullPage timeout)
   const desk = await browser.newContext({ viewport: { width: 1440, height: 900 } });
   const dpage = await desk.newPage();
+  dpage.setDefaultTimeout(20000);
   await enterDemo(dpage);
-  await dpage.goto(`${BASE}/today`, { waitUntil: 'networkidle' });
-  await dpage.waitForTimeout(800);
-  const deskFile = path.join(OUT, 'overview-desktop-1440.png');
-  await dpage.screenshot({ path: deskFile, fullPage: true });
-  console.log('saved', deskFile);
+  await dpage.goto(`${BASE}/today`, { waitUntil: 'domcontentloaded' });
+  await dpage.waitForTimeout(900);
+  await shot(dpage, path.join(OUT, 'overview-desktop-1440.png'), false);
 
   await desk.close();
   await browser.close();
