@@ -5,7 +5,7 @@ import { RouterProvider } from 'react-router-dom';
 import { registerSW } from 'virtual:pwa-register';
 import { AppProvider } from './app/AppContext';
 import { router } from './app/router';
-import './design-system/styles.css';
+import './index.css';
 const updateSW = registerSW({
   onNeedRefresh() {
     if (confirm('Доступна новая версия. Обновить сейчас?')) void updateSW(true);

@@ -1,0 +1,71 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 240 20% 98%;
+    --foreground: 240 10% 10%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 10%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 10%;
+    --primary: 250 55% 55%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 240 12% 95%;
+    --secondary-foreground: 240 10% 20%;
+    --muted: 240 10% 96%;
+    --muted-foreground: 240 5% 42%;
+    --accent: 240 12% 94%;
+    --accent-foreground: 240 10% 16%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 10% 90%;
+    --input: 240 10% 90%;
+    --ring: 250 55% 55%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 240 12% 8%;
+    --foreground: 240 10% 96%;
+    --card: 240 12% 11%;
+    --card-foreground: 240 10% 96%;
+    --popover: 240 12% 11%;
+    --popover-foreground: 240 10% 96%;
+    --primary: 250 60% 68%;
+    --primary-foreground: 240 12% 8%;
+    --secondary: 240 10% 16%;
+    --secondary-foreground: 240 10% 96%;
+    --muted: 240 10% 16%;
+    --muted-foreground: 240 6% 64%;
+    --accent: 240 10% 18%;
+    --accent-foreground: 240 10% 96%;
+    --destructive: 0 62% 50%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 240 10% 18%;
+    --input: 240 10% 18%;
+    --ring: 250 60% 68%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html,
+  body,
+  #root {
+    @apply min-h-full bg-background text-foreground antialiased;
+  }
+
+  body {
+    @apply min-w-[320px] overflow-x-hidden;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    @apply font-sans;
+  }
+}

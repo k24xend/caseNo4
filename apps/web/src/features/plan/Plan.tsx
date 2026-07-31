@@ -3,8 +3,11 @@ import { Link } from 'react-router-dom';
 import { useApp } from '../../app/AppContext';
 import { ModeDial } from '../../components/ModeDial';
 import { Page } from '../../components/Page';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import type { FinancialGoal } from '../../domain/models';
 import { formatMoney } from '../../domain/money';
+import { cn } from '../../lib/utils';
 
 const goals: Array<[FinancialGoal, string, string]> = [
   ['stability', 'Стабильность', 'Подушка и спокойный ритм'],
@@ -15,60 +18,79 @@ const goals: Array<[FinancialGoal, string, string]> = [
   ['capital', 'Капитал', 'Резерв и инвестиции'],
   ['custom', 'Своя комбинация', 'Собрать личный путь'],
 ];
+
 export function Plan() {
   const { data, settings, patch } = useApp();
   if (!data)
     return (
       <Page title="План">
-        <div className="empty-state">План загружается…</div>
+        <p className="text-sm text-muted-foreground">План загружается…</p>
       </Page>
     );
+
   const goal = goals.find((x) => x[0] === settings.primaryGoal)!;
-  const toggleSecondary = (id: FinancialGoal) => {
-    const exists = settings.secondaryGoals.includes(id);
-    const next = exists
-      ? settings.secondaryGoals.filter((x) => x !== id)
-      : [...settings.secondaryGoals, id].slice(-2);
-    void patch({ secondaryGoals: next });
-  };
+
   return (
     <Page title="План" sub="Куда вы хотите прийти с деньгами?">
-      <section className="plan-focus liquid-panel">
-        <span className="eyebrow">Главная цель</span>
-        <h2>{goal[1]}</h2>
-        <p>{goal[2]}. Цифры плана рассчитываются детерминированно.</p>
-        <details>
-          <summary>
-            Изменить цель <ChevronDown />
-          </summary>
-          <div className="goal-grid">
-            {goals.map(([id, name, sub]) => (
-              <button
-                className={settings.primaryGoal === id ? 'active' : ''}
-                onClick={() => void patch({ primaryGoal: id })}
-                key={id}
-              >
-                <b>{name}</b>
-                <small>{sub}</small>
-                {settings.primaryGoal === id && <Check />}
-              </button>
-            ))}
+      <Card>
+        <CardHeader>
+          <p className="text-sm font-medium text-primary">Главная цель</p>
+          <CardTitle>{goal[1]}</CardTitle>
+          <CardDescription>
+            {goal[2]}. Цифры плана рассчитываются детерминированно.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <details className="group">
+            <summary className="flex cursor-pointer list-none items-center gap-2 text-sm font-medium text-primary">
+              Изменить цель
+              <ChevronDown className="h-4 w-4 transition group-open:rotate-180" />
+            </summary>
+            <div className="mt-4 space-y-2">
+              {goals.map(([id, name, sub]) => (
+                <button
+                  key={id}
+                  type="button"
+                  onClick={() => void patch({ primaryGoal: id })}
+                  className={cn(
+                    'flex w-full items-start justify-between gap-3 rounded-lg border border-border px-4 py-3 text-left transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    settings.primaryGoal === id && 'border-primary bg-secondary',
+                  )}
+                >
+                  <span>
+                    <b className="block text-sm font-semibold">{name}</b>
+                    <small className="text-sm text-muted-foreground">{sub}</small>
+                  </span>
+                  {settings.primaryGoal === id && <Check className="mt-1 h-4 w-4 text-primary" />}
+                </button>
+              ))}
+            </div>
+          </details>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader className="flex-row items-center justify-between space-y-0">
+          <div className="space-y-2">
+            <p className="text-sm text-muted-foreground">Темп сопровождения</p>
+            <CardTitle>
+              {settings.guidanceMode === 'base' ? 'Base · устойчиво' : 'Hard · интенсивно'}
+            </CardTitle>
+            <CardDescription>Режим меняет приоритет и тон советов, но не финансовые факты.</CardDescription>
           </div>
-        </details>
-      </section>
-      <section className="mode-plan">
-        <div>
-          <small>Темп сопровождения</small>
-          <h2>{settings.guidanceMode === 'base' ? 'Base · устойчиво' : 'Hard · интенсивно'}</h2>
-          <p>Режим меняет приоритет и тон советов, но не финансовые факты.</p>
-        </div>
-        <ModeDial expanded={false} />
-      </section>
+          <ModeDial expanded={false} />
+        </CardHeader>
+      </Card>
+
       {settings.guidanceMode === 'hard' && (
-        <section className="risk-section">
-          <h2>Допустимый риск</h2>
-          <p>Обязательные деньги и комфорт остаются защищены.</p>
-          <div>
+        <Card className="space-y-4 p-6">
+          <div className="space-y-2">
+            <h2 className="text-base font-semibold">Допустимый риск</h2>
+            <p className="text-sm text-muted-foreground">
+              Обязательные деньги и комфорт остаются защищены.
+            </p>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
             {(
               [
                 ['moderate', 'Умеренный'],
@@ -76,81 +98,72 @@ export function Plan() {
                 ['extreme', 'Предельный'],
               ] as const
             ).map(([id, label]) => (
-              <button
-                className={settings.hardRiskLevel === id ? 'active' : ''}
-                onClick={() => void patch({ hardRiskLevel: id })}
+              <Button
                 key={id}
+                type="button"
+                size="sm"
+                variant={settings.hardRiskLevel === id ? 'default' : 'outline'}
+                onClick={() => void patch({ hardRiskLevel: id })}
               >
                 {label}
-              </button>
+              </Button>
             ))}
           </div>
           {settings.hardRiskLevel === 'extreme' && (
-            <small>
-              <Shield />
+            <p className="flex items-start gap-2 text-sm text-muted-foreground">
+              <Shield className="mt-0.5 h-4 w-4 shrink-0" />
               Проверьте максимальную потерю и путь назад перед подтверждением.
-            </small>
+            </p>
           )}
-        </section>
+        </Card>
       )}
-      <section className="plan-numbers">
-        <div>
-          <small>Безопасно сегодня</small>
-          <strong>{formatMoney(data.plan.snapshot.safe_daily_amount, data.currency)}</strong>
-        </div>
-        <div>
-          <small>Свободный поток</small>
-          <strong>{formatMoney(data.plan.snapshot.monthly_free_cash_flow, data.currency)}</strong>
-        </div>
-      </section>
-      <section className="comfort-plan">
-        <span>Неприкосновенный комфорт</span>
-        <strong>{formatMoney(settings.comfortBudget, data.currency)}</strong>
-        <p>Уважается и в Base, и в Hard.</p>
-        <Link to="/profile">
-          Настроить <ArrowRight />
-        </Link>
-      </section>
-      <section className="what-if">
-        <span className="eyebrow">Что если</span>
-        <h2>Проверьте сценарий до решения</h2>
-        <div>
-          <Link to="/scenarios">
-            Уйду во фриланс <ArrowRight />
+
+      <div className="grid grid-cols-2 gap-3">
+        <Card className="p-4">
+          <p className="text-sm text-muted-foreground">Безопасно сегодня</p>
+          <p className="mt-2 text-base font-semibold tabular-nums">
+            {formatMoney(data.plan.snapshot.safe_daily_amount, data.currency)}
+          </p>
+        </Card>
+        <Card className="p-4">
+          <p className="text-sm text-muted-foreground">Свободный поток</p>
+          <p className="mt-2 text-base font-semibold tabular-nums">
+            {formatMoney(data.plan.snapshot.monthly_free_cash_flow, data.currency)}
+          </p>
+        </Card>
+      </div>
+
+      <Card className="p-6">
+        <p className="text-sm text-muted-foreground">Неприкосновенный комфорт</p>
+        <p className="mt-2 text-2xl font-semibold tabular-nums">
+          {formatMoney(settings.comfortBudget, data.currency)}
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Уважается и в Base, и в Hard.</p>
+        <Button asChild variant="link" className="mt-2 h-auto px-0">
+          <Link to="/profile">
+            Настроить <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link to="/scenarios">
-            Доход упадёт <ArrowRight />
+        </Button>
+      </Card>
+
+      <Card className="p-6">
+        <p className="text-sm font-medium text-primary">Что если</p>
+        <h2 className="mt-2 text-base font-semibold">Проверьте сценарий до решения</h2>
+        <div className="mt-4 divide-y divide-border">
+          <Link
+            to="/scenarios"
+            className="flex items-center justify-between py-3 text-sm font-medium hover:text-primary"
+          >
+            Уйду во фриланс <ArrowRight className="h-4 w-4" />
           </Link>
-          <Link to="/scenarios">
-            Увеличу платёж <ArrowRight />
+          <Link
+            to="/opportunities"
+            className="flex items-center justify-between py-3 text-sm font-medium hover:text-primary"
+          >
+            Возможности <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
-        <small>Сценарий не меняет реальные данные до подтверждения.</small>
-      </section>
-      <details className="secondary-goals">
-        <summary>
-          Дополнительные цели · {settings.secondaryGoals.length}/2 <ChevronDown />
-        </summary>
-        {goals
-          .filter((x) => x[0] !== settings.primaryGoal)
-          .map(([id, name]) => (
-            <label key={id}>
-              <input
-                type="checkbox"
-                checked={settings.secondaryGoals.includes(id)}
-                onChange={() => toggleSecondary(id)}
-              />
-              {name}
-            </label>
-          ))}
-      </details>
-      <Link className="row-link" to="/debts">
-        <span>
-          <b>Долги и стратегия</b>
-          <small>Avalanche, snowball и свой порядок</small>
-        </span>
-        <ArrowRight />
-      </Link>
+      </Card>
     </Page>
   );
 }

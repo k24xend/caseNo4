@@ -1,5 +1,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { useApp } from '../app/AppContext';
+import { cn } from '../lib/utils';
+import { Button } from './ui/button';
+import { Card } from './ui/card';
 
 type HardRiskLevel = 'moderate' | 'high' | 'extreme';
 
@@ -25,7 +28,7 @@ export function ModeDial({ expanded = false }: { expanded?: boolean }) {
 
   const choose = (mode: 'base' | 'hard') => {
     void patch({ guidanceMode: mode });
-    navigator.vibrate?.(10);
+    navigator.vibrate?.(8);
     if (mode === 'base') setOpen(false);
   };
 
@@ -35,62 +38,60 @@ export function ModeDial({ expanded = false }: { expanded?: boolean }) {
     setOpen(false);
   };
 
-  const toggle = () => {
-    setOpen((value) => !value);
-    navigator.vibrate?.(6);
-  };
-
   return (
-    <div
-      className={`mode-dial ${open ? 'open' : ''} mode-${settings.guidanceMode}`}
-      ref={ref}
-      data-mode={settings.guidanceMode}
-    >
-      <div className="dial-orbit" aria-hidden={!open}>
-        <button
-          type="button"
-          tabIndex={open ? 0 : -1}
-          className={`dial-arc base ${settings.guidanceMode === 'base' ? 'active' : ''}`}
-          onClick={() => choose('base')}
-        >
-          <span>Base</span>
-          <small>бережно</small>
-        </button>
-        <button
-          type="button"
-          tabIndex={open ? 0 : -1}
-          className={`dial-arc hard ${settings.guidanceMode === 'hard' ? 'active' : ''}`}
-          onClick={() => choose('hard')}
-        >
-          <span>Hard</span>
-          <small>интенсивно</small>
-        </button>
-      </div>
-
-      <button
+    <div className="relative" ref={ref}>
+      <Button
         type="button"
-        className="dial-trigger"
+        variant="outline"
+        size="sm"
+        className="min-w-16 rounded-full"
         aria-label={`Режим ${settings.guidanceMode}. Изменить`}
         aria-expanded={open}
-        onClick={toggle}
+        onClick={() => {
+          setOpen((v) => !v);
+          navigator.vibrate?.(6);
+        }}
       >
-        <span className="dial-refract" aria-hidden="true" />
-        <span>{settings.guidanceMode === 'base' ? 'Base' : 'Hard'}</span>
-      </button>
+        {settings.guidanceMode === 'base' ? 'Base' : 'Hard'}
+      </Button>
 
-      {open && settings.guidanceMode === 'hard' && (
-        <div className="dial-risk" role="group" aria-label="Допустимый риск">
-          {riskOptions.map(([id, label]) => (
-            <button
+      {open && (
+        <Card className="absolute right-0 top-12 z-50 w-56 space-y-2 p-3 shadow-md">
+          <div className="grid grid-cols-2 gap-2">
+            <Button
               type="button"
-              key={id}
-              className={settings.hardRiskLevel === id ? 'active' : ''}
-              onClick={() => chooseRisk(id)}
+              size="sm"
+              variant={settings.guidanceMode === 'base' ? 'default' : 'ghost'}
+              onClick={() => choose('base')}
             >
-              {label}
-            </button>
-          ))}
-        </div>
+              Base
+            </Button>
+            <Button
+              type="button"
+              size="sm"
+              variant={settings.guidanceMode === 'hard' ? 'default' : 'ghost'}
+              onClick={() => choose('hard')}
+            >
+              Hard
+            </Button>
+          </div>
+          {settings.guidanceMode === 'hard' && (
+            <div className="space-y-2 border-t border-border pt-3" role="group" aria-label="Допустимый риск">
+              {riskOptions.map(([id, label]) => (
+                <Button
+                  key={id}
+                  type="button"
+                  size="sm"
+                  variant={settings.hardRiskLevel === id ? 'secondary' : 'ghost'}
+                  className={cn('w-full justify-start')}
+                  onClick={() => chooseRisk(id)}
+                >
+                  {label}
+                </Button>
+              ))}
+            </div>
+          )}
+        </Card>
       )}
     </div>
   );

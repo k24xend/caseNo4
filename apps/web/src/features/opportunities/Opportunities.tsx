@@ -1,9 +1,12 @@
 import { useState } from 'react';
 import { Page } from '../../components/Page';
-import { Banner, Card } from '../../components/ui';
+import { Banner } from '../../components/ui';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
 import { useApp } from '../../app/AppContext';
 import { formatMoney } from '../../domain/money';
 import { assessPurchase } from '../../domain/financialEngine';
+
 type Idea = {
   id: string;
   title: string;
@@ -16,6 +19,7 @@ type Idea = {
   reason: string;
   step: string;
 };
+
 const ideas: Idea[] = [
   {
     id: 'sell',
@@ -114,6 +118,7 @@ const ideas: Idea[] = [
     step: 'Снимите один бесплатный пример без платного инструмента.',
   },
 ];
+
 export function Opportunities() {
   const { data, settings } = useApp();
   const [filter, setFilter] = useState<'fit' | 'free' | 'all'>('fit');
@@ -135,78 +140,102 @@ export function Opportunities() {
     )
     .sort((a, b) => b.score - a.score);
   const tool = assessPurchase(5500000, 3000000, 50, data.plan.snapshot.safe_to_spend);
+
   return (
     <Page title="Возможности" sub="Идеи по вашим ресурсам — без гарантии дохода">
-      <Card className="skill-card">
-        <p className="eyebrow">Ваши ресурсы</p>
-        <h2>
-          {r.hoursPerWeek} ч/нед. ·{' '}
-          {[r.phone && 'смартфон', r.computer && 'компьютер'].filter(Boolean).join(' · ') ||
-            'устройство не выбрано'}
-        </h2>
-        <p>Изменить ресурсы можно в профиле. Диапазоны — ориентир для демо, не обещание рынка.</p>
-        <div className="chips">
-          <button className={filter === 'fit' ? 'active' : ''} onClick={() => setFilter('fit')}>
-            Подходят
-          </button>
-          <button className={filter === 'free' ? 'active' : ''} onClick={() => setFilter('free')}>
-            Без вложений
-          </button>
-          <button className={filter === 'all' ? 'active' : ''} onClick={() => setFilter('all')}>
-            Все
-          </button>
-        </div>
+      <Card>
+        <CardHeader>
+          <p className="text-sm font-medium text-primary">Ваши ресурсы</p>
+          <CardTitle>
+            {r.hoursPerWeek} ч/нед. ·{' '}
+            {[r.phone && 'смартфон', r.computer && 'компьютер'].filter(Boolean).join(' · ') ||
+              'устройство не выбрано'}
+          </CardTitle>
+          <CardDescription>
+            Изменить ресурсы можно в профиле. Диапазоны — ориентир для демо, не обещание рынка.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-wrap gap-2">
+            {(
+              [
+                ['fit', 'Подходят'],
+                ['free', 'Без вложений'],
+                ['all', 'Все'],
+              ] as const
+            ).map(([id, label]) => (
+              <Button
+                key={id}
+                type="button"
+                size="sm"
+                variant={filter === id ? 'secondary' : 'outline'}
+                onClick={() => setFilter(id)}
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </CardContent>
       </Card>
-      <div className="opportunity-list">
+
+      <div className="space-y-3">
         {scored.map((i) => (
           <Card key={i.id}>
-            <div>
-              <div className="card-heading">
-                <h3>{i.title}</h3>
-                <span className="state exit">{i.score}/100</span>
-              </div>
-              <p>
-                <b>Почему:</b> {i.reason}
+            <CardHeader className="flex-row items-start justify-between space-y-0 gap-3">
+              <CardTitle className="text-base">{i.title}</CardTitle>
+              <span className="shrink-0 rounded-md bg-secondary px-2 py-1 text-sm font-medium text-secondary-foreground tabular-nums">
+                {i.score}/100
+              </span>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm leading-relaxed">
+                <b className="font-semibold">Почему:</b> {i.reason}
               </p>
-              <dl>
-                <div>
-                  <dt>Время</dt>
-                  <dd>{i.hours} ч/нед.</dd>
+              <dl className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <dt className="text-sm text-muted-foreground">Время</dt>
+                  <dd className="text-sm font-medium">{i.hours} ч/нед.</dd>
                 </div>
-                <div>
-                  <dt>Вложения</dt>
-                  <dd>{formatMoney(i.investment, data.currency)}</dd>
-                </div>
-                <div>
-                  <dt>Диапазон</dt>
-                  <dd>
-                    {formatMoney(i.range[0], data.currency)}–
-                    {formatMoney(i.range[1], data.currency)}
+                <div className="space-y-1">
+                  <dt className="text-sm text-muted-foreground">Вложения</dt>
+                  <dd className="text-sm font-medium tabular-nums">
+                    {formatMoney(i.investment, data.currency)}
                   </dd>
                 </div>
-                <div>
-                  <dt>Риск</dt>
-                  <dd>{i.risk}</dd>
+                <div className="space-y-1">
+                  <dt className="text-sm text-muted-foreground">Диапазон</dt>
+                  <dd className="text-sm font-medium tabular-nums">
+                    {formatMoney(i.range[0], data.currency)}–{formatMoney(i.range[1], data.currency)}
+                  </dd>
+                </div>
+                <div className="space-y-1">
+                  <dt className="text-sm text-muted-foreground">Риск</dt>
+                  <dd className="text-sm font-medium">{i.risk}</dd>
                 </div>
               </dl>
-              <p>
-                <b>Первый шаг:</b> {i.step}
+              <p className="text-sm leading-relaxed">
+                <b className="font-semibold">Первый шаг:</b> {i.step}
               </p>
-            </div>
+            </CardContent>
           </Card>
         ))}
       </div>
+
       <Card>
-        <h2>Проверка покупки ноутбука</h2>
-        <p>
-          Консервативный доход {formatMoney(tool.conservativeIncome, data.currency)}; окупаемость{' '}
-          {tool.paybackMonths ?? '—'} мес.
-        </p>
-        <Banner kind={tool.createsCashGap ? 'danger' : 'info'}>
-          {tool.createsCashGap
-            ? 'Покупка создаст кассовый разрыв. Не финансируйте её новым долгом.'
-            : 'Покупка укладывается в безопасную сумму, но доход не гарантирован.'}
-        </Banner>
+        <CardHeader>
+          <CardTitle>Проверка покупки ноутбука</CardTitle>
+          <CardDescription>
+            Консервативный доход {formatMoney(tool.conservativeIncome, data.currency)}; окупаемость{' '}
+            {tool.paybackMonths ?? '—'} мес.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Banner kind={tool.createsCashGap ? 'danger' : 'info'}>
+            {tool.createsCashGap
+              ? 'Покупка создаст кассовый разрыв. Не финансируйте её новым долгом.'
+              : 'Покупка укладывается в безопасную сумму, но доход не гарантирован.'}
+          </Banner>
+        </CardContent>
       </Card>
     </Page>
   );

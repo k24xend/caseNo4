@@ -1,11 +1,20 @@
 import { Pencil, Plus, Trash2 } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Card, Field } from '../../components/ui';
+import { Field } from '../../components/ui';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent } from '../../components/ui/card';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '../../components/ui/dialog';
 import type { Currency, Debt, DraftLine, OnboardingDraft } from '../../domain/models';
 import { formatMoney, moneyInput, newId, parseMoney } from '../../domain/money';
 import { getDraft, setDraft } from '../../persistence/db';
 import { useApp } from '../../app/AppContext';
+import { cn } from '../../lib/utils';
 
 const currencies: Currency[] = ['RUB', 'USD', 'EUR'];
 const strategies: Array<{ value: OnboardingDraft['strategy']; label: string }> = [
@@ -52,8 +61,8 @@ export function Onboarding() {
   useEffect(() => {
     void getDraft().then((saved) => saved && setLocal(saved));
   }, []);
-  const update = async (patch: Partial<OnboardingDraft>) => {
-    const next = { ...draft, ...patch };
+  const update = async (patchDraft: Partial<OnboardingDraft>) => {
+    const next = { ...draft, ...patchDraft };
     setLocal(next);
     await setDraft(next);
   };
@@ -74,26 +83,44 @@ export function Onboarding() {
     setAddingDebt(false);
   };
 
+  const progress = ((step + 1) / steps.length) * 100;
+
   return (
-    <div className="onboarding">
-      <header>
-        <span>
-          Шаг {step + 1} из {steps.length}
-        </span>
-        <progress value={step + 1} max={steps.length} />
-        <button
-          className="text-button"
-          onClick={async () => {
-            await repository.scenario('empty');
-            await patch({ entered: true });
-            nav('/today');
-          }}
+    <div className="mx-auto flex min-h-dvh w-full max-w-lg flex-col bg-background">
+      <header className="space-y-3 border-b border-border px-4 py-4">
+        <div className="flex items-center justify-between gap-3">
+          <span className="text-sm text-muted-foreground">
+            Шаг {step + 1} из {steps.length}
+          </span>
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            onClick={async () => {
+              await repository.scenario('empty');
+              await patch({ entered: true });
+              nav('/today');
+            }}
+          >
+            Пропустить
+          </Button>
+        </div>
+        <div
+          className="h-2 overflow-hidden rounded-full bg-muted"
+          role="progressbar"
+          aria-valuenow={step + 1}
+          aria-valuemin={1}
+          aria-valuemax={steps.length}
         >
-          Пропустить
-        </button>
+          <div
+            className="h-full rounded-full bg-primary transition-all"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
       </header>
-      <main>
-        <p className="eyebrow">{steps[step]}</p>
+
+      <main className="flex-1 space-y-6 overflow-auto px-4 py-6">
+        <p className="text-sm font-medium text-primary">{steps[step]}</p>
         {step === 0 && (
           <ChoiceStep
             title="На каком языке удобнее?"
@@ -106,21 +133,22 @@ export function Onboarding() {
           />
         )}
         {step === 1 && (
-          <>
-            <h1>Базовая валюта</h1>
-            <p>Разные валюты не смешиваются.</p>
-            <div className="choice">
+          <div className="space-y-4">
+            <h1 className="text-2xl font-semibold tracking-tight">Базовая валюта</h1>
+            <p className="text-sm text-muted-foreground">Разные валюты не смешиваются.</p>
+            <div className="grid grid-cols-3 gap-2">
               {currencies.map((currency) => (
-                <button
+                <Button
                   key={currency}
-                  className={draft.currency === currency ? 'active' : ''}
+                  type="button"
+                  variant={draft.currency === currency ? 'default' : 'outline'}
                   onClick={() => void update({ currency })}
                 >
                   {currency}
-                </button>
+                </Button>
               ))}
             </div>
-          </>
+          </div>
         )}
         {step === 2 && (
           <MoneyStep
@@ -170,32 +198,42 @@ export function Onboarding() {
           />
         )}
         {step === 7 && (
-          <>
-            <h1>Приоритет погашения</h1>
-            <div className="choice vertical">
+          <div className="space-y-4">
+            <h1 className="text-2xl font-semibold tracking-tight">Приоритет погашения</h1>
+            <div className="space-y-2">
               {strategies.map(({ value, label }) => (
                 <button
                   key={value}
-                  className={draft.strategy === value ? 'active' : ''}
+                  type="button"
+                  className={cn(
+                    'flex w-full items-center rounded-lg border border-border px-4 py-3 text-left text-sm font-medium transition-colors',
+                    'hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+                    draft.strategy === value && 'border-primary bg-secondary',
+                  )}
                   onClick={() => void update({ strategy: value })}
                 >
                   {label}
                 </button>
               ))}
             </div>
-          </>
+          </div>
         )}
         {step === 8 && <Summary draft={draft} />}
       </main>
-      <footer>
+
+      <footer className="flex gap-3 border-t border-border px-4 py-4">
         <Button
-          className="secondary"
+          type="button"
+          variant="outline"
+          className="flex-1"
           disabled={step === 0}
           onClick={() => setStep((value) => value - 1)}
         >
           Назад
         </Button>
         <Button
+          type="button"
+          className="flex-1"
           onClick={() =>
             step === steps.length - 1 ? nav('/diagnosis') : setStep((value) => value + 1)
           }
@@ -203,21 +241,31 @@ export function Onboarding() {
           {step === steps.length - 1 ? 'Собрать мой план' : 'Далее'}
         </Button>
       </footer>
-      {lineEditor && (
-        <div className="modal-wrap" role="dialog" aria-modal="true">
-          <div className="modal">
+
+      <Dialog open={!!lineEditor} onOpenChange={(open) => !open && setLineEditor(undefined)}>
+        <DialogContent>
+          {lineEditor && (
             <DraftLineForm
               kind={lineEditor.kind}
               item={lineEditor.item}
               onSave={(item) => saveLine(lineEditor.kind, item)}
               onClose={() => setLineEditor(undefined)}
             />
-          </div>
-        </div>
-      )}
-      {(addingDebt || debtEditor) && (
-        <div className="modal-wrap" role="dialog" aria-modal="true">
-          <div className="modal">
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <Dialog
+        open={addingDebt || !!debtEditor}
+        onOpenChange={(open) => {
+          if (!open) {
+            setAddingDebt(false);
+            setDebtEditor(undefined);
+          }
+        }}
+      >
+        <DialogContent>
+          {(addingDebt || debtEditor) && (
             <DebtDraftForm
               currency={draft.currency}
               item={debtEditor}
@@ -227,9 +275,9 @@ export function Onboarding() {
                 setDebtEditor(undefined);
               }}
             />
-          </div>
-        </div>
-      )}
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
@@ -246,22 +294,25 @@ function ChoiceStep({
   onSelect: (value: string) => void;
 }) {
   return (
-    <>
-      <h1>{title}</h1>
-      <div className="choice">
+    <div className="space-y-4">
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
         {values.map(([value, label]) => (
-          <button
+          <Button
             key={value}
-            className={selected === value ? 'active' : ''}
+            type="button"
+            variant={selected === value ? 'default' : 'outline'}
+            className="h-12"
             onClick={() => onSelect(value)}
           >
             {label}
-          </button>
+          </Button>
         ))}
       </div>
-    </>
+    </div>
   );
 }
+
 function MoneyStep({
   title,
   value,
@@ -273,8 +324,8 @@ function MoneyStep({
 }) {
   const [text, setText] = useState(value ? moneyInput(value) : '');
   return (
-    <>
-      <h1>{title}</h1>
+    <div className="space-y-4">
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
       <Field
         label="Сумма"
         inputMode="decimal"
@@ -285,10 +336,11 @@ function MoneyStep({
           if (minor !== null) void onChange(minor);
         }}
       />
-      <p className="muted">Внутри сумма хранится целым числом в копейках.</p>
-    </>
+      <p className="text-sm text-muted-foreground">Внутри сумма хранится целым числом в копейках.</p>
+    </div>
   );
 }
+
 function DraftList({
   title,
   currency,
@@ -305,35 +357,45 @@ function DraftList({
   onRemove: (id: string) => void;
 }) {
   return (
-    <>
-      <h1>{title}</h1>
-      {items.map((item) => (
-        <Card key={item.id}>
-          <div className="setting">
-            <span>
-              <b>{item.name}</b>
-              <small>
-                {formatMoney(item.amount, currency)} · {item.date}
-              </small>
-            </span>
-            <div>
-              <button aria-label="Изменить" onClick={() => onEdit(item)}>
-                <Pencil />
-              </button>
-              <button aria-label="Удалить" onClick={() => onRemove(item.id)}>
-                <Trash2 />
-              </button>
-            </div>
-          </div>
-        </Card>
-      ))}
-      <Button className="secondary" onClick={onAdd}>
-        <Plus />
+    <div className="space-y-4">
+      <h1 className="text-2xl font-semibold tracking-tight">{title}</h1>
+      <div className="space-y-2">
+        {items.map((item) => (
+          <Card key={item.id}>
+            <CardContent className="flex items-center justify-between gap-3 p-4">
+              <span className="min-w-0 space-y-1">
+                <b className="block text-sm font-semibold">{item.name}</b>
+                <small className="text-sm text-muted-foreground">
+                  {formatMoney(item.amount, currency)} · {item.date}
+                </small>
+              </span>
+              <div className="flex shrink-0 gap-1">
+                <Button type="button" variant="ghost" size="icon" aria-label="Изменить" onClick={() => onEdit(item)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Удалить"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => onRemove(item.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Button type="button" variant="outline" className="w-full" onClick={onAdd}>
+        <Plus className="h-4 w-4" />
         Добавить строку
       </Button>
-    </>
+    </div>
   );
 }
+
 function DraftLineForm({
   kind,
   item,
@@ -353,7 +415,7 @@ function DraftLineForm({
   const minor = parseMoney(amount);
   return (
     <form
-      className="sheet-form"
+      className="space-y-4"
       onSubmit={(event) => {
         event.preventDefault();
         if (name.trim() && minor && date)
@@ -367,9 +429,11 @@ function DraftLineForm({
           });
       }}
     >
-      <h2>
-        {item ? 'Изменить' : 'Добавить'} {kind === 'incomes' ? 'доход' : 'расход'}
-      </h2>
+      <DialogHeader>
+        <DialogTitle>
+          {item ? 'Изменить' : 'Добавить'} {kind === 'incomes' ? 'доход' : 'расход'}
+        </DialogTitle>
+      </DialogHeader>
       <Field label="Название" value={name} onChange={(e) => setName(e.target.value)} />
       <Field
         label="Сумма"
@@ -378,33 +442,38 @@ function DraftLineForm({
         onChange={(e) => setAmount(e.target.value)}
       />
       <Field label="Дата" type="date" value={date} onChange={(e) => setDate(e.target.value)} />
-      <label className="check">
+      <label className="flex items-center gap-3 text-sm">
         <input
           type="checkbox"
+          className="h-4 w-4 rounded border-input accent-primary"
           checked={recurring}
           onChange={(e) => setRecurring(e.target.checked)}
         />
         Повторяется
       </label>
       {kind === 'incomes' && (
-        <label className="check">
+        <label className="flex items-center gap-3 text-sm">
           <input
             type="checkbox"
+            className="h-4 w-4 rounded border-input accent-primary"
             checked={confirmed}
             onChange={(e) => setConfirmed(e.target.checked)}
           />
           Доход подтверждён
         </label>
       )}
-      <div className="sheet-actions">
-        <Button type="button" className="secondary" onClick={onClose}>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onClose}>
           Отмена
         </Button>
-        <Button disabled={!name.trim() || !minor || !date}>Сохранить</Button>
+        <Button type="submit" disabled={!name.trim() || !minor || !date}>
+          Сохранить
+        </Button>
       </div>
     </form>
   );
 }
+
 function DebtList({
   currency,
   items,
@@ -419,35 +488,45 @@ function DebtList({
   onRemove: (id: string) => void;
 }) {
   return (
-    <>
-      <h1>Долги</h1>
-      {items.map((item) => (
-        <Card key={item.id}>
-          <div className="setting">
-            <span>
-              <b>{item.name}</b>
-              <small>
-                {formatMoney(item.balance, currency)} · {item.annual_rate_bps / 100}%
-              </small>
-            </span>
-            <div>
-              <button aria-label="Изменить" onClick={() => onEdit(item)}>
-                <Pencil />
-              </button>
-              <button aria-label="Удалить" onClick={() => onRemove(item.id)}>
-                <Trash2 />
-              </button>
-            </div>
-          </div>
-        </Card>
-      ))}
-      <Button className="secondary" onClick={onAdd}>
-        <Plus />
+    <div className="space-y-4">
+      <h1 className="text-2xl font-semibold tracking-tight">Долги</h1>
+      <div className="space-y-2">
+        {items.map((item) => (
+          <Card key={item.id}>
+            <CardContent className="flex items-center justify-between gap-3 p-4">
+              <span className="min-w-0 space-y-1">
+                <b className="block text-sm font-semibold">{item.name}</b>
+                <small className="text-sm text-muted-foreground">
+                  {formatMoney(item.balance, currency)} · {item.annual_rate_bps / 100}%
+                </small>
+              </span>
+              <div className="flex shrink-0 gap-1">
+                <Button type="button" variant="ghost" size="icon" aria-label="Изменить" onClick={() => onEdit(item)}>
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="Удалить"
+                  className="text-muted-foreground hover:text-destructive"
+                  onClick={() => onRemove(item.id)}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+      <Button type="button" variant="outline" className="w-full" onClick={onAdd}>
+        <Plus className="h-4 w-4" />
         Добавить долг
       </Button>
-    </>
+    </div>
   );
 }
+
 function DebtDraftForm({
   currency,
   item,
@@ -466,8 +545,8 @@ function DebtDraftForm({
   const [dueDay, setDueDay] = useState(item?.due_day ?? 15);
   const [overdue, setOverdue] = useState(item?.overdue ?? false);
   const [priority, setPriority] = useState(item?.custom_priority ?? 0);
-  const balanceMinor = parseMoney(balance),
-    minimumMinor = parseMoney(minimum);
+  const balanceMinor = parseMoney(balance);
+  const minimumMinor = parseMoney(minimum);
   const valid =
     !!name.trim() &&
     !!balanceMinor &&
@@ -477,7 +556,7 @@ function DebtDraftForm({
     dueDay <= 31;
   return (
     <form
-      className="sheet-form"
+      className="space-y-4"
       onSubmit={(event) => {
         event.preventDefault();
         if (valid)
@@ -496,7 +575,9 @@ function DebtDraftForm({
           });
       }}
     >
-      <h2>{item ? 'Изменить долг' : 'Новый долг'}</h2>
+      <DialogHeader>
+        <DialogTitle>{item ? 'Изменить долг' : 'Новый долг'}</DialogTitle>
+      </DialogHeader>
       <Field label="Название" value={name} onChange={(e) => setName(e.target.value)} />
       <Field
         label="Остаток"
@@ -516,7 +597,7 @@ function DebtDraftForm({
         value={minimum}
         onChange={(e) => setMinimum(e.target.value)}
       />
-      <div className="field-row">
+      <div className="grid grid-cols-2 gap-4">
         <Field
           label="День платежа"
           type="number"
@@ -533,42 +614,58 @@ function DebtDraftForm({
           onChange={(e) => setPriority(Number(e.target.value))}
         />
       </div>
-      <label className="check">
-        <input type="checkbox" checked={overdue} onChange={(e) => setOverdue(e.target.checked)} />
+      <label className="flex items-center gap-3 text-sm">
+        <input
+          type="checkbox"
+          className="h-4 w-4 rounded border-input accent-primary"
+          checked={overdue}
+          onChange={(e) => setOverdue(e.target.checked)}
+        />
         Есть просрочка
       </label>
-      <div className="sheet-actions">
-        <Button type="button" className="secondary" onClick={onClose}>
+      <div className="flex justify-end gap-2 pt-2">
+        <Button type="button" variant="outline" onClick={onClose}>
           Отмена
         </Button>
-        <Button disabled={!valid}>Сохранить</Button>
+        <Button type="submit" disabled={!valid}>
+          Сохранить
+        </Button>
       </div>
     </form>
   );
 }
+
 function Summary({ draft }: { draft: OnboardingDraft }) {
   return (
-    <>
-      <h1>Всё готово</h1>
+    <div className="space-y-4">
+      <h1 className="text-2xl font-semibold tracking-tight">Всё готово</h1>
       <Card>
-        <dl>
-          <div>
-            <dt>Доступно</dt>
-            <dd>{formatMoney(draft.availableNow, draft.currency)}</dd>
-          </div>
-          <div>
-            <dt>Резерв</dt>
-            <dd>{formatMoney(draft.minimumReserve, draft.currency)}</dd>
-          </div>
-          <div>
-            <dt>Доходы / расходы / долги</dt>
-            <dd>
-              {draft.incomes.length} / {draft.expenses.length} / {draft.debts.length}
-            </dd>
-          </div>
-        </dl>
-        <small>Ключ повторной отправки сохранён для защиты от дублей.</small>
+        <CardContent className="space-y-4 p-6">
+          <dl className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="space-y-1">
+              <dt className="text-sm text-muted-foreground">Доступно</dt>
+              <dd className="text-sm font-semibold tabular-nums">
+                {formatMoney(draft.availableNow, draft.currency)}
+              </dd>
+            </div>
+            <div className="space-y-1">
+              <dt className="text-sm text-muted-foreground">Резерв</dt>
+              <dd className="text-sm font-semibold tabular-nums">
+                {formatMoney(draft.minimumReserve, draft.currency)}
+              </dd>
+            </div>
+            <div className="space-y-1 sm:col-span-2">
+              <dt className="text-sm text-muted-foreground">Доходы / расходы / долги</dt>
+              <dd className="text-sm font-semibold">
+                {draft.incomes.length} / {draft.expenses.length} / {draft.debts.length}
+              </dd>
+            </div>
+          </dl>
+          <p className="text-sm text-muted-foreground">
+            Ключ повторной отправки сохранён для защиты от дублей.
+          </p>
+        </CardContent>
       </Card>
-    </>
+    </div>
   );
 }

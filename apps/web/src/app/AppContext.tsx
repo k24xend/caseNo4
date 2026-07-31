@@ -91,6 +91,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       settings.theme === 'dark' ||
       (settings.theme === 'system' && matchMedia('(prefers-color-scheme: dark)').matches);
     document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+    document.documentElement.classList.toggle('dark', dark);
     document.documentElement.lang = settings.language;
   }, [settings.theme, settings.language]);
   useEffect(() => {

@@ -2,6 +2,10 @@ import { useMemo, useState } from 'react';
 import { Archive, ArrowUp, RotateCcw, Search, WifiOff } from 'lucide-react';
 import { useApp } from '../../app/AppContext';
 import { Page } from '../../components/Page';
+import { Button } from '../../components/ui/button';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { Input } from '../../components/ui/input';
+import { cn } from '../../lib/utils';
 
 export function Assistant() {
   const { settings, patch } = useApp();
@@ -33,107 +37,115 @@ export function Assistant() {
     );
     setMessage('');
   };
+
   return (
     <Page title="Помощник" sub="Объясняет расчёты, но не меняет деньги">
       {settings.demoOffline && (
-        <div className="status-banner">
-          <WifiOff />
+        <div className="flex items-center gap-3 rounded-lg border border-border bg-muted px-4 py-3 text-sm text-muted-foreground">
+          <WifiOff className="h-4 w-4" />
           AI недоступен · план работает офлайн
         </div>
       )}
-      <div className="assistant-intro liquid-panel">
-        <span className="lens-dot" />
-        <div>
-          <small>{settings.guidanceMode === 'base' ? 'Спокойный Base' : 'Интенсивный Hard'}</small>
-          <h2>С чего начнём?</h2>
-          <p>Спросите про доход, план или расходы. Ответ будет коротким.</p>
-        </div>
-      </div>
-      <div className="quick-topics">
+
+      <Card>
+        <CardHeader>
+          <p className="text-sm font-medium text-primary">
+            {settings.guidanceMode === 'base' ? 'Спокойный Base' : 'Интенсивный Hard'}
+          </p>
+          <CardTitle>С чего начнём?</CardTitle>
+          <CardDescription>Спросите про доход, план или расходы. Ответ будет коротким.</CardDescription>
+        </CardHeader>
+      </Card>
+
+      <div className="flex flex-wrap gap-2">
         {['Доход', 'План', 'Расходы'].map((x) => (
-          <button key={x} onClick={() => setMessage(x)}>
+          <Button key={x} type="button" size="sm" variant="outline" onClick={() => setMessage(x)}>
             {x}
-          </button>
+          </Button>
         ))}
       </div>
+
       {reply && (
-        <div className="chat-reply" aria-live="polite">
+        <Card className="bg-secondary p-4 text-sm leading-relaxed" aria-live="polite">
           {reply}
-        </div>
+        </Card>
       )}
+
       <form
-        className="ask-bar"
+        className="flex items-center gap-2 rounded-lg border border-border bg-card p-2 shadow-sm"
         onSubmit={(e) => {
           e.preventDefault();
           ask();
         }}
       >
-        <label>
+        <label className="min-w-0 flex-1">
           <span className="sr-only">Вопрос помощнику</span>
-          <input
+          <Input
+            className="border-0 shadow-none focus-visible:ring-0"
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             placeholder="Спросить о плане"
           />
         </label>
-        <button aria-label="Отправить">
-          <ArrowUp />
-        </button>
+        <Button type="submit" size="icon" aria-label="Отправить">
+          <ArrowUp className="h-4 w-4" />
+        </Button>
       </form>
-      <div className="advice-header">
-        <h2>{archive ? 'Архив' : 'Рекомендации'}</h2>
-        <button onClick={() => setArchive(!archive)}>
-          <Archive />
+
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-base font-semibold">{archive ? 'Архив' : 'Рекомендации'}</h2>
+        <Button type="button" variant="ghost" size="sm" onClick={() => setArchive(!archive)}>
+          <Archive className="h-4 w-4" />
           {archive ? 'К активным' : 'Архив'}
-        </button>
+        </Button>
       </div>
+
       {archive && (
-        <label className="search">
-          <Search />
-          <span className="sr-only">Поиск в архиве</span>
-          <input
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            className="pl-10"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Найти совет"
+            aria-label="Поиск в архиве"
           />
-        </label>
+        </div>
       )}
-      <div className="advice-list">
-        {items.length ? (
-          items.map((item) => (
-            <article key={item.id}>
-              <small>
-                {item.topic === 'income' ? 'Доход' : item.topic === 'plan' ? 'План' : 'Расходы'}
-              </small>
-              <h3>{item.title}</h3>
-              <p>{item.body}</p>
-              <div>
-                {archive ? (
-                  <button onClick={() => status(item.id, 'active')}>
-                    <RotateCcw />
-                    Вернуть
-                  </button>
-                ) : (
-                  <>
-                    <button className="primary-mini">Открыть</button>
-                    <button onClick={() => status(item.id, 'hidden')}>Скрыть</button>
-                    <button onClick={() => status(item.id, 'archived')}>Не предлагать снова</button>
-                  </>
-                )}
-              </div>
-            </article>
-          ))
-        ) : (
-          <div className="empty-state">
-            <Archive />
-            <h3>{archive ? 'Архив пуст' : 'На сегодня всё'}</h3>
-            <p>
-              {archive
-                ? 'Скрытые навсегда советы появятся здесь.'
-                : 'Новых советов нет — можно вернуться позже.'}
-            </p>
-          </div>
+
+      <div className="space-y-3">
+        {items.length === 0 && (
+          <p className="text-sm text-muted-foreground">
+            {archive ? 'Архив пуст' : 'Активных рекомендаций нет'}
+          </p>
         )}
+        {items.map((item) => (
+          <Card key={item.id} className="p-4">
+            <h3 className="text-sm font-semibold">{item.title}</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{item.body}</p>
+            <div className="mt-4 flex flex-wrap gap-2">
+              {archive ? (
+                <Button type="button" size="sm" variant="outline" onClick={() => status(item.id, 'active')}>
+                  <RotateCcw className="h-4 w-4" />
+                  Вернуть
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    type="button"
+                    size="sm"
+                    onClick={() => status(item.id, 'archived')}
+                  >
+                    Принять
+                  </Button>
+                  <Button type="button" size="sm" variant="ghost" onClick={() => status(item.id, 'hidden')}>
+                    Не предлагать снова
+                  </Button>
+                </>
+              )}
+            </div>
+          </Card>
+        ))}
       </div>
     </Page>
   );
