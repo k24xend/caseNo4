@@ -31,7 +31,7 @@ function buildContext(data: DemoData | undefined, lang: AppLanguage) {
   ].join('\n');
 }
 
-/** Deterministic contextual answers — always available offline. */
+/** Deterministic contextual answers — always available offline / if Grok is down. */
 export function localFinancialReply(
   question: string,
   data: DemoData | undefined,
@@ -46,12 +46,38 @@ export function localFinancialReply(
   for (const t of expenses) byCat.set(t.category, (byCat.get(t.category) ?? 0) + t.amount);
   const top = [...byCat.entries()].sort((a, b) => b[1] - a[1]);
   const largest = [...expenses].sort((a, b) => b.amount - a.amount).slice(0, 3);
+  const debts = data?.debts ?? [];
 
-  const isZh = lang === 'zh';
-  const isRu = lang === 'ru' || /[а-яё]/i.test(question);
+  // Reply language: prefer script of the question, else UI language
+  const isZh = lang === 'zh' || /[\u4e00-\u9fff]/.test(question);
+  const isRu = !isZh && (lang === 'ru' || /[а-яё]/i.test(question));
 
   const pick = (ru: string, en: string, zh: string) => (isZh ? zh : isRu ? ru : en);
 
+  if (/who are you|кто ты|что ты|what are you|你是谁|助手|ассистент выхода|vyhod|выход/.test(q)) {
+    return pick(
+      'Я ассистент выхода ВЫХОД: спокойно объясняю ваш план — сколько можно сегодня, что обязательно до дохода, какой долг гасить и одно главное действие. Суммы считает приложение, я их только поясняю. Пишите на любом языке.',
+      "I'm Vyhod's exit assistant: I explain your plan — safe daily spend, bills before income, which debt to pay, and today's best action. The app calculates numbers; I only explain them. Ask in any language.",
+      '我是 ВЫХОД 退出助手：用白话解释您的计划——今日安全额度、收入前必付项、优先还哪笔债、今天最该做的一件事。数字由应用计算，我只负责解释。可用任何语言提问。',
+    );
+  }
+  if (/today|сегодня|что делать|action|действие|主行动|今天/.test(q) && /do|делать|action|действие|should|надо|该/.test(q)) {
+    return pick(
+      `Главное действие сейчас: «${data?.plan.action.title ?? '—'}» (${formatMoney(data?.plan.action.amount ?? 0, cur)}). Доступно: ${formatMoney(snap?.available_now ?? 0, cur)}, дневной ориентир: ${formatMoney(snap?.safe_daily_amount ?? 0, cur)}. Состояние: ${data?.plan.state ?? '—'}.`,
+      `Your main action now: “${data?.plan.action.title ?? '—'}” (${formatMoney(data?.plan.action.amount ?? 0, cur)}). Available: ${formatMoney(snap?.available_now ?? 0, cur)}, safe daily: ${formatMoney(snap?.safe_daily_amount ?? 0, cur)}. State: ${data?.plan.state ?? '—'}.`,
+      `当前主行动：「${data?.plan.action.title ?? '—'}」（${formatMoney(data?.plan.action.amount ?? 0, cur)}）。可用 ${formatMoney(snap?.available_now ?? 0, cur)}，安全日额度 ${formatMoney(snap?.safe_daily_amount ?? 0, cur)}。状态：${data?.plan.state ?? '—'}。`,
+    );
+  }
+  if (/debt|долг|кредит|债/.test(q)) {
+    const list =
+      debts.map((d) => `• ${d.name}: ${formatMoney(d.balance, cur)} (min ${formatMoney(d.minimum_payment, cur)})`).join('\n') ||
+      pick('• долгов нет в данных', '• no debts in data', '• 数据中无债务');
+    return pick(
+      `Долги:\n${list}\nСначала закрывайте обязательные платежи (${formatMoney(snap?.mandatory_before_next_income ?? 0, cur)}), затем действие плана: ${data?.plan.action.title ?? '—'}.`,
+      `Debts:\n${list}\nCover mandatory ${formatMoney(snap?.mandatory_before_next_income ?? 0, cur)} first, then the plan action: ${data?.plan.action.title ?? '—'}.`,
+      `债务：\n${list}\n先覆盖必须支出 ${formatMoney(snap?.mandatory_before_next_income ?? 0, cur)}，再执行计划行动：${data?.plan.action.title ?? '—'}。`,
+    );
+  }
   if (/spend|потрат|расход|花了|支出|week|недел|周/.test(q)) {
     return pick(
       `На этой выборке расходы: ${formatMoney(spent, cur)}. Доступно сейчас: ${formatMoney(snap?.available_now ?? 0, cur)}. Безопасный дневной лимит: ${formatMoney(snap?.safe_daily_amount ?? 0, cur)}.`,
@@ -90,9 +116,9 @@ export function localFinancialReply(
   }
 
   return pick(
-    `Сейчас доступно ${formatMoney(snap?.available_now ?? 0, cur)}, состояние «${data?.plan.state ?? '—'}». Спросите про расходы, категории, сбережения или крупные платежи — отвечу по вашим данным.`,
-    `You have ${formatMoney(snap?.available_now ?? 0, cur)} available; plan state “${data?.plan.state ?? '—'}”. Ask about spending, categories, savings, or big payments — I’ll use your live numbers.`,
-    `当前可用 ${formatMoney(snap?.available_now ?? 0, cur)}，计划状态「${data?.plan.state ?? '—'}」。可问支出、分类、储蓄或大额支付——我会用您的实时数据回答。`,
+    `Я ассистент выхода ВЫХОД. Сейчас доступно ${formatMoney(snap?.available_now ?? 0, cur)}, состояние «${data?.plan.state ?? '—'}». Спросите про расходы, категории, сбережения, долги или «что делать сегодня» — отвечу по вашим данным на любом языке.`,
+    `I'm Vyhod's exit assistant. You have ${formatMoney(snap?.available_now ?? 0, cur)} available; plan state “${data?.plan.state ?? '—'}”. Ask about spending, categories, savings, debts, or “what should I do today” — in any language.`,
+    `我是 ВЫХОД 退出助手。当前可用 ${formatMoney(snap?.available_now ?? 0, cur)}，计划状态「${data?.plan.state ?? '—'}」。可问支出、分类、储蓄、债务或「今天该做什么」——支持任何语言。`,
   );
 }
 

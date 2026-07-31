@@ -78,10 +78,10 @@ const ru: UiStrings = {
   searchTx: 'Search transactions…',
   noTx: 'No transactions',
   trySearch: 'Try another search',
-  aiTitle: 'AI Assistant',
+  aiTitle: 'Exit assistant',
   aiReady: 'Ready to help',
   aiIntro:
-    'Привет! Я финансовый ассистент Vyhod. Вижу ваши расходы, категории и доступный баланс — спрашивайте на русском или English.',
+    'Привет! Я ассистент выхода ВЫХОД. Вижу расходы, категории, долги и доступный баланс — отвечаю на подсказки и любые вопросы, на любом языке.',
   suggested: 'Suggested questions',
   askAnything: 'Ask anything…',
   send: 'Send',
@@ -105,8 +105,9 @@ const en: UiStrings = {
   ...ru,
   profile: 'Profile',
   brandTag: 'Track money, improve balance',
+  aiTitle: 'Exit assistant',
   aiIntro:
-    "Hi! I'm your Vyhod finance assistant. I can see your spending, categories, and available balance — ask in English or Russian.",
+    "Hi! I'm Vyhod's exit assistant. I see your spending, categories, debts, and available balance — ask the suggested questions or anything else, in any language.",
 };
 
 const zh: UiStrings = {
@@ -137,9 +138,10 @@ const zh: UiStrings = {
   searchTx: '搜索交易…',
   noTx: '暂无交易',
   trySearch: '试试其他关键词',
-  aiTitle: 'AI 助手',
+  aiTitle: '退出助手',
   aiReady: '随时为您服务',
-  aiIntro: '您好！我是 Vyhod 财务助手。我了解您的支出、分类与可用余额——可用中文、俄语或英语提问。',
+  aiIntro:
+    '您好！我是 ВЫХОД 退出助手。我了解您的支出、分类、债务与可用余额——可点推荐问题，也可随便问，支持任何语言。',
   suggested: '推荐问题',
   askAnything: '随便问…',
   send: '发送',
@@ -189,8 +191,10 @@ export const strings: Record<AppLanguage, UiStrings> = {
     searchTx: 'Поиск операций…',
     noTx: 'Операций нет',
     trySearch: 'Попробуйте другой запрос',
-    aiTitle: 'AI-ассистент',
+    aiTitle: 'Ассистент выхода',
     aiReady: 'Готов помочь',
+    aiIntro:
+      'Привет! Я ассистент выхода ВЫХОД. Вижу расходы, категории, долги и доступный баланс — отвечаю на подсказки и любые вопросы, на любом языке.',
     suggested: 'Подсказки',
     askAnything: 'Спросите что угодно…',
     send: 'Отправить',

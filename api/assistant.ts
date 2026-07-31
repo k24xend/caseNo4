@@ -1,102 +1,58 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 /**
- * Grok (xAI) proxy via Responses API.
- * Env: XAI_API_KEY on Vercel.
+ * Grok (xAI / SpaceXAI) proxy via Responses API.
+ * Env: XAI_API_KEY (Vercel project env or root .env for local).
  * Client falls back to local financial answers if this returns non-2xx.
  *
  * @see https://docs.x.ai/docs/guides/chat
  */
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  if (req.method !== 'POST') {
-    res.status(405).json({ error: 'Method not allowed' });
-    return;
-  }
 
-  const key = process.env.XAI_API_KEY;
-  if (!key) {
-    res.status(503).json({ error: 'XAI_API_KEY not configured' });
-    return;
-  }
+const MODEL = 'grok-4.5';
 
-  const body = req.body as {
-    message?: string;
-    language?: string;
-    context?: string;
-    history?: Array<{ role: string; content: string }>;
-  };
+export function buildSystemPrompt(language?: string, context?: string): string {
+  const uiLang = language ?? 'en';
+  const uiHint =
+    uiLang === 'zh'
+      ? 'UI language preference: Chinese (zh).'
+      : uiLang === 'ru'
+        ? 'UI language preference: Russian (ru).'
+        : uiLang === 'en'
+          ? 'UI language preference: English (en).'
+          : `UI language preference: ${uiLang}.`;
 
-  const message = body.message?.trim();
-  if (!message) {
-    res.status(400).json({ error: 'message required' });
-    return;
-  }
+  return `You are **ВЫХОД (Vyhod)** — the calm personal «ассистент выхода» (exit assistant) inside the Vyhod financial navigator app.
 
-  const lang = body.language ?? 'en';
-  const system = `You are Vyhod, a calm personal finance co-pilot powered by Grok.
-Answer in ${lang === 'zh' ? 'Chinese' : lang === 'ru' ? 'Russian' : 'English'}.
-Use ONLY the provided user financial context. Be concise (max 120 words), practical, never shame the user.
-Do not invent bank balances. If data is missing, say so briefly.
-Context:
-${body.context ?? 'none'}`;
+## Who you are
+- You help people with unstable income, debts, or no buffer move through: **Critical → Stabilization → Exit → Buffer**.
+- You explain the user's plan in plain language: safe daily spend, mandatory bills before next income, debts, and the single best action for today.
+- You are NOT a bank, broker, or payment processor. You never move money or invent balances.
+- Tone: calm, practical, never shaming or moralizing. Short answers (prefer ≤120 words unless the user asks for detail).
 
-  const input = [
-    { role: 'system', content: system },
-    ...(body.history ?? []).map((m) => ({
-      role: m.role === 'assistant' ? 'assistant' : 'user',
-      content: m.content,
-    })),
-    { role: 'user', content: message },
-  ];
+## Product facts (Vyhod / ВЫХОД)
+- Deterministic engine calculates: available_now, safe_daily_amount, mandatory_before_next_income, plan state, primary action.
+- **You explain numbers already calculated in Context — you must NOT invent new authoritative amounts.**
+- Suggested topics users often ask: weekly spend, where budget goes, how to save, largest expenses, debts, "what should I do today?", plan state meaning.
+- If Context says data is missing, say so briefly and suggest what to enter in the app (income, bills, debts, available cash).
 
-  try {
-    const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 55_000);
+## Language (critical)
+- ${uiHint}
+- **Always reply in the language of the user's latest message** (any language: Russian, English, Chinese, Spanish, Arabic, etc.).
+- If the message mixes languages, prefer the language of the question body.
+- If the user asks in language A but UI preference is B, still answer in A unless they explicitly request another language.
 
-    const upstream = await fetch('https://api.x.ai/v1/responses', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${key}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'grok-4.5',
-        input,
-        store: false,
-      }),
-      signal: controller.signal,
-    }).finally(() => clearTimeout(timer));
+## Rules
+1. Use ONLY the financial Context below for numbers. Quote those figures; do not recalculate or invent bank balances.
+2. Answer prepared/suggested questions AND any free-form question about money, the plan, or the app.
+3. If asked something outside finance / this app, answer briefly and steer back to their money plan when useful.
+4. Never claim you transferred money, paid a bill, or connected a bank.
+5. Prefer one clear next step when giving advice.
 
-    const raw = await upstream.text();
-    if (!upstream.ok) {
-      res.status(502).json({ error: 'upstream failed', detail: raw.slice(0, 400) });
-      return;
-    }
-
-    let data: unknown;
-    try {
-      data = JSON.parse(raw);
-    } catch {
-      res.status(502).json({ error: 'invalid JSON from upstream' });
-      return;
-    }
-
-    const reply = extractResponseText(data);
-    if (!reply) {
-      res.status(502).json({ error: 'empty reply', detail: raw.slice(0, 400) });
-      return;
-    }
-
-    res.status(200).json({ reply, source: 'grok', model: 'grok-4.5' });
-  } catch (e) {
-    res.status(500).json({
-      error: e instanceof Error ? e.message : 'assistant error',
-    });
-  }
+## User financial context
+${context?.trim() || 'none'}`;
 }
 
-/** Parse xAI Responses API payload (output_text or output[].content[].text). */
-function extractResponseText(data: unknown): string | undefined {
+export function extractResponseText(data: unknown): string | undefined {
   if (!data || typeof data !== 'object') return undefined;
   const obj = data as Record<string, unknown>;
 
@@ -133,4 +89,99 @@ function extractResponseText(data: unknown): string | undefined {
   }
 
   return undefined;
+}
+
+export type AssistantBody = {
+  message?: string;
+  language?: string;
+  context?: string;
+  history?: Array<{ role: string; content: string }>;
+};
+
+export async function runAssistant(
+  body: AssistantBody,
+  apiKey: string,
+): Promise<{ reply: string; source: 'grok'; model: string } | { error: string; status: number; detail?: string }> {
+  const message = body.message?.trim();
+  if (!message) {
+    return { error: 'message required', status: 400 };
+  }
+
+  const system = buildSystemPrompt(body.language, body.context);
+  const input = [
+    { role: 'system', content: system },
+    ...(body.history ?? []).map((m) => ({
+      role: m.role === 'assistant' ? 'assistant' : 'user',
+      content: m.content,
+    })),
+    { role: 'user', content: message },
+  ];
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 55_000);
+
+  try {
+    const upstream = await fetch('https://api.x.ai/v1/responses', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: MODEL,
+        input,
+        store: false,
+      }),
+      signal: controller.signal,
+    });
+
+    const raw = await upstream.text();
+    if (!upstream.ok) {
+      return { error: 'upstream failed', status: 502, detail: raw.slice(0, 400) };
+    }
+
+    let data: unknown;
+    try {
+      data = JSON.parse(raw);
+    } catch {
+      return { error: 'invalid JSON from upstream', status: 502 };
+    }
+
+    const reply = extractResponseText(data);
+    if (!reply) {
+      return { error: 'empty reply', status: 502, detail: raw.slice(0, 400) };
+    }
+
+    return { reply, source: 'grok', model: MODEL };
+  } catch (e) {
+    return {
+      error: e instanceof Error ? e.message : 'assistant error',
+      status: 500,
+    };
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    res.status(405).json({ error: 'Method not allowed' });
+    return;
+  }
+
+  const key = process.env.XAI_API_KEY;
+  if (!key) {
+    res.status(503).json({ error: 'XAI_API_KEY not configured' });
+    return;
+  }
+
+  const result = await runAssistant(req.body as AssistantBody, key);
+  if ('reply' in result) {
+    res.status(200).json(result);
+    return;
+  }
+  res.status(result.status).json({
+    error: result.error,
+    ...(result.detail ? { detail: result.detail } : {}),
+  });
 }
