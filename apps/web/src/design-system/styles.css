@@ -4163,3 +4163,1443 @@ select {
     scroll-behavior: auto !important;
   }
 }
+
+/* ==========================================================================
+   VYHOD liquid fidelity 9/10 — authoritative surface for Overview + Money
+   Tokens only. Continuous fan expand. Radial Base dial. Water-lens nav.
+   ========================================================================== */
+:root {
+  --bg-pearl: #eceaf1;
+  --comfort-violet: #9a8af4;
+  --primary-violet: #8174e8;
+  --reserve-blue-violet: #7186c8;
+  --obligation-terracotta: #c98272;
+  --positive-sage: #7e9f92;
+  --ink: #14131a;
+  --muted-ink: #625f70;
+  --hard-plum: #8e536e;
+  --page-bg: var(--bg-pearl);
+  --page-glow: color-mix(in srgb, var(--comfort-violet) 18%, transparent);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted-ink);
+  --text-tertiary: color-mix(in srgb, var(--ink) 55%, white);
+  --violet: var(--primary-violet);
+  --terracotta: var(--obligation-terracotta);
+  --reserve: var(--reserve-blue-violet);
+  --positive: var(--positive-sage);
+  --glass-fill: color-mix(in srgb, white 52%, transparent);
+  --glass-fill-strong: color-mix(in srgb, white 72%, transparent);
+  --glass-rim: color-mix(in srgb, white 78%, transparent);
+  --glass-inner-highlight: color-mix(in srgb, white 92%, transparent);
+  --glass-shadow: color-mix(in srgb, var(--ink) 16%, transparent);
+  --nav-fill: color-mix(in srgb, var(--bg-pearl) 55%, white);
+  --divider: color-mix(in srgb, var(--ink) 12%, transparent);
+  --liquid-ease: cubic-bezier(0.18, 0.88, 0.22, 1.18);
+  --liquid-ease-soft: cubic-bezier(0.22, 0.82, 0.2, 1);
+  --spring: cubic-bezier(0.2, 0.9, 0.25, 1.28);
+  --gutter: clamp(14px, 4.8vw, 20px);
+  --canvas: 430px;
+}
+:root[data-theme='dark'] {
+  --bg-pearl: #15141c;
+  --ink: #f4f1fa;
+  --muted-ink: #b5afc3;
+  --page-bg: var(--bg-pearl);
+  --page-glow: color-mix(in srgb, var(--comfort-violet) 22%, transparent);
+  --text-primary: var(--ink);
+  --text-secondary: var(--muted-ink);
+  --glass-fill: color-mix(in srgb, #2a2736 78%, transparent);
+  --glass-fill-strong: color-mix(in srgb, #322e40 90%, transparent);
+  --glass-rim: color-mix(in srgb, white 16%, transparent);
+  --glass-inner-highlight: color-mix(in srgb, white 12%, transparent);
+  --glass-shadow: color-mix(in srgb, black 40%, transparent);
+  --nav-fill: color-mix(in srgb, #1c1a24 92%, transparent);
+  --divider: color-mix(in srgb, white 12%, transparent);
+}
+
+html,
+body,
+#root {
+  background: var(--bg-pearl);
+  color: var(--ink);
+}
+html:not([data-theme='dark']) body {
+  background:
+    radial-gradient(42% 28% at 82% 6%, color-mix(in srgb, var(--comfort-violet) 16%, transparent), transparent 72%),
+    radial-gradient(58% 36% at 18% 48%, color-mix(in srgb, var(--reserve-blue-violet) 12%, transparent), transparent 74%),
+    linear-gradient(160deg, color-mix(in srgb, white 55%, var(--bg-pearl)), var(--bg-pearl) 55%, color-mix(in srgb, var(--bg-pearl) 92%, var(--comfort-violet)));
+  background-attachment: fixed;
+}
+.app-shell {
+  max-width: var(--canvas);
+  min-height: 100dvh;
+  padding-bottom: calc(78px + var(--safe-bottom));
+  background: transparent;
+}
+.app-shell::before {
+  content: '';
+  position: fixed;
+  z-index: -1;
+  top: 96px;
+  left: 50%;
+  width: min(520px, 100vw);
+  height: 420px;
+  transform: translateX(-50%);
+  background:
+    radial-gradient(circle at 70% 42%, color-mix(in srgb, var(--reserve-blue-violet) 14%, transparent), transparent 36%),
+    radial-gradient(circle at 28% 68%, color-mix(in srgb, var(--comfort-violet) 12%, transparent), transparent 40%);
+  pointer-events: none;
+}
+
+/* —— Top bar + Mode dial (radial glass) —— */
+.liquid-topbar {
+  height: calc(74px + var(--safe-top));
+  padding: calc(12px + var(--safe-top)) var(--gutter) 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 40;
+  border: 0;
+  border-bottom: 0;
+  box-shadow: none;
+  background: transparent;
+}
+.watermark {
+  width: 44px;
+  height: 44px;
+  position: relative;
+  filter: drop-shadow(0 8px 12px color-mix(in srgb, var(--primary-violet) 18%, transparent));
+}
+.watermark i {
+  position: absolute;
+  inset: 7px;
+  border: 1.5px solid color-mix(in srgb, var(--primary-violet) 70%, white);
+  border-radius: 52% 48% 60% 40%;
+  transform: rotate(-20deg);
+}
+.watermark i:nth-child(2) {
+  inset: 13px;
+  transform: rotate(31deg);
+}
+.watermark i:nth-child(3) {
+  inset: 19px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--comfort-violet) 70%, white), var(--primary-violet));
+  box-shadow: 0 0 16px color-mix(in srgb, var(--primary-violet) 45%, transparent);
+  border: 0;
+}
+.mode-dial {
+  position: relative;
+  width: 72px;
+  height: 58px;
+  margin-left: auto;
+  z-index: 50;
+  overflow: visible;
+}
+/* Kill legacy dropdown chrome entirely — radial dial is sole selector */
+.mode-dial .dial-options {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+.dial-trigger {
+  position: absolute;
+  right: 0;
+  top: 0;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: 1px solid var(--glass-rim);
+  color: var(--ink);
+  cursor: pointer;
+  overflow: hidden;
+  isolation: isolate;
+  background:
+    radial-gradient(circle at 30% 22%, color-mix(in srgb, white 96%, transparent), transparent 38%),
+    radial-gradient(circle at 68% 74%, color-mix(in srgb, var(--primary-violet) 28%, transparent), transparent 48%),
+    color-mix(in srgb, white 42%, transparent);
+  box-shadow:
+    0 12px 28px color-mix(in srgb, var(--primary-violet) 18%, transparent),
+    0 2px 6px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 1px 1px 0 var(--glass-inner-highlight),
+    inset -5px -6px 14px color-mix(in srgb, var(--primary-violet) 14%, transparent);
+  -webkit-backdrop-filter: blur(14px) saturate(1.2);
+  backdrop-filter: blur(14px) saturate(1.2);
+  transition: transform 0.48s var(--spring);
+}
+.dial-refract {
+  position: absolute;
+  inset: 4px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--primary-violet) 12%, transparent);
+  background: radial-gradient(circle at 28% 24%, color-mix(in srgb, white 55%, transparent), transparent 42%);
+  pointer-events: none;
+}
+.dial-trigger span:not(.dial-refract) {
+  position: relative;
+  z-index: 1;
+  font-size: 11px;
+  font-weight: 780;
+  letter-spacing: -0.02em;
+}
+.mode-dial.open .dial-trigger {
+  transform: rotate(108deg) scale(0.92);
+}
+.dial-orbit {
+  position: absolute;
+  right: -8px;
+  top: -8px;
+  width: 148px;
+  height: 148px;
+  pointer-events: none;
+  opacity: 0;
+  transform: scale(0.55);
+  transform-origin: 78% 42%;
+  transition:
+    opacity 0.28s var(--liquid-ease-soft),
+    transform 0.48s var(--spring);
+}
+.mode-dial.open .dial-orbit {
+  opacity: 1;
+  transform: scale(1);
+  pointer-events: auto;
+}
+.dial-arc {
+  position: absolute;
+  width: 64px;
+  min-height: 52px;
+  padding: 8px 6px;
+  border: 1px solid var(--glass-rim);
+  border-radius: 20px;
+  background: color-mix(in srgb, white 70%, transparent);
+  box-shadow:
+    0 10px 24px color-mix(in srgb, var(--ink) 12%, transparent),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(16px) saturate(1.25);
+  backdrop-filter: blur(16px) saturate(1.25);
+  display: grid;
+  place-items: center;
+  font-weight: 780;
+  line-height: 1.1;
+  color: var(--ink);
+  cursor: pointer;
+  transition:
+    transform 0.36s var(--spring),
+    background 0.2s ease;
+}
+.dial-arc small {
+  display: block;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted-ink);
+  margin-top: 2px;
+}
+.dial-arc.base {
+  right: 78px;
+  top: 8px;
+  transform: rotate(-8deg);
+}
+.dial-arc.hard {
+  right: 18px;
+  top: 78px;
+  transform: rotate(6deg);
+}
+.dial-arc.active {
+  background: color-mix(in srgb, var(--primary-violet) 18%, white);
+  color: var(--primary-violet);
+  box-shadow:
+    0 12px 26px color-mix(in srgb, var(--primary-violet) 20%, transparent),
+    inset 0 1px white;
+}
+.dial-arc.hard.active {
+  background: color-mix(in srgb, var(--hard-plum) 16%, white);
+  color: var(--hard-plum);
+}
+.mode-dial.open .dial-arc.base {
+  transform: rotate(-8deg) translateY(-2px);
+}
+.mode-dial.open .dial-arc.hard {
+  transform: rotate(6deg) translateY(-2px);
+}
+.dial-options {
+  /* secondary list kept for tests / reduced-motion fallback, hidden by default chrome */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+}
+.mode-dial.open .dial-options {
+  /* keep clipped; radial is primary */
+  pointer-events: none;
+}
+.dial-risk {
+  position: absolute;
+  right: 0;
+  top: 156px;
+  width: 210px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 5px;
+  padding: 7px;
+  border-radius: 18px;
+  border: 1px solid var(--glass-rim);
+  background: color-mix(in srgb, white 74%, transparent);
+  box-shadow: 0 14px 32px color-mix(in srgb, var(--ink) 12%, transparent);
+  -webkit-backdrop-filter: blur(18px);
+  backdrop-filter: blur(18px);
+  animation: dial-risk-in 0.36s var(--spring);
+}
+.dial-risk button {
+  min-height: 40px;
+  border: 1px solid var(--divider);
+  border-radius: 12px;
+  background: transparent;
+  font-size: 10px;
+  font-weight: 650;
+  color: var(--muted-ink);
+  cursor: pointer;
+}
+.dial-risk button.active {
+  background: color-mix(in srgb, var(--hard-plum) 14%, white);
+  color: var(--hard-plum);
+  border-color: color-mix(in srgb, var(--hard-plum) 28%, transparent);
+}
+@keyframes dial-risk-in {
+  from {
+    opacity: 0;
+    transform: translateY(-8px) scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* —— Overview wallet closed state —— */
+.overview {
+  padding: 2px var(--gutter) 18px;
+  min-height: calc(100dvh - 160px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(12px, 2.2dvh, 18px);
+}
+.wallet-stage {
+  position: relative;
+  width: min(100%, 390px);
+  max-width: 100%;
+  height: clamp(318px, 46dvh, 372px);
+  min-height: 318px;
+  margin: 0 auto;
+  padding-top: clamp(8px, 2.4dvh, 22px);
+  isolation: isolate;
+  display: block;
+  aspect-ratio: auto;
+  overflow: hidden;
+}
+.wallet-aura {
+  position: absolute;
+  inset: 18% 0 2%;
+  z-index: -1;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--reserve-blue-violet) 22%, transparent), transparent 68%);
+  filter: blur(28px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.wallet-stack {
+  width: 100%;
+  height: 100%;
+  min-height: 300px;
+  position: relative;
+  border: 0;
+  background: none;
+  padding: 0;
+  perspective: 1200px;
+  transform-style: preserve-3d;
+  text-align: left;
+  cursor: pointer;
+  overflow: visible;
+}
+.wallet-stack:disabled {
+  cursor: default;
+}
+.wallet-ripple {
+  position: absolute;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 8;
+  background: radial-gradient(
+    circle,
+    color-mix(in srgb, white 55%, transparent) 0%,
+    color-mix(in srgb, var(--primary-violet) 18%, transparent) 42%,
+    transparent 70%
+  );
+  animation: wallet-ripple 0.62s var(--liquid-ease-soft) forwards;
+  mix-blend-mode: soft-light;
+}
+@keyframes wallet-ripple {
+  from {
+    transform: scale(0.2);
+    opacity: 0.75;
+  }
+  to {
+    transform: scale(1.15);
+    opacity: 0;
+  }
+}
+.wallet-layer {
+  position: absolute;
+  left: 1.5%;
+  width: 97%;
+  height: 62%;
+  border: 1px solid var(--glass-rim);
+  border-radius: 34px 34px 28px 28px;
+  padding: 18px 22px;
+  color: var(--ink);
+  overflow: hidden;
+  transform-origin: 50% 92%;
+  transform-style: preserve-3d;
+  -webkit-backdrop-filter: blur(16px) saturate(1.28);
+  backdrop-filter: blur(16px) saturate(1.28);
+  transition:
+    transform 0.5s var(--liquid-ease),
+    filter 0.45s var(--liquid-ease-soft),
+    box-shadow 0.45s ease,
+    opacity 0.35s ease;
+  box-shadow:
+    0 22px 48px color-mix(in srgb, var(--ink) 12%, transparent),
+    0 4px 12px color-mix(in srgb, var(--ink) 8%, transparent),
+    inset 0 1px 0 var(--glass-inner-highlight),
+    inset 0 -14px 28px color-mix(in srgb, var(--primary-violet) 8%, transparent),
+    inset 4px 0 12px color-mix(in srgb, white 28%, transparent);
+  will-change: transform;
+}
+.wallet-layer::before {
+  content: '';
+  position: absolute;
+  inset: -36% 12% 50% -28%;
+  background: radial-gradient(ellipse, color-mix(in srgb, white 86%, transparent), transparent 68%);
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+.wallet-layer::after {
+  content: '';
+  position: absolute;
+  inset: 2px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--primary-violet) 10%, transparent);
+  border-left-color: color-mix(in srgb, white 55%, transparent);
+  border-bottom-color: color-mix(in srgb, var(--ink) 10%, transparent);
+  pointer-events: none;
+}
+.wallet-layer.comfort {
+  top: 2%;
+  z-index: 1;
+  transform: translate3d(0, 0, -48px) scale(0.965);
+  background:
+    radial-gradient(circle at 82% 20%, color-mix(in srgb, white 55%, transparent), transparent 28%),
+    linear-gradient(
+      138deg,
+      color-mix(in srgb, var(--comfort-violet) 42%, white),
+      color-mix(in srgb, var(--comfort-violet) 28%, transparent) 55%,
+      color-mix(in srgb, var(--bg-pearl) 40%, white)
+    );
+}
+.wallet-layer.obligations {
+  top: 17%;
+  z-index: 2;
+  transform: translate3d(0, 0, -24px) scale(0.982);
+  background:
+    radial-gradient(circle at 18% 26%, color-mix(in srgb, white 60%, transparent), transparent 30%),
+    linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--obligation-terracotta) 38%, white),
+      color-mix(in srgb, var(--obligation-terracotta) 24%, transparent) 56%,
+      color-mix(in srgb, var(--bg-pearl) 45%, white)
+    );
+}
+.wallet-layer.reserve {
+  top: 33%;
+  z-index: 3;
+  height: 64%;
+  padding: 28px 22px 58px;
+  overflow: visible;
+  transform: translate3d(0, 0, 0) scale(1);
+  background:
+    radial-gradient(ellipse at 16% 2%, color-mix(in srgb, white 88%, transparent), transparent 34%),
+    radial-gradient(ellipse at 92% 70%, color-mix(in srgb, var(--reserve-blue-violet) 28%, transparent), transparent 46%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--reserve-blue-violet) 22%, white),
+      color-mix(in srgb, var(--reserve-blue-violet) 42%, white) 52%,
+      color-mix(in srgb, var(--comfort-violet) 18%, var(--reserve-blue-violet))
+    );
+  box-shadow:
+    0 28px 56px color-mix(in srgb, var(--reserve-blue-violet) 22%, transparent),
+    0 6px 14px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 1.5px 0 var(--glass-inner-highlight),
+    inset 0 -18px 34px color-mix(in srgb, var(--primary-violet) 10%, transparent),
+    inset 5px 0 14px color-mix(in srgb, white 42%, transparent);
+}
+.wallet-caustic {
+  position: absolute;
+  width: 160px;
+  height: 80px;
+  right: 4px;
+  top: 12px;
+  border-radius: 50%;
+  border: 11px solid color-mix(in srgb, white 18%, transparent);
+  transform: rotate(-25deg);
+  filter: blur(3px);
+  pointer-events: none;
+}
+.wallet-edge-tension {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 8% 50%, color-mix(in srgb, white 35%, transparent), transparent 18%),
+    radial-gradient(circle at 94% 42%, color-mix(in srgb, var(--primary-violet) 16%, transparent), transparent 16%);
+  mix-blend-mode: soft-light;
+  opacity: 0.85;
+}
+.wallet-layer-heading {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  position: relative;
+  z-index: 1;
+}
+.wallet-layer-heading svg {
+  width: 15px;
+  height: 15px;
+  stroke-width: 1.7;
+  opacity: 0.7;
+  color: color-mix(in srgb, var(--ink) 70%, var(--primary-violet));
+}
+.wallet-layer small {
+  font-size: 12px;
+  font-weight: 580;
+  letter-spacing: 0.01em;
+  opacity: 0.72;
+  color: var(--ink);
+}
+.wallet-layer > b {
+  position: relative;
+  z-index: 1;
+  font-size: 18px;
+  font-weight: 620;
+  font-variant-numeric: tabular-nums;
+  display: block;
+  margin-top: 4px;
+  letter-spacing: -0.03em;
+}
+.wallet-amount {
+  margin-top: 8px !important;
+  font-size: clamp(34px, 11.2vw, 50px) !important;
+  font-weight: 580 !important;
+  letter-spacing: -0.055em !important;
+  line-height: 1;
+  max-width: calc(100% - 52px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  color: var(--ink);
+}
+.safe-strip {
+  position: relative;
+  z-index: 1;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 14px;
+  min-height: 31px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: color-mix(in srgb, var(--ink) 78%, var(--primary-violet));
+  background: linear-gradient(
+    105deg,
+    color-mix(in srgb, var(--primary-violet) 22%, transparent),
+    color-mix(in srgb, var(--reserve-blue-violet) 26%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, white 42%, transparent);
+  box-shadow:
+    inset 0 1px color-mix(in srgb, white 55%, transparent),
+    0 5px 12px color-mix(in srgb, var(--primary-violet) 10%, transparent);
+  font-size: 12px;
+}
+.safe-strip svg {
+  width: 13px;
+  height: 13px;
+  flex: none;
+}
+.safe-strip strong {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.wallet-lip {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 54px;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 0 0 28px 28px;
+  background: linear-gradient(
+    180deg,
+    color-mix(in srgb, white 4%, transparent),
+    color-mix(in srgb, white 28%, transparent)
+  );
+  border-top: 1px solid color-mix(in srgb, white 40%, transparent);
+  box-shadow: inset 0 1px color-mix(in srgb, var(--primary-violet) 8%, transparent);
+}
+.wallet-lip em {
+  font-size: 11px;
+  font-style: normal;
+  color: color-mix(in srgb, var(--ink) 72%, transparent);
+}
+.wallet-lip b {
+  display: block;
+  font-size: 13px;
+  font-weight: 680;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+}
+.clasp {
+  position: absolute;
+  right: 10px;
+  top: 68px;
+  width: 68px;
+  height: 52px;
+  z-index: 6;
+  border-radius: 30px 12px 12px 30px;
+  border: 1px solid color-mix(in srgb, white 88%, transparent);
+  display: grid;
+  place-items: center;
+  background:
+    radial-gradient(circle at 25% 20%, color-mix(in srgb, white 92%, transparent), transparent 32%),
+    linear-gradient(
+      110deg,
+      color-mix(in srgb, white 72%, var(--reserve-blue-violet)),
+      color-mix(in srgb, var(--reserve-blue-violet) 42%, transparent)
+    );
+  -webkit-backdrop-filter: blur(12px) saturate(1.4);
+  backdrop-filter: blur(12px) saturate(1.4);
+  box-shadow:
+    0 12px 24px color-mix(in srgb, var(--reserve-blue-violet) 24%, transparent),
+    inset 1px 1px color-mix(in srgb, white 95%, transparent),
+    inset -7px -5px 13px color-mix(in srgb, var(--reserve-blue-violet) 18%, transparent);
+  transition: transform 0.22s var(--spring);
+}
+.clasp-neck {
+  position: absolute;
+  right: -1px;
+  inset-block: 7px;
+  width: 13px;
+  border-left: 1px solid color-mix(in srgb, white 50%, transparent);
+  background: color-mix(in srgb, var(--reserve-blue-violet) 10%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.clasp i {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  border: 1px solid color-mix(in srgb, var(--ink) 14%, transparent);
+  background: radial-gradient(
+    circle at 32% 28%,
+    white 0 10%,
+    color-mix(in srgb, white 70%, var(--reserve-blue-violet)) 43%,
+    color-mix(in srgb, var(--reserve-blue-violet) 40%, transparent)
+  );
+  box-shadow:
+    0 4px 9px color-mix(in srgb, var(--ink) 12%, transparent),
+    inset 0 2px 4px color-mix(in srgb, white 90%, transparent);
+}
+
+/* Press feedback: keep depth, slight compress + clasp bite */
+.wallet-stack:active:not(:disabled) .wallet-layer.comfort {
+  transform: translate3d(0, 2px, -48px) scale(0.955);
+}
+.wallet-stack:active:not(:disabled) .wallet-layer.obligations {
+  transform: translate3d(0, 2px, -24px) scale(0.972);
+}
+.wallet-stack:active:not(:disabled) .wallet-layer.reserve {
+  transform: translate3d(0, 2px, 0) scale(0.988);
+}
+.wallet-stack:active:not(:disabled) .clasp {
+  transform: translateX(-8px) scaleX(0.9) scaleY(0.96);
+}
+
+/* Opening fan of compact layers (continuous spatial handoff) */
+.wallet-is-open .wallet-stack .wallet-layer.comfort {
+  transform: translate3d(0, -18px, -90px) scale(0.9) rotateX(14deg);
+  filter: blur(0.2px);
+  opacity: 0.55;
+}
+.wallet-is-open .wallet-stack .wallet-layer.obligations {
+  transform: translate3d(0, -8px, -50px) scale(0.94) rotateX(8deg);
+  opacity: 0.7;
+}
+.wallet-is-open .wallet-stack .wallet-layer.reserve {
+  transform: translate3d(0, 6px, 20px) scale(1.02);
+  opacity: 0.35;
+}
+.wallet-is-open .wallet-stack .clasp {
+  transform: translateX(4px) rotate(8deg);
+  opacity: 0.4;
+}
+.wallet-is-open .assistant-capsule {
+  opacity: 0.35;
+  transform: translateY(8px) scale(0.98);
+  pointer-events: none;
+  transition:
+    opacity 0.4s ease,
+    transform 0.45s var(--liquid-ease);
+}
+
+/* —— Assistant capsule (compact morphing glass) —— */
+.assistant-capsule {
+  position: relative;
+  flex: none;
+  max-height: 18dvh;
+  min-height: 96px;
+  margin: 0;
+  padding: 14px 15px;
+  gap: 12px;
+  display: flex;
+  overflow: hidden;
+  border-radius: 28px;
+  border: 1px solid color-mix(in srgb, white 78%, transparent);
+  color: var(--ink);
+  background: linear-gradient(
+    125deg,
+    color-mix(in srgb, white 58%, transparent),
+    color-mix(in srgb, var(--bg-pearl) 40%, transparent)
+  );
+  box-shadow:
+    0 14px 34px color-mix(in srgb, var(--ink) 9%, transparent),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(16px) saturate(1.22);
+  backdrop-filter: blur(16px) saturate(1.22);
+  transition:
+    opacity 0.4s ease,
+    transform 0.45s var(--liquid-ease);
+}
+.assistant-shimmer {
+  position: absolute;
+  inset: -50% 40% 45% -20%;
+  transform: rotate(-12deg);
+  background: radial-gradient(ellipse, color-mix(in srgb, white 80%, transparent), transparent 68%);
+  pointer-events: none;
+}
+.lens-dot {
+  width: 38px;
+  height: 38px;
+  flex: none;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: var(--primary-violet);
+  background: radial-gradient(
+    circle at 30% 20%,
+    white,
+    color-mix(in srgb, var(--primary-violet) 22%, transparent)
+  );
+  box-shadow:
+    0 7px 15px color-mix(in srgb, var(--primary-violet) 12%, transparent),
+    inset 0 0 0 1px var(--glass-rim);
+}
+.lens-dot svg {
+  width: 18px;
+}
+.assistant-capsule small {
+  color: var(--primary-violet);
+  font-size: 11px;
+  font-weight: 750;
+}
+.assistant-capsule h2 {
+  font-size: clamp(15px, 4.4vw, 17px);
+  font-weight: 640;
+  letter-spacing: -0.025em;
+  margin: 2px 0 8px;
+  color: var(--ink);
+}
+.assistant-capsule > div {
+  flex: 1;
+  min-width: 0;
+}
+.assistant-capsule > div > div {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.assistant-capsule a {
+  min-height: 32px;
+  border: 1px solid var(--divider);
+  border-radius: 999px;
+  padding: 6px 11px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 11px;
+  background: color-mix(in srgb, white 30%, transparent);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.assistant-capsule a:last-child {
+  margin-left: auto;
+  color: var(--primary-violet);
+  background: color-mix(in srgb, var(--primary-violet) 12%, transparent);
+  border-color: color-mix(in srgb, var(--primary-violet) 18%, transparent);
+}
+.assistant-capsule a svg {
+  width: 12px;
+}
+
+/* —— Bottom nav water-lens —— */
+.bottom-nav {
+  grid-template-columns: repeat(4, 1fr);
+  left: 50%;
+  right: auto;
+  transform: translateX(-50%);
+  bottom: max(8px, var(--safe-bottom));
+  width: min(calc(100% - 28px), 402px);
+  max-width: calc(100vw - 28px);
+  height: 66px;
+  padding: 5px 8px;
+  border-radius: 26px;
+  border: 1px solid color-mix(in srgb, white 80%, transparent);
+  background: color-mix(in srgb, var(--bg-pearl) 42%, white);
+  box-shadow:
+    0 14px 36px color-mix(in srgb, var(--ink) 12%, transparent),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(22px) saturate(1.3);
+  backdrop-filter: blur(22px) saturate(1.3);
+  color: var(--muted-ink);
+  box-sizing: border-box;
+}
+.bottom-nav a {
+  min-height: 54px;
+  font-size: 9px;
+  font-weight: 560;
+  gap: 0;
+  color: var(--muted-ink);
+  transition: transform 0.32s var(--spring), color 0.2s ease;
+}
+.bottom-nav a b {
+  font-weight: 620;
+}
+.nav-lens {
+  width: 46px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  transition:
+    transform 0.36s var(--spring),
+    background 0.28s ease,
+    box-shadow 0.28s ease;
+}
+.bottom-nav svg {
+  width: 19px;
+  stroke-width: 1.7;
+}
+.bottom-nav a.active {
+  color: var(--primary-violet);
+  transform: translateY(-3px);
+  font-weight: 650;
+}
+.bottom-nav a.active .nav-lens {
+  transform: scale(1.08) translateY(-1px);
+  background:
+    radial-gradient(circle at 34% 18%, color-mix(in srgb, white 95%, transparent), transparent 42%),
+    radial-gradient(circle at 50% 80%, color-mix(in srgb, var(--primary-violet) 28%, transparent), transparent 55%),
+    color-mix(in srgb, var(--primary-violet) 16%, transparent);
+  box-shadow:
+    0 8px 16px color-mix(in srgb, var(--primary-violet) 16%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, white 70%, transparent),
+    inset 0 -6px 12px color-mix(in srgb, var(--primary-violet) 12%, transparent);
+}
+
+/* —— Money expanded: continuous fan, not a foreign modal —— */
+.money-view {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  max-width: var(--canvas);
+  margin: auto;
+  min-height: 100dvh;
+  overflow-x: hidden;
+  overflow-y: auto;
+  color: var(--ink);
+  background:
+    radial-gradient(58% 26% at 74% 6%, color-mix(in srgb, var(--comfort-violet) 18%, transparent), transparent 74%),
+    radial-gradient(70% 42% at 28% 70%, color-mix(in srgb, var(--reserve-blue-violet) 14%, transparent), transparent 72%),
+    var(--bg-pearl);
+  overscroll-behavior: contain;
+  display: flex;
+  flex-direction: column;
+  animation: money-fan-in 0.52s var(--liquid-ease) both;
+}
+.money-view.money-phase-closing {
+  animation: money-fan-out 0.4s var(--liquid-ease-soft) both;
+}
+.money-backdrop-light {
+  position: absolute;
+  inset: 100px -40px auto;
+  height: 380px;
+  background: radial-gradient(ellipse, color-mix(in srgb, var(--reserve-blue-violet) 16%, transparent), transparent 68%);
+  filter: blur(24px);
+  pointer-events: none;
+  display: block;
+}
+@keyframes money-fan-in {
+  from {
+    opacity: 0.35;
+    transform: translateY(10%) scale(0.96);
+    clip-path: inset(18% 4% 40% 4% round 34px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    clip-path: inset(0 0 0 0 round 0);
+  }
+}
+@keyframes money-fan-out {
+  from {
+    opacity: 1;
+    transform: none;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(8%) scale(0.97);
+  }
+}
+.money-view > .money-header,
+.money-view > header {
+  position: relative;
+  z-index: 6;
+  width: min(100%, var(--canvas));
+  height: auto;
+  min-height: calc(108px + var(--safe-top));
+  margin: 0 auto;
+  padding: calc(14px + var(--safe-top)) var(--gutter) 8px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  animation: money-header-in 0.48s var(--liquid-ease) both;
+}
+@keyframes money-header-in {
+  from {
+    opacity: 0;
+    transform: translateY(-12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.money-header > div {
+  display: grid;
+  min-width: 0;
+  flex: 1;
+}
+.money-header > div > span {
+  font-size: 22px;
+  font-weight: 720;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+}
+.money-header small {
+  margin-top: 8px;
+  color: var(--muted-ink);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+.money-view > .money-header h1,
+.money-view > header h1 {
+  max-width: calc(100vw - 126px);
+  margin: 2px 0 0;
+  overflow: hidden;
+  color: var(--ink);
+  font-size: clamp(30px, 9.6vw, 42px);
+  font-weight: 600;
+  line-height: 1.05;
+  letter-spacing: -0.045em;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+.money-header .demo-mark {
+  margin: 4px 46px 0 auto;
+  color: var(--muted-ink);
+}
+.money-view > .money-header button,
+.money-view > header button {
+  position: absolute;
+  top: calc(14px + var(--safe-top));
+  right: var(--gutter);
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  color: var(--ink);
+  border: 1px solid var(--glass-rim);
+  border-radius: 50%;
+  background: color-mix(in srgb, white 48%, transparent);
+  box-shadow:
+    0 8px 20px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 1px var(--glass-inner-highlight);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  cursor: pointer;
+}
+.money-view > .money-header button svg {
+  width: 18px;
+}
+.expanded-scene {
+  position: relative;
+  width: min(100%, var(--canvas));
+  min-height: 560px;
+  margin: 0 auto;
+  padding: 0 var(--gutter) calc(24px + var(--safe-bottom));
+  flex: 1;
+  perspective: 1100px;
+}
+.expanded-fan {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 124px;
+  margin: 0;
+  perspective: 900px;
+  transform-style: preserve-3d;
+}
+.expanded-fan > i {
+  position: absolute;
+  left: 2%;
+  width: 96%;
+  height: 104px;
+  border: 1px solid color-mix(in srgb, white 86%, transparent);
+  border-radius: 32px 32px 20px 20px;
+  -webkit-backdrop-filter: blur(16px) saturate(1.32);
+  backdrop-filter: blur(16px) saturate(1.32);
+  box-shadow:
+    0 -2px 8px color-mix(in srgb, var(--ink) 5%, transparent),
+    0 14px 26px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 1px var(--glass-inner-highlight),
+    inset 0 -10px 22px color-mix(in srgb, var(--primary-violet) 6%, transparent);
+  transform-origin: 50% 100%;
+  animation: fan-layer-in 0.55s var(--liquid-ease) both;
+}
+.expanded-fan .fan-comfort {
+  top: 0;
+  z-index: 1;
+  background:
+    radial-gradient(circle at 78% 20%, color-mix(in srgb, white 55%, transparent), transparent 32%),
+    linear-gradient(
+      138deg,
+      color-mix(in srgb, var(--comfort-violet) 38%, white),
+      color-mix(in srgb, var(--comfort-violet) 18%, transparent) 58%,
+      color-mix(in srgb, white 45%, transparent)
+    );
+  transform: translate3d(0, -10px, -42px) rotateX(10deg) scale(0.91);
+  animation-delay: 0.02s;
+}
+.expanded-fan .fan-obligations {
+  top: 24px;
+  z-index: 2;
+  background:
+    radial-gradient(circle at 20% 24%, color-mix(in srgb, white 50%, transparent), transparent 30%),
+    linear-gradient(
+      140deg,
+      color-mix(in srgb, var(--obligation-terracotta) 32%, white),
+      color-mix(in srgb, var(--obligation-terracotta) 16%, transparent) 56%,
+      color-mix(in srgb, white 42%, transparent)
+    );
+  transform: translate3d(0, -2px, -22px) rotateX(5deg) scale(0.955);
+  animation-delay: 0.08s;
+}
+.expanded-fan .fan-reserve {
+  top: 48px;
+  z-index: 3;
+  background:
+    radial-gradient(ellipse at 18% 8%, color-mix(in srgb, white 70%, transparent), transparent 36%),
+    linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--reserve-blue-violet) 26%, white),
+      color-mix(in srgb, var(--reserve-blue-violet) 22%, transparent) 55%,
+      color-mix(in srgb, var(--comfort-violet) 12%, white)
+    );
+  transform: translate3d(0, 6px, 0) scale(0.99);
+  animation-delay: 0.12s;
+}
+@keyframes fan-layer-in {
+  from {
+    opacity: 0.2;
+    transform: translate3d(0, 40px, 0) scale(0.98);
+  }
+}
+.fan-clasp {
+  position: absolute;
+  z-index: 5;
+  right: 10px;
+  top: 74px;
+  width: 66px;
+  height: 48px;
+  border-radius: 28px 12px 12px 28px;
+  border: 1px solid color-mix(in srgb, white 90%, transparent);
+  background:
+    radial-gradient(circle at 28% 22%, color-mix(in srgb, white 90%, transparent), transparent 34%),
+    linear-gradient(
+      120deg,
+      color-mix(in srgb, white 78%, transparent),
+      color-mix(in srgb, var(--reserve-blue-violet) 38%, transparent)
+    );
+  box-shadow:
+    0 10px 22px color-mix(in srgb, var(--reserve-blue-violet) 18%, transparent),
+    inset 0 1px white,
+    inset -6px -4px 12px color-mix(in srgb, var(--reserve-blue-violet) 14%, transparent);
+  display: grid;
+  place-items: center;
+  -webkit-backdrop-filter: blur(12px) saturate(1.35);
+  backdrop-filter: blur(12px) saturate(1.35);
+  animation: fan-layer-in 0.55s var(--liquid-ease) both;
+  animation-delay: 0.16s;
+}
+.fan-clasp .clasp-neck {
+  position: absolute;
+  right: -1px;
+  inset-block: 7px;
+  width: 12px;
+  border-left: 1px solid color-mix(in srgb, white 50%, transparent);
+  background: color-mix(in srgb, var(--reserve-blue-violet) 10%, transparent);
+  border-radius: 0 8px 8px 0;
+}
+.fan-clasp > i {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 32% 28%,
+    white 0 12%,
+    color-mix(in srgb, white 72%, var(--reserve-blue-violet)) 45%,
+    color-mix(in srgb, var(--reserve-blue-violet) 36%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, var(--ink) 12%, transparent);
+  box-shadow:
+    0 3px 8px color-mix(in srgb, var(--ink) 10%, transparent),
+    inset 0 2px 3px color-mix(in srgb, white 85%, transparent);
+}
+.money-surface {
+  position: relative;
+  z-index: 3;
+  min-height: 420px;
+  margin: -22px 0 0;
+  padding: 14px 13px 18px;
+  overflow: visible;
+  color: var(--ink);
+  border: 1px solid color-mix(in srgb, white 86%, transparent);
+  border-radius: 32px;
+  background: linear-gradient(
+    145deg,
+    color-mix(in srgb, white 72%, transparent),
+    color-mix(in srgb, var(--reserve-blue-violet) 14%, white)
+  );
+  box-shadow:
+    0 -2px 6px color-mix(in srgb, white 60%, transparent),
+    0 22px 48px color-mix(in srgb, var(--ink) 12%, transparent),
+    inset 0 1px white,
+    inset 0 18px 44px color-mix(in srgb, white 18%, transparent);
+  -webkit-backdrop-filter: blur(20px) saturate(1.25);
+  backdrop-filter: blur(20px) saturate(1.25);
+  animation: money-surface-in 0.55s var(--liquid-ease) both;
+  animation-delay: 0.1s;
+}
+@keyframes money-surface-in {
+  from {
+    opacity: 0.3;
+    transform: translateY(28px) scale(0.97);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.money-surface::before {
+  content: '';
+  position: absolute;
+  inset: 1px;
+  border-radius: inherit;
+  border: 1px solid color-mix(in srgb, var(--primary-violet) 8%, transparent);
+  pointer-events: none;
+  display: block;
+}
+.money-tabs {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  max-width: 100%;
+  min-height: 42px;
+  margin: 0 0 10px;
+  padding: 3px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  border: 1px solid color-mix(in srgb, white 54%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, white 22%, transparent);
+}
+.money-tabs button {
+  min-height: 34px;
+  border: 0;
+  border-radius: 13px;
+  background: none;
+  font-size: 12px;
+  color: var(--muted-ink);
+  cursor: pointer;
+}
+.money-tabs button[aria-selected='true'] {
+  color: var(--ink);
+  font-weight: 680;
+  background: radial-gradient(circle at 34% 15%, white, color-mix(in srgb, var(--bg-pearl) 70%, white));
+  box-shadow:
+    0 5px 14px color-mix(in srgb, var(--primary-violet) 12%, transparent),
+    inset 0 0 0 1px color-mix(in srgb, white 80%, transparent);
+}
+.money-scroll {
+  position: relative;
+  max-height: none;
+  overflow: visible;
+  padding: 0;
+}
+.movement,
+.transactions-preview {
+  margin: 8px 0 12px;
+  padding: 14px;
+  border-radius: 22px;
+  color: var(--ink);
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, white 40%, transparent),
+    color-mix(in srgb, var(--bg-pearl) 30%, transparent)
+  );
+  border: 1px solid color-mix(in srgb, white 55%, transparent);
+  box-shadow:
+    0 10px 22px color-mix(in srgb, var(--ink) 6%, transparent),
+    inset 0 1px color-mix(in srgb, white 70%, transparent);
+}
+.movement-heading,
+.transactions-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.movement-heading small,
+.movement-heading span {
+  font-size: 10px;
+  color: var(--muted-ink);
+}
+.movement h2,
+.transactions-preview h2 {
+  font-size: 16px;
+  font-weight: 640;
+  letter-spacing: -0.025em;
+  margin: 1px 0 8px;
+  color: var(--ink);
+}
+.movement svg {
+  width: 100%;
+  height: 140px;
+  margin-top: 4px;
+  overflow: visible;
+}
+.movement line {
+  stroke: var(--divider);
+  stroke-width: 1;
+  stroke-dasharray: 3 5;
+}
+.chart-area {
+  fill: url(#chartFill);
+}
+.chart-curve {
+  fill: none;
+  stroke: var(--primary-violet);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.chart-point-halo {
+  fill: color-mix(in srgb, var(--primary-violet) 16%, transparent);
+}
+.chart-point {
+  fill: white;
+  stroke: var(--primary-violet);
+  stroke-width: 2;
+}
+.transactions-heading {
+  margin-bottom: 5px;
+}
+.transactions-heading a {
+  width: 35px;
+  height: 35px;
+  display: grid;
+  place-items: center;
+  color: var(--muted-ink);
+  border-radius: 50%;
+  background: color-mix(in srgb, white 30%, transparent);
+  text-decoration: none;
+}
+.transactions-heading svg {
+  width: 15px;
+}
+.transactions-preview article {
+  display: grid;
+  grid-template-columns: 37px minmax(0, 1fr) auto;
+  min-height: 56px;
+  gap: 10px;
+  padding: 8px 6px;
+  margin: 4px 0;
+  border: 1px solid color-mix(in srgb, white 35%, transparent);
+  border-radius: 16px;
+  background: color-mix(in srgb, white 22%, transparent);
+  color: var(--ink);
+}
+.transactions-preview article > span {
+  width: 35px;
+  height: 35px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+}
+.transactions-preview article > span svg {
+  width: 16px;
+}
+.transactions-preview .income {
+  color: var(--positive-sage);
+  background: color-mix(in srgb, var(--positive-sage) 18%, transparent);
+}
+.transactions-preview .expense {
+  color: var(--obligation-terracotta);
+  background: color-mix(in srgb, var(--obligation-terracotta) 16%, transparent);
+}
+.transactions-preview article b {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 12px;
+  font-weight: 640;
+  color: var(--ink);
+}
+.transactions-preview article small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 9px;
+  color: var(--muted-ink);
+}
+.transactions-preview article > strong {
+  white-space: nowrap;
+  font-size: 11px;
+  font-weight: 660;
+  font-variant-numeric: tabular-nums;
+}
+.income-text {
+  color: var(--positive-sage) !important;
+}
+.expense-text {
+  color: var(--obligation-terracotta) !important;
+}
+
+/* Plan risk uses tokens */
+.risk-section button.active {
+  background: var(--hard-plum);
+  color: white;
+}
+
+/* Reduced motion: calm crossfade + scale, no 3D fan thrash */
+@media (prefers-reduced-motion: reduce) {
+  .wallet-layer,
+  .wallet-is-open .wallet-stack .wallet-layer.comfort,
+  .wallet-is-open .wallet-stack .wallet-layer.obligations,
+  .wallet-is-open .wallet-stack .wallet-layer.reserve {
+    transform: none !important;
+    filter: none !important;
+    transition: opacity 0.2s ease !important;
+  }
+  .wallet-stack:active:not(:disabled) .wallet-layer {
+    transform: scale(0.99) !important;
+  }
+  .money-view,
+  .money-view.money-phase-closing,
+  .expanded-fan > i,
+  .fan-clasp,
+  .money-surface,
+  .money-view > .money-header,
+  .dial-orbit,
+  .dial-risk,
+  .wallet-ripple {
+    animation: wallet-fade 0.2s ease both !important;
+  }
+  .mode-dial.open .dial-trigger {
+    transform: scale(0.96) !important;
+  }
+  .bottom-nav a.active {
+    transform: none;
+  }
+}
+
+@media (max-width: 359px) {
+  .wallet-stage {
+    width: 100%;
+    height: 310px;
+    min-height: 300px;
+  }
+  .wallet-layer {
+    padding-inline: 16px;
+  }
+  .clasp {
+    right: -6px;
+    width: 62px;
+    top: 60px;
+  }
+  .safe-strip span {
+    display: none;
+  }
+  .assistant-capsule {
+    min-height: 92px;
+    max-height: 20dvh;
+  }
+  .dial-risk {
+    width: 180px;
+  }
+}
+@media (max-height: 700px) {
+  .wallet-stage {
+    height: 300px;
+    min-height: 290px;
+  }
+  .assistant-capsule {
+    max-height: 16dvh;
+  }
+}
+@supports not ((-webkit-backdrop-filter: blur(2px)) or (backdrop-filter: blur(2px))) {
+  .wallet-layer,
+  .assistant-capsule,
+  .money-surface,
+  .dial-trigger,
+  .dial-arc,
+  .bottom-nav {
+    background-color: color-mix(in srgb, var(--bg-pearl) 40%, white);
+  }
+}

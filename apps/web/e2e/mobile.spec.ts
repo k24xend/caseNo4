@@ -97,18 +97,19 @@ test('liquid wallet, mode, comfort and advice lifecycle persist', async ({ page 
   await page.getByRole('button', { name: 'Закрыть кошелёк' }).click();
   await expect(page.getByRole('button', { name: 'Открыть кошелёк и историю' })).toBeFocused();
   await page.getByRole('button', { name: /Режим base/i }).click();
-  await page.getByRole('button', { name: /Hard/ }).click();
-  await page.getByRole('link', { name: /План/ }).click();
+  await page.getByRole('button', { name: /^Hard/ }).click();
+  await page.getByLabel('Основная навигация').getByRole('link', { name: /План/ }).click();
   await expect(page.getByText(/Hard · интенсивно/)).toBeVisible();
   await page.getByRole('button', { name: 'Высокий' }).click();
-  await page.getByRole('link', { name: /Профиль/ }).click();
+  await page.getByLabel('Основная навигация').getByRole('link', { name: /Профиль/ }).click();
   await page.getByLabel('Мягкий лимит в месяц').fill('10000');
-  await page.getByRole('link', { name: /Помощник/ }).click();
+  await page.getByLabel('Основная навигация').getByRole('link', { name: /Помощник/ }).click();
   await page.getByRole('button', { name: 'Не предлагать снова' }).first().click();
   await page.getByRole('button', { name: 'Архив' }).click();
   await expect(page.getByRole('button', { name: /Вернуть/ })).toBeVisible();
   await page.getByRole('button', { name: /Вернуть/ }).click();
   await page.reload();
+  await page.getByRole('button', { name: 'Архив' }).click();
   await expect(page.getByText('Архив пуст')).toBeVisible();
   await noOverflow(page);
   expect(errors).toEqual([]);
@@ -133,7 +134,7 @@ test('persisted dark theme stays coherent between overview and Money', async ({ 
   await enter(page);
   await page.getByRole('link', { name: /Профиль/ }).click();
   await page.getByRole('button', { name: 'Тёмная' }).click();
-  await page.getByRole('link', { name: /Сегодня/ }).click();
+  await page.getByLabel('Основная навигация').getByRole('link', { name: /Обзор|Сегодня|Overview/ }).click();
   const compactTheme = await page.evaluate(() => ({
     theme: document.documentElement.dataset.theme,
     page: getComputedStyle(document.documentElement).getPropertyValue('--page-bg').trim(),
