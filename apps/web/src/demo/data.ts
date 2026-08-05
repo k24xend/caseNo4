@@ -51,6 +51,9 @@ const labels = [
   ['expense', 420000, 'Транспорт', 'Проездной'],
   ['income', 7200000, 'Работа', 'Аванс'],
   ['expense', 128000, 'Продукты', 'Магазин'],
+  ['expense', 890000, 'Развлечения', 'Кино и ужин'],
+  ['expense', 2500000, 'Покупки', 'Техника'],
+  ['expense', 95000, 'Связь', 'Мобильная связь'],
 ] as const;
 function baseline(scenario: Scenario, date: Date): FinancialInputs {
   if (scenario === 'empty')

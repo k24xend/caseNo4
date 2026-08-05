@@ -48,7 +48,7 @@ export function HeaderChrome({ compact }: { compact?: boolean }) {
         </div>
         {!compact && (
           <div className="min-w-0">
-            <div className="truncate text-[21px] font-semibold tracking-tight text-ink">Vyhod</div>
+            <div className="truncate text-[21px] font-semibold tracking-tight text-ink">{s.appName}</div>
             <div className="truncate text-[11px] font-medium leading-4 text-muted">{s.brandTag}</div>
           </div>
         )}

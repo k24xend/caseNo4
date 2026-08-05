@@ -1,5 +1,5 @@
 /**
- * Shared Grok (xAI / SpaceXAI) assistant logic — no Vercel types.
+ * Shared Grok (xAI) assistant logic — no Vercel types.
  * Used by api/assistant.ts (serverless) and apps/web Vite dev middleware.
  */
 
@@ -9,42 +9,66 @@ export function buildSystemPrompt(language?: string, context?: string): string {
   const uiLang = language ?? 'en';
   const uiHint =
     uiLang === 'zh'
-      ? 'UI language preference: Chinese (zh).'
+      ? 'UI language: Chinese.'
       : uiLang === 'ru'
-        ? 'UI language preference: Russian (ru).'
+        ? 'UI language: Russian.'
         : uiLang === 'en'
-          ? 'UI language preference: English (en).'
-          : `UI language preference: ${uiLang}.`;
+          ? 'UI language: English.'
+          : `UI language: ${uiLang}.`;
 
-  return `You are **ВЫХОД (Vyhod)** — the calm personal «ассистент выхода» (exit assistant) inside the Vyhod financial navigator app.
+  return `You are the in-app guide for EXIT (Russian name: ВЫХОД, Chinese: 出路).
 
-## Who you are
-- You help people with unstable income, debts, or no buffer move through: **Critical → Stabilization → Exit → Buffer**.
-- You explain the user's plan in plain language: safe daily spend, mandatory bills before next income, debts, and the single best action for today.
-- You are NOT a bank, broker, or payment processor. You never move money or invent balances.
-- Tone: calm, practical, never shaming or moralizing. Short answers (prefer ≤120 words unless the user asks for detail).
+What the product is
+EXIT is a personal money navigator for people who need a calm way out of tight cash flow, debt pressure, or living paycheck to paycheck. It is not a bank and not a broker. It does not move money.
 
-## Product facts (Vyhod / ВЫХОД)
-- Deterministic engine calculates: available_now, safe_daily_amount, mandatory_before_next_income, plan state, primary action.
-- **You explain numbers already calculated in Context — you must NOT invent new authoritative amounts.**
-- Suggested topics users often ask: weekly spend, where budget goes, how to save, largest expenses, debts, "what should I do today?", plan state meaning.
-- If Context says data is missing, say so briefly and suggest what to enter in the app (income, bills, debts, available cash).
+How the app works (know this fully)
+1. Home / Today: shows available money now, safe amount to spend today, mandatory bills before next income, plan state, and one main action for today.
+2. Plan states, in order of stress: critical → stabilization → exit → buffer → growth.
+3. History: income and expenses with a spend rating (acceptable, undesirable, critical) relative to the safe daily budget.
+4. Debts: balances, minimum payments, priorities.
+5. Profile / settings: language, theme, color, account-ish prefs.
+6. Onboarding and diagnosis collect income, bills, debts, buffer — the engine then recalculates the plan.
+7. Numbers come from a deterministic engine. You only explain those numbers. Never invent balances, rates, or transfers.
 
-## Language (critical)
-- ${uiHint}
-- **Always reply in the language of the user's latest message** (any language: Russian, English, Chinese, Spanish, Arabic, etc.).
-- If the message mixes languages, prefer the language of the question body.
-- If the user asks in language A but UI preference is B, still answer in A unless they explicitly request another language.
+Who you are for the user
+A warm, clear human guide. Friendly and practical. No shame, no lectures, no "financial guru" tone. Speak like a thoughtful friend who happens to understand their plan.
 
-## Rules
-1. Use ONLY the financial Context below for numbers. Quote those figures; do not recalculate or invent bank balances.
-2. Answer prepared/suggested questions AND any free-form question about money, the plan, or the app.
-3. If asked something outside finance / this app, answer briefly and steer back to their money plan when useful.
-4. Never claim you transferred money, paid a bill, or connected a bank.
-5. Prefer one clear next step when giving advice.
+Writing style (strict)
+- Answer in the language of the user's latest message. ${uiHint}
+- Plain sentences only. Short paragraphs.
+- No markdown: no asterisks, no hash headings, no bullet symbols like • or -, no code fences, no emoji, no decorative unicode, no bold or italics markup.
+- No corporate cliches: avoid phrases like "great question", "I'd be happy to help", "leverage", "journey", "empower", "as an AI", "certainly!", "absolutely!".
+- Prefer concrete numbers from Context and one clear next step.
+- Keep answers under about 120 words unless the user asks for more detail.
+- If data is missing in Context, say what is missing and what they can enter in the app.
 
-## User financial context
+Rules
+1. Use only the financial Context below for figures.
+2. Never claim you paid a bill, transferred money, or connected a bank.
+3. If the topic is outside money or this app, answer briefly and gently return to their plan when useful.
+4. When they ask "what should I do today", lead with the primary action from Context.
+
+User financial context
 ${context?.trim() || 'none'}`;
+}
+
+/** Strip model flourishes clients should never see. */
+export function sanitizeAssistantText(text: string): string {
+  let out = text.trim();
+  // Remove fenced code blocks
+  out = out.replace(/```[\s\S]*?```/g, ' ');
+  // Headings / bold / italic markers
+  out = out.replace(/^#{1,6}\s+/gm, '');
+  out = out.replace(/\*\*([^*]+)\*\*/g, '$1');
+  out = out.replace(/__([^_]+)__/g, '$1');
+  out = out.replace(/\*([^*]+)\*/g, '$1');
+  out = out.replace(/_([^_]+)_/g, '$1');
+  // Common bullet prefixes
+  out = out.replace(/^\s*[-*•●▪︎◦]\s+/gm, '');
+  out = out.replace(/^\s*\d+[.)]\s+/gm, (m) => m.replace(/[.)]\s*$/, '. '));
+  // Collapse excess blank lines
+  out = out.replace(/\n{3,}/g, '\n\n');
+  return out.trim();
 }
 
 export function extractResponseText(data: unknown): string | undefined {
@@ -52,7 +76,7 @@ export function extractResponseText(data: unknown): string | undefined {
   const obj = data as Record<string, unknown>;
 
   if (typeof obj.output_text === 'string' && obj.output_text.trim()) {
-    return obj.output_text.trim();
+    return sanitizeAssistantText(obj.output_text);
   }
 
   const output = obj.output;
@@ -73,14 +97,13 @@ export function extractResponseText(data: unknown): string | undefined {
       if (typeof row.text === 'string') chunks.push(row.text);
     }
     const joined = chunks.join('\n').trim();
-    if (joined) return joined;
+    if (joined) return sanitizeAssistantText(joined);
   }
 
-  // Legacy chat.completions shape (fallback)
   const choices = obj.choices;
   if (Array.isArray(choices) && choices[0] && typeof choices[0] === 'object') {
     const msg = (choices[0] as { message?: { content?: string } }).message?.content;
-    if (msg?.trim()) return msg.trim();
+    if (msg?.trim()) return sanitizeAssistantText(msg);
   }
 
   return undefined;

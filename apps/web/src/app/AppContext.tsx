@@ -95,6 +95,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
     document.documentElement.dataset.scheme = settings.colorScheme ?? 'mint';
     document.documentElement.classList.toggle('dark', dark);
     document.documentElement.lang = settings.language;
+    const names = { ru: 'ВЫХОД', en: 'EXIT', zh: '出路' } as const;
+    document.title = names[settings.language] ?? names.en;
   }, [settings.theme, settings.language, settings.colorScheme]);
   useEffect(() => {
     if (dataMode === 'demo' && settingsState) void refresh();

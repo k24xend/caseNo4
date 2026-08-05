@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react';
 import { useApp } from '../../app/AppContext';
 import { HeaderChrome } from '../../components/HeaderChrome';
 import { formatMoney } from '../../domain/money';
+import { rateTransaction, type SpendRating } from '../../domain/spendRating';
 import { formatDate, t } from '../../i18n';
 
 export function Transactions() {
@@ -30,11 +31,18 @@ export function Transactions() {
   if (!data) return null;
   const currency = data.currency;
 
+  const ratingLabel = (r: SpendRating) => {
+    if (r === 'ok') return s.spendOk;
+    if (r === 'caution') return s.spendCaution;
+    return s.spendCritical;
+  };
+
   return (
     <div>
       <HeaderChrome compact />
       <h1 className="fs-page-title mt-4">{s.historyTitle}</h1>
       <p className="fs-page-sub">{s.historySub}</p>
+      <p className="fs-page-hint">{s.spendRatingHint}</p>
 
       <div className="fs-stats">
         <div className="fs-stat">
@@ -64,6 +72,7 @@ export function Transactions() {
           {list.length ? (
             list.map((tx) => {
               const incomeTx = tx.kind === 'income';
+              const rating = rateTransaction(tx, data.plan);
               return (
                 <li key={tx.id}>
                   <span className={`fs-tx-ic ${incomeTx ? 'income' : 'expense'}`}>
@@ -74,6 +83,11 @@ export function Transactions() {
                     <small>
                       {tx.category} · {formatDate(tx.occurred_at, settings.language)}
                     </small>
+                    {rating && (
+                      <span className={`fs-spend-badge ${rating}`} title={s.spendRatingHint}>
+                        {ratingLabel(rating)}
+                      </span>
+                    )}
                   </div>
                   <strong className={incomeTx ? 'income' : 'expense'}>
                     {incomeTx ? '+' : '−'}

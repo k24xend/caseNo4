@@ -482,6 +482,13 @@ a {
   color: var(--ink);
 }
 
+.fs-page-hint {
+  margin: 4px 0 0;
+  font-size: 12px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
 .fs-page-sub {
   margin: 4px 0 16px;
   font-size: 13px;
@@ -624,6 +631,38 @@ a {
 }
 .fs-tx-list li strong.income {
   color: var(--positive);
+}
+
+.fs-spend-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 650;
+  letter-spacing: 0.01em;
+  line-height: 1.4;
+}
+.fs-spend-badge.ok {
+  color: #1f7a45;
+  background: color-mix(in srgb, #3ecf8e 16%, transparent);
+}
+.fs-spend-badge.caution {
+  color: #9a6b00;
+  background: color-mix(in srgb, #f0b429 18%, transparent);
+}
+.fs-spend-badge.critical {
+  color: #b42318;
+  background: color-mix(in srgb, #f04438 16%, transparent);
+}
+[data-theme='dark'] .fs-spend-badge.ok {
+  color: #6ee7a8;
+}
+[data-theme='dark'] .fs-spend-badge.caution {
+  color: #fcd34d;
+}
+[data-theme='dark'] .fs-spend-badge.critical {
+  color: #fda4af;
 }
 
 /* —— Assistant premium —— */

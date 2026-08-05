@@ -8,9 +8,11 @@ import { dataMode, useApp } from '../../app/AppContext';
 import { Banner, Field } from '../../components/ui';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../../components/ui/card';
+import { t } from '../../i18n';
 
 export function Welcome() {
   const { patch, settings } = useApp();
+  const s = t(settings.language);
   const [mode, setMode] = useState<'welcome' | 'login' | 'register'>('welcome');
   const [show, setShow] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -49,10 +51,10 @@ export function Welcome() {
     <div className="welcome-mint mx-auto flex min-h-dvh w-full max-w-lg flex-col justify-center gap-6 px-4 py-8">
       <div className="space-y-4 text-center">
         <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border border-border bg-card text-base font-semibold text-primary shadow-sm">
-          В
+          {s.appMark}
         </div>
-        <p className="text-sm font-medium text-muted-foreground">Финансовый навигатор</p>
-        <h1 className="text-3xl font-semibold tracking-tight">ВЫХОД</h1>
+        <p className="text-sm font-medium text-muted-foreground">{s.brandTag}</p>
+        <h1 className="text-3xl font-semibold tracking-tight">{s.appName}</h1>
         <p className="text-base font-medium leading-relaxed text-foreground">
           Не просто считай расходы.
           <br />

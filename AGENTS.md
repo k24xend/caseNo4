@@ -4,6 +4,16 @@
 
 Build the portfolio-grade MVP described in `VYHOD_SPEC.md`. Read that file completely before planning or editing.
 
+## Web UI rules
+
+When writing or changing web UI (`apps/web`):
+
+1. Read `DESIGN.md` and `ANTI-SLOP.md` first.
+2. Follow `CLAUDE.md` / `.cursorrules` UI generation rules.
+3. Stack only: React + Tailwind + shadcn/ui; semantic tokens only; 8-pt spacing.
+4. One high-quality component or section at a time unless a full page is explicitly requested.
+5. Pass the Anti-Slop checklist before finishing.
+
 ## Required workflow
 
 1. Inspect the repository and map the current state against `VYHOD_SPEC.md`.

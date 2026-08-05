@@ -1,6 +1,8 @@
 import type { AppLanguage } from '../domain/models';
 
 export type UiStrings = {
+  appName: string;
+  appMark: string;
   home: string;
   assistant: string;
   history: string;
@@ -28,6 +30,10 @@ export type UiStrings = {
   searchTx: string;
   noTx: string;
   trySearch: string;
+  spendOk: string;
+  spendCaution: string;
+  spendCritical: string;
+  spendRatingHint: string;
   aiTitle: string;
   aiReady: string;
   aiIntro: string;
@@ -50,11 +56,13 @@ export type UiStrings = {
   qLargest: string;
 };
 
-const ru: UiStrings = {
+const en: UiStrings = {
+  appName: 'EXIT',
+  appMark: 'E',
   home: 'Home',
   assistant: 'Assistant',
   history: 'History',
-  profile: 'Профиль',
+  profile: 'Profile',
   brandTag: 'Track money, improve balance',
   difficulty: 'Difficulty',
   choosePace: 'Choose your pace',
@@ -71,21 +79,25 @@ const ru: UiStrings = {
   shopping: 'Shopping',
   foodDrink: 'Food & Drink',
   historyTitle: 'History',
-  historySub: 'All transactions and trends',
+  historySub: 'All transactions and spend ratings',
   totalIncome: 'Total Income',
   totalSpent: 'Total Spent',
   thisWeek: 'This week',
   searchTx: 'Search transactions…',
   noTx: 'No transactions',
   trySearch: 'Try another search',
-  aiTitle: 'Exit assistant',
-  aiReady: 'Ready to help',
+  spendOk: 'Acceptable',
+  spendCaution: 'Undesirable',
+  spendCritical: 'Critical',
+  spendRatingHint: 'Rated against your safe daily budget',
+  aiTitle: 'Your guide',
+  aiReady: 'Here if you need me',
   aiIntro:
-    'Привет! Я ассистент выхода ВЫХОД. Вижу расходы, категории, долги и доступный баланс — отвечаю на подсказки и любые вопросы, на любом языке.',
-  suggested: 'Suggested questions',
+    'Hi. I am the EXIT guide. I see your plan, balance, bills, debts, and history. Ask in plain words — I will answer the same way, without jargon.',
+  suggested: 'Try asking',
   askAnything: 'Ask anything…',
   send: 'Send',
-  thinking: 'Thinking…',
+  thinking: 'One moment…',
   offlineDemo: 'Offline demo',
   theme: 'Theme',
   language: 'Language',
@@ -101,16 +113,66 @@ const ru: UiStrings = {
   qLargest: 'Show my largest expenses',
 };
 
-const en: UiStrings = {
-  ...ru,
-  profile: 'Profile',
-  brandTag: 'Track money, improve balance',
-  aiTitle: 'Exit assistant',
+const ru: UiStrings = {
+  appName: 'ВЫХОД',
+  appMark: 'В',
+  home: 'Главная',
+  assistant: 'Ассистент',
+  history: 'История',
+  profile: 'Профиль',
+  brandTag: 'Считай деньги, улучшай баланс',
+  difficulty: 'Режим',
+  choosePace: 'Выберите темп',
+  basic: 'Базовый',
+  hard: 'Жёсткий',
+  financialProgress: 'Финансовый прогресс',
+  balanceImproving: 'Баланс улучшается',
+  availableToSpend: 'Можно потратить',
+  thisMonth: 'В этом месяце',
+  stable: 'Стабильно',
+  moneyCategories: 'Категории трат',
+  whereBudgetGoes: 'Куда уходит бюджет',
+  edit: 'Изменить',
+  shopping: 'Покупки',
+  foodDrink: 'Еда и напитки',
+  historyTitle: 'История',
+  historySub: 'Все операции и оценка трат',
+  totalIncome: 'Доход',
+  totalSpent: 'Расход',
+  thisWeek: 'На этой неделе',
+  searchTx: 'Поиск операций…',
+  noTx: 'Операций нет',
+  trySearch: 'Попробуйте другой запрос',
+  spendOk: 'Допустимая',
+  spendCaution: 'Нежелательная',
+  spendCritical: 'Критическая',
+  spendRatingHint: 'Оценка относительно безопасного дневного бюджета',
+  aiTitle: 'Ваш гид',
+  aiReady: 'На связи',
   aiIntro:
-    "Hi! I'm Vyhod's exit assistant. I see your spending, categories, debts, and available balance — ask the suggested questions or anything else, in any language.",
+    'Привет. Я гид приложения ВЫХОД. Вижу ваш план, баланс, счета, долги и историю. Пишите обычными словами — отвечу так же, без сложных терминов.',
+  suggested: 'Можно спросить',
+  askAnything: 'Спросите что угодно…',
+  send: 'Отправить',
+  thinking: 'Секунду…',
+  offlineDemo: 'Офлайн-демо',
+  theme: 'Тема',
+  language: 'Язык',
+  colorScheme: 'Палитра',
+  light: 'Светлая',
+  dark: 'Тёмная',
+  system: 'Система',
+  close: 'Закрыть',
+  weekDays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
+  qSpendWeek: 'Сколько я потратил на этой неделе?',
+  qBudget: 'Куда уходит бюджет?',
+  qSave: 'Как откладывать больше?',
+  qLargest: 'Покажи крупнейшие траты',
 };
 
 const zh: UiStrings = {
+  appName: '出路',
+  appMark: '出',
   home: '首页',
   assistant: '助手',
   history: '历史',
@@ -131,21 +193,25 @@ const zh: UiStrings = {
   shopping: '购物',
   foodDrink: '餐饮',
   historyTitle: '历史记录',
-  historySub: '全部交易与趋势',
+  historySub: '全部交易与支出评级',
   totalIncome: '总收入',
   totalSpent: '总支出',
   thisWeek: '本周',
   searchTx: '搜索交易…',
   noTx: '暂无交易',
   trySearch: '试试其他关键词',
-  aiTitle: '退出助手',
-  aiReady: '随时为您服务',
+  spendOk: '可接受',
+  spendCaution: '不宜',
+  spendCritical: '危险',
+  spendRatingHint: '相对安全日预算的评级',
+  aiTitle: '你的向导',
+  aiReady: '在线',
   aiIntro:
-    '您好！我是 ВЫХОД 退出助手。我了解您的支出、分类、债务与可用余额——可点推荐问题，也可随便问，支持任何语言。',
-  suggested: '推荐问题',
+    '你好。我是「出路」里的向导。我能看到你的计划、余额、账单、债务和历史。用平常话问我，我会用平常话回答，不绕弯。',
+  suggested: '可以这样问',
   askAnything: '随便问…',
   send: '发送',
-  thinking: '思考中…',
+  thinking: '稍等…',
   offlineDemo: '离线演示',
   theme: '主题',
   language: '语言',
@@ -161,58 +227,8 @@ const zh: UiStrings = {
   qLargest: '最大的支出是什么？',
 };
 
-// Home/nav labels stay brand-English on RU for Screen3 look; full UI i18n for zh/en content elsewhere
 export const strings: Record<AppLanguage, UiStrings> = {
-  ru: {
-    ...ru,
-    home: 'Главная',
-    assistant: 'Ассистент',
-    history: 'История',
-    brandTag: 'Считай деньги, улучшай баланс',
-    difficulty: 'Режим',
-    choosePace: 'Выберите темп',
-    basic: 'Базовый',
-    hard: 'Жёсткий',
-    financialProgress: 'Финансовый прогресс',
-    balanceImproving: 'Баланс улучшается',
-    availableToSpend: 'Можно потратить',
-    thisMonth: 'В этом месяце',
-    stable: 'Стабильно',
-    moneyCategories: 'Категории трат',
-    whereBudgetGoes: 'Куда уходит бюджет',
-    edit: 'Изменить',
-    shopping: 'Покупки',
-    foodDrink: 'Еда и напитки',
-    historyTitle: 'История',
-    historySub: 'Все операции и тренды',
-    totalIncome: 'Доход',
-    totalSpent: 'Расход',
-    thisWeek: 'На этой неделе',
-    searchTx: 'Поиск операций…',
-    noTx: 'Операций нет',
-    trySearch: 'Попробуйте другой запрос',
-    aiTitle: 'Ассистент выхода',
-    aiReady: 'Готов помочь',
-    aiIntro:
-      'Привет! Я ассистент выхода ВЫХОД. Вижу расходы, категории, долги и доступный баланс — отвечаю на подсказки и любые вопросы, на любом языке.',
-    suggested: 'Подсказки',
-    askAnything: 'Спросите что угодно…',
-    send: 'Отправить',
-    thinking: 'Думаю…',
-    offlineDemo: 'Офлайн-демо',
-    theme: 'Тема',
-    language: 'Язык',
-    colorScheme: 'Палитра',
-    light: 'Светлая',
-    dark: 'Тёмная',
-    system: 'Система',
-    close: 'Закрыть',
-    weekDays: ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Вс'],
-    qSpendWeek: 'Сколько я потратил на этой неделе?',
-    qBudget: 'Куда уходит бюджет?',
-    qSave: 'Как откладывать больше?',
-    qLargest: 'Покажи крупнейшие траты',
-  },
+  ru,
   en,
   zh,
 };

@@ -121,6 +121,11 @@ export default defineConfig({
   resolve: {
     dedupe: ['three', 'react', 'react-dom'],
   },
+  // Allow Cloudflare quick tunnels / LAN hosts when opening from Safari on phone
+  server: {
+    host: true,
+    allowedHosts: true,
+  },
   plugins: [
     react(),
     assistantApiPlugin(),
